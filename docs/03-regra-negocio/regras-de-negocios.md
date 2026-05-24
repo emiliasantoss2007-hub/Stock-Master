@@ -13,149 +13,68 @@
 - **Expurgo:** retirada de produtos do estoque por perda, dano, vencimento ou outro motivo justificado.
 - **Estoque crítico:** situação em que o estoque disponível atinge ou fica abaixo do nível mínimo definido.
 
+## Regras de Negócios 
+
+As regras de negócio definem as condições e restrições que orientam o funcionamento do sistema. Elas estabelecem quem pode realizar determinadas ações e sob quais critérios, garantindo o controle, a segurança e a integridade das operações realizadas no sistema de gerenciamento de estoque.
+
 ## Acesso e Segurança
 
 ### RN01 - Controle de Acesso
 
 O acesso ao sistema só pode ser permitido para usuários cadastrados que informem login e senha válidos.
 
-**Critérios:**
-
-- O usuário deve estar previamente cadastrado.
-- O login informado deve existir no sistema.
-- A senha deve ser validada com segurança.
-- O acesso deve respeitar o perfil e as permissões do usuário.
 
 ## Gestão de Usuários
 
 ### RN02 - Cadastro de Usuários
 
-Usuários só podem ser cadastrados por administradores quando todos os campos obrigatórios forem preenchidos.
-
-**Critérios:**
-
-- O cadastro deve conter nome, login, senha e perfil.
-- O administrador deve estar autenticado.
-- O perfil do usuário deve ser definido no momento do cadastro.
-- Cadastros incompletos não devem ser salvos.
+Usuários só podem ser cadastrados, por administradores, com todos os campos obrigatórios preenchidos (nome, login, senha e perfil).
 
 ### RN03 - Exclusão de Usuários
 
-Usuários só podem ser excluídos por administradores mediante confirmação da operação.
-
-**Critérios:**
-
-- O administrador deve estar autenticado.
-- O usuário a ser excluído deve existir no sistema.
-- A operação deve solicitar confirmação antes da exclusão.
-- Após a exclusão, o acesso do usuário deve ser revogado.
+Usuários só podem ser excluídos, por administradores, mediante confirmação da operação.
 
 ## Gestão de Produtos
 
 ### RN04 - Cadastro de Produtos
 
-Produtos só podem ser cadastrados por usuários autenticados quando os dados obrigatórios forem informados.
-
-**Critérios:**
-
-- O cadastro deve conter nome, categoria e quantidade.
-- A quantidade informada deve ser válida.
-- O usuário deve possuir permissão para cadastrar produtos.
-- Produtos com dados obrigatórios ausentes não devem ser salvos.
+Produtos só podem ser cadastrados, por usuários autenticados, com nome, categoria e quantidade informados.
 
 ### RN05 - Edição de Produtos
 
-Produtos só podem ser editados por administradores quando estiverem previamente cadastrados no sistema.
-
-**Critérios:**
-
-- O produto deve existir no cadastro.
-- O administrador deve estar autenticado.
-- Os dados alterados devem ser validados antes do salvamento.
-- A edição não deve gerar inconsistências no estoque.
+Produtos só podem ser editados, por administradores, quando estiverem previamente cadastrados no sistema.
 
 ### RN06 - Exclusão de Produtos
 
-Produtos só podem ser excluídos por usuários autorizados após confirmação da exclusão.
-
-**Critérios:**
-
-- O produto deve existir no sistema.
-- O usuário deve possuir permissão para excluir produtos.
-- O sistema deve solicitar confirmação antes da exclusão.
-- A exclusão deve respeitar vínculos e restrições operacionais do estoque.
+Produtos só podem ser excluídos, por usuários autorizados, após confirmação da exclusão.
 
 ## Controle de Estoque
 
 ### RN07 - Entrada de Estoque
 
-A inclusão de estoque só pode ser realizada por administradores ou técnicos mediante informação de quantidade maior que zero.
-
-**Critérios:**
-
-- O produto deve estar cadastrado.
-- A quantidade de entrada deve ser maior que zero.
-- O usuário deve estar autenticado.
-- A operação deve atualizar o estoque disponível.
+A inclusão de estoque só pode ser realizada, por administradores ou técnicos, informando uma quantidade maior que zero.
 
 ### RN08 - Saída de Estoque
 
-A saída de produtos só pode ser realizada por administradores ou técnicos quando a quantidade solicitada for menor ou igual ao estoque disponível.
-
-**Critérios:**
-
-- O produto deve estar cadastrado.
-- A quantidade de saída deve ser maior que zero.
-- A quantidade de saída não pode ultrapassar o estoque disponível.
-- A operação deve atualizar o estoque disponível.
+A saída de produtos só pode ser realizada, por administradores ou técnicos, quando a quantidade solicitada for menor ou igual ao estoque disponível.
 
 ### RN09 - Expurgo de Estoque
 
-O expurgo de produtos só pode ser realizado por administradores mediante informação do motivo da retirada.
-
-**Critérios:**
-
-- O produto deve estar cadastrado.
-- O administrador deve estar autenticado.
-- A quantidade expurgada deve ser válida.
-- O motivo do expurgo deve ser informado.
-- A operação deve atualizar o estoque disponível.
+O expurgo de produtos só pode ser realizado, por administradores, informando o motivo da retirada.
 
 ## Auditoria e Rastreabilidade
 
 ### RN10 - Histórico de Movimentações
 
-Toda movimentação de estoque deve ser registrada com data, tipo de movimentação e quantidade da operação.
-
-**Critérios:**
-
-- O registro deve indicar o produto movimentado.
-- O registro deve indicar o tipo da operação: entrada, saída ou expurgo.
-- O registro deve conter a quantidade movimentada.
-- O registro deve conter a data da operação.
-- O histórico deve permitir acompanhamento das operações realizadas no estoque.
+Toda movimentação de estoque deve ser registrada, para todos os produtos, com data, tipo e quantidade da operação.
 
 ## Alertas e Relatórios
 
 ### RN11 - Alerta de Estoque Crítico
 
-Alertas de estoque só devem ser gerados para produtos cadastrados quando o estoque disponível atingir o nível mínimo definido.
-
-**Critérios:**
-
-- O produto deve estar cadastrado.
-- O produto deve possuir nível mínimo definido.
-- O alerta deve ser gerado quando a quantidade disponível atingir ou ficar abaixo do limite mínimo.
-- O limite pode ser configurado por produto, como 30% do estoque total.
+Alertas de estoque só devem ser gerados, para produtos cadastrados, quando atingirem o nível mínimo definido (ex: 30% do estoque).
 
 ### RN12 - Relatórios
 
-Relatórios só podem ser gerados por administradores com base nos dados cadastrados no sistema.
-
-**Critérios:**
-
-- O administrador deve estar autenticado.
-- Os relatórios devem utilizar dados registrados no sistema.
-- As informações exibidas devem respeitar as permissões de acesso.
-- Os relatórios devem apoiar a análise e o acompanhamento das operações do estoque.
+Relatórios só podem ser gerados, por administradores, com base nos dados cadastrados no sistema.
 

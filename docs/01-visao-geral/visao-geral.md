@@ -1,14 +1,11 @@
-# Visão Geral do Sistema Stock Master
-
-## Fonte
-
-Este documento foi elaborado a partir do arquivo `Escopo Sistema/Escopo Sistema de Controle de Estoque.pdf`.
+# Visão Geral 
+### Sistema de Controle de Estoque - Assitência Técnica
 
 ## Sobre o Projeto
 
-O Stock Master é um sistema de gerenciamento de estoque voltado para uma assistência técnica. A solução tem como finalidade controlar, organizar e registrar as operações relacionadas ao estoque, permitindo maior precisão, segurança e eficiência nos processos internos.
+O Sistema de Gerenciamento de Estoque é uma solução desenvolvida para controlar, organizar e registrar todas as operações relacionadas ao estoque de uma assitência técnica. O sistema permite o gerenciamento completo de produtos, usuários e movimentações, garantindo maior precisão, segurança e eficiência nos processos.
 
-O sistema centraliza o gerenciamento de produtos, usuários e movimentações de estoque, oferecendo recursos para cadastro, consulta, edição, exclusão, controle de entradas e saídas, expurgo, histórico de movimentações e alertas de estoque crítico.
+A aplicação foi projetada para atender diferentes perfis de usuários, como administradores e técnicos, oferecendo funcionalidades que vão desde o cadastro de produtos até o controle detalhado de entradas, saídas e alertas de estoque.
 
 ## Objetivo do Sistema
 
@@ -30,57 +27,39 @@ Usuário responsável por executar operações de estoque autorizadas, como cons
 
 O sistema contempla funcionalidades relacionadas à gestão de usuários, autenticação, controle de acesso, gestão de produtos, movimentações de estoque, histórico, alertas e relatórios.
 
-## Módulos do Sistema
+## Principais aspectos e funcionalidades do projeto:
 
 ### Gerenciamento de Usuários
 
-O sistema permite cadastrar, editar, excluir e consultar usuários. Também controla o acesso por meio de login e definição de permissões, garantindo que cada usuário acesse somente as funcionalidades permitidas para seu perfil.
+O sistema permite o cadastro, edição, exclusão e consulta de usuários. Também realiza o controle de acesso por meio de login e definição de permissões, garantindo que cada usuário acesse apenas as funcionalidades permitidas.
 
 ### Autenticação e Controle de Acesso
 
-O sistema possui login seguro com validação por login e senha. As permissões são aplicadas conforme o perfil do usuário, como Administrador ou Técnico, garantindo segurança e controle nas operações realizadas.
+O sistema possui funcionalidade de login segura, onde os usuários acessam a plataforma com login e senha. As permissões são aplicadas conforme o perfil (Administrador ou Técnico), garantindo segurança e controle das operações.
 
 ### Cadastro e Gerenciamento de Produtos
 
-O sistema permite o cadastro completo de produtos, incluindo nome, categoria, quantidade e demais informações relevantes. Também permite consultar, editar e excluir produtos, mantendo os dados atualizados e organizados.
+Permite o cadastro completo de produtos, incluindo nome, categoria, quantidade e demais informações relevantes. Também possibilita consultar, editar e excluir produtos, mantendo o sistema sempre atualizado e organizado.
 
 ### Controle de Estoque
 
-O sistema realiza o controle das operações essenciais de estoque.
-
-As principais operações previstas são:
-
-- Cadastro inicial de estoque.
-- Inclusão de produtos no estoque.
-- Saída de produtos por venda ou uso.
-- Expurgo de produtos por perda, dano ou vencimento.
-
-Essas funcionalidades garantem que o estoque disponível seja atualizado conforme as movimentações realizadas.
+Osistema realiza o controle completo do estoque, incluindo:  Cadastro inicial de estoque  Inclusão de produtos (entrada)  Saída de produtos (vendas)  Expurgo (perdas, danos ou vencimentos) Essas funcionalidades garantem que o estoque esteja sempre atualizado.
 
 ### Histórico de Movimentações
 
-Todas as movimentações realizadas no estoque são registradas para permitir acompanhamento e rastreabilidade das operações.
-
-O histórico deve registrar informações como:
-
-- Tipo de movimentação.
-- Produto movimentado.
-- Quantidade movimentada.
-- Data da operação.
+Todas as movimentações realizadas no sistema são registradas, permitindo o acompanhamento completo das operações de estoque. O histórico inclui informações como tipo de movimentação, produto, quantidade e data.
 
 ### Alerta de Estoque Crítico
 
-O sistema monitora automaticamente os níveis de estoque e gera alertas quando a quantidade disponível de um produto atinge o nível mínimo definido.
-
-O limite de estoque crítico pode ser configurado por produto, podendo ser definido, por exemplo, como 30% da quantidade total.
+O sistema monitora automaticamente os níveis de estoque e gera alertas quando a quantidade disponível de um produto atinge o nível mínimo definido. Esse limite pode ser configurado para cada produto, podendo ser estabelecido, por exemplo, em 30% da quantidade total.
 
 ### Segurança e Criptografia
 
-O sistema protege dados sensíveis por meio de criptografia, especialmente senhas. O controle de acesso por perfil também contribui para que cada usuário execute apenas as operações permitidas.
+O sistema garante a proteção dos dados por meio de criptografia (hashing), especialmente para informações sensíveis como senhas. Também controla o acesso às funcionalidades conforme o perfil do usuário.
 
 ### Compatibilidade e Usabilidade
 
-O sistema deve funcionar em diferentes navegadores e dispositivos. A interface deve ser intuitiva e responsiva, facilitando o uso por administradores e técnicos.
+O sistema foi desenvolvido para funcionar em diferentes navegadores e dispositivos, com interface intuitiva e responsiva, facilitando o uso por todos os usuários.
 
 ## Benefícios Esperados
 
