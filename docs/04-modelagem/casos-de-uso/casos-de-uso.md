@@ -1,589 +1,580 @@
-# Casos de Uso do Sistema Stock Master
-
-## Convenções de Nomenclatura
-
-- **Sistema:** Stock Master.
-- **Usuário:** pessoa cadastrada no sistema.
-- **Usuário autenticado:** usuário que realizou login com sucesso.
-- **Administrador:** perfil com permissão para gerenciar usuários, permissões e cadastros críticos.
-- **Técnico/Funcionário autorizado:** perfil operacional com permissões definidas pelo administrador.
-- **Estagiário:** perfil com permissões restritas, principalmente de visualização quando autorizado.
-- **Perfil de acesso:** conjunto de permissões associado a um usuário.
-- **Produto:** item cadastrado e controlado no estoque.
-- **SKU/Código de barras:** identificador usado para localizar ou diferenciar produtos.
+# Casos de Uso do Sistema
 
 ## UC01 - Realizar Login com Validação por Hash
 
 ### Objetivo
 
-Permitir que o usuário acesse o sistema de forma segura, validando a senha por meio de hash criptográfico, sem armazenar ou comparar senhas em texto puro.
+Permitir que o usuário acesse o sistema de forma segura, validando sua senha através de hash criptográfico, sem armazenar ou comparar senhas em texto puro
 
 ### Atores
 
-- Usuário.
-- Administrador.
-- Técnico/Funcionário autorizado.
+- Usuário (Administrador, Funcionário, etc.)
 
 ### Pré-condições
 
-- O usuário deve estar cadastrado no sistema.
-- A senha do usuário deve estar armazenada no banco de dados em formato hash.
-- O sistema deve possuir algoritmo de hash configurado.
+- O usuário já deve estar cadastrado no sistema
+- A senha do usuário deve estar armazenada no banco de dados em formato hash
+- O sistema deve possuir um algoritmo de hash configurado
+
+### Pós-condições
+
+Em caso de sucesso:
+
+- Usuário autenticado no sistema
+- Sessão iniciada com seu nível de acesso
+
+Em caso de falha:
+
+- Acesso negado
+- Mensagem de erro exibida
 
 ### Fluxo Principal
 
 1. O usuário acessa a tela de login.
-2. O usuário informa login e senha.
-3. O sistema busca o usuário pelo login informado.
+2. O usuário informa:
+   - login
+   - senha
+3. O sistema busca o usuário pelo login.
 4. O sistema recupera o hash da senha armazenada.
-5. O sistema aplica o algoritmo de hash à senha informada.
-6. O sistema compara o hash gerado com o hash armazenado.
-7. Se os hashes forem iguais, o sistema libera o acesso.
-8. O sistema inicia a sessão com o perfil de acesso do usuário.
-9. O sistema redireciona o usuário para o painel inicial.
+5. O sistema aplica o algoritmo de hash na senha informada.
+6. O sistema compara:
+   - hash gerado vs hash armazenado
+7. Se forem iguais:
+   - acesso liberado
+   - sistema redireciona para o painel
+8. O sistema carrega o nível de acesso do usuário
 
-### Fluxos Alternativos e Exceções
+### Fluxos Alternativos
 
-- **FA01 - Usuário não encontrado:** o sistema não localiza o login informado e exibe a mensagem "Usuário ou senha inválidos".
-- **FA02 - Senha incorreta:** o hash gerado não corresponde ao hash armazenado e o sistema exibe a mensagem "Usuário ou senha inválidos".
-- **FE01 - Erro interno:** em caso de falha no banco de dados ou no processamento do hash, o sistema exibe a mensagem "Erro interno. Tente novamente mais tarde".
+#### FA01 - Usuário não encontrado
 
-### Pós-condições
+O sistema não localiza o login informado.
 
-- Em caso de sucesso, o usuário fica autenticado e com sessão iniciada.
-- Em caso de falha, o acesso é negado e nenhuma sessão é criada.
+Exibe mensagem: "Usuário ou senha inválidos"
 
-### Requisitos Relacionados
+#### FA02 - Senha incorreta
 
-- RF01 - Realizar Login.
-- RNF01 - Login.
-- RNF06 - Segurança e controle de acesso.
+O hash da senha não corresponde.
 
-## UC02 - Controlar Tentativas de Login e Bloqueio Temporário
+Exibe mensagem: "Usuário ou senha inválidos"
 
-### Objetivo
+#### FA03 - Erro no sistema
 
-Prevenir acessos indevidos e ataques de força bruta, controlando tentativas falhas de login e aplicando bloqueio temporário quando o limite for atingido.
+Falha ao acessar banco ou processar hash.
+
+Exibe mensagem: "Erro interno. Tente novamente mais tarde"
+
+## UC02 - Controle de Tentativas de Login
 
 ### Atores
 
-- Usuário.
-- Administrador.
-- Técnico/Funcionário autorizado.
+- Usuário (Administrador ou Técnico)
 
-### Pré-condições
+### Objetivo
 
-- O usuário deve estar na tela de login.
-- O sistema deve estar apto a registrar tentativas falhas de autenticação.
+Garantir a integridade do sistema de gestão de estoque, bloqueando tentativas de acesso de pessoas não autorizadas e prevenindo ataques de força bruta.
 
-### Regras de Validação
+### Descrição
 
-- O sistema deve contabilizar cada tentativa falha de login.
-- O sistema deve exibir a quantidade de tentativas restantes.
-- O limite máximo é de 5 tentativas incorretas consecutivas.
-- Após o limite, o acesso deve ser bloqueado por 30 minutos.
-- Após login bem-sucedido, o contador de tentativas deve ser reiniciado.
+O controle de tentativas será aplicado na tela de login. O sistema deve monitorar erros consecutivos e, ao atingir o limite, impedir o acesso temporariamente através de uma tela de bloqueio.
 
-### Fluxo Principal
+### Exigências de Validação
+
+Para o controle de segurança, o sistema deve:
+
+- Contabilizar cada tentativa falha de login.
+- Exibir o número de tentativas restantes em tempo real.
+- Bloquear o acesso após a 5ª tentativa incorreta.
+- Impor um tempo de espera de 30 minutos antes de permitir um novo login.
+
+### Comportamento do Sistema
+
+#### Tentativa de Login Incorreta
 
 1. O usuário acessa a tela de login.
-2. O usuário informa login e senha.
-3. O sistema valida as credenciais conforme o UC01.
-4. Se as credenciais estiverem incorretas, o sistema registra uma tentativa falha.
-5. O sistema exibe alerta informando o erro e a quantidade de tentativas restantes.
-6. O usuário pode corrigir os dados e tentar novamente enquanto houver tentativas disponíveis.
-7. Se o usuário informar credenciais válidas antes do bloqueio, o sistema libera o acesso e reinicia o contador.
+2. O usuário insere o "Usuário" e a "Senha".
+3. O sistema valida as credenciais.
+4. Se os dados estiverem incorretos, o sistema exibe um alerta em vermelho no topo do formulário.
+5. O sistema informa o motivo do erro e quantas tentativas o usuário ainda possui.
+6. O usuário deve corrigir os dados para tentar novamente.
 
-### Fluxos Alternativos e Exceções
+#### Bloqueio de Acesso
 
-- **FA01 - Tentativa incorreta:** o sistema exibe a mensagem "Usuário inexistente ou senha incorreta" e informa "Você tem [X] tentativas restantes antes do bloqueio".
-- **FA02 - Bloqueio por limite excedido:** ao atingir 5 tentativas falhas, o sistema redireciona o usuário para a tela de bloqueio.
-- **FA03 - Aviso de bloqueio:** o sistema exibe a mensagem "Você ultrapassou o limite de 5 tentativas de login, para sua segurança bloqueamos seu acesso ao sistema. Tente novamente após 30 minutos".
-- **FE01 - Falha ao registrar tentativa:** se o sistema não conseguir registrar a tentativa falha, o login deve permanecer negado e o sistema deve exibir uma mensagem de erro interno.
+1. O usuário atinge o limite de 5 tentativas falhas.
+2. O sistema redireciona o usuário para a tela de "Bloqueado".
+3. O sistema exibe o modal informando que o limite foi ultrapassado.
+4. O sistema informa que o acesso está suspenso por 30 minutos por motivos de segurança.
+5. O usuário clica no botão "Entendo" para fechar o aviso, mas o acesso permanece restrito.
 
-### Pós-condições
+### Mensagens de Erros
 
-- Se as credenciais forem válidas, o usuário acessa o sistema.
-- Se o limite for excedido, o acesso permanece bloqueado por 30 minutos.
+O sistema deve exibir mensagens claras, conforme o design:
 
-### Requisitos Relacionados
+- Erro inicial: “Usuário inexistente ou senha incorreta.”
+- Contador: “Você tem [X] tentativas restantes antes do bloqueio.”
+- Tela de Bloqueio: “Você ultrapassou o limite de 5 tentativas de login, para sua segurança bloqueamos seu acesso ao sistema. Tente novamente após 30 minutos.”
 
-- RF01 - Realizar Login.
-- RNF01 - Login.
-- RNF06 - Segurança e controle de acesso.
+### Textos das Telas de Apoio
 
-## UC03 - Cadastrar Usuário
+#### Tela de Login
 
-### Objetivo
+- LOGIN
+- Usuário inexistente ou senha incorreta.
+- Você tem 4 tentativas restantes antes do bloqueio.
+- Usuário
+- Digite seu usuário
+- Senha
+- Digite sua senha
+- Mostrar Senha
+- ENTRAR
 
-Permitir que um administrador cadastre novos usuários com dados válidos, seguros e associados a um perfil de acesso.
+#### Tela de Bloqueio
 
-### Atores
+- Bloqueado
+- Você ultrapassou o limite de 5 tentativas de login, para sua segurança bloqueamos seu acesso ao sistema. Tente novamente após 30 minutos.
+- Entendo
 
-- Administrador.
-- Usuário cadastrado.
+### Exemplos de Fluxo Válido
 
-### Pré-condições
+- Inserir Usuário/Senha corretos na 1ª tentativa: Acesso liberado.
+- Errar 2 vezes e acertar na 3ª: Contador resetado e acesso liberado.
 
-- O administrador deve estar autenticado no sistema.
-- O administrador deve possuir permissão para cadastrar usuários.
-- O sistema deve estar em funcionamento.
+### Exemplos de Fluxo de Bloqueio
 
-### Campos Obrigatórios
-
-- Nome.
-- Login.
-- E-mail.
-- Senha.
-- Perfil de acesso.
-
-### Fluxo Principal
-
-1. O administrador acessa o sistema.
-2. O administrador seleciona a opção de gerenciamento de usuários.
-3. O administrador seleciona a opção de novo usuário.
-4. O sistema exibe o formulário de cadastro.
-5. O administrador preenche os campos obrigatórios.
-6. O administrador solicita o salvamento.
-7. O sistema valida os dados informados.
-8. O sistema armazena o novo usuário no banco de dados.
-9. O sistema exibe mensagem de confirmação do cadastro.
-
-### Fluxos Alternativos e Exceções
-
-- **FA01 - Dados obrigatórios ausentes ou inválidos:** o sistema destaca os campos inválidos, exibe mensagem de erro e solicita correção.
-- **FA02 - Senha fora do padrão:** se a senha tiver menos de 8 caracteres ou não cumprir os critérios de segurança definidos, o sistema bloqueia o cadastro e informa o requisito mínimo.
-- **FA03 - Login já existente:** se o login informado já estiver em uso, o sistema impede o cadastro e solicita outro login.
-- **FA04 - E-mail inválido:** se o e-mail não possuir formato válido, o sistema impede o cadastro e solicita correção.
-
-### Regras de Negócio e Segurança
-
-- O login deve ser único no sistema.
-- O e-mail deve possuir formato válido.
-- O perfil de acesso deve ser obrigatoriamente definido.
-- Senhas devem ser armazenadas de forma criptografada.
-- Apenas administradores podem cadastrar usuários.
-- Dados sensíveis devem ser protegidos.
-
-### Pós-condições
-
-- O usuário é cadastrado com sucesso no banco de dados.
-- O usuário fica apto a acessar o sistema conforme seu perfil.
-- Em caso de erro, dados inválidos não são salvos.
+Errar 5 vezes seguidas $\rightarrow$ Sistema exibe tela de bloqueio e trava o login por 30 min.
 
 ### Requisitos Relacionados
 
-- RF02 - Cadastrar Usuários.
-- RF06 - Controlar Acesso por Perfil.
-- RNF02 - Cadastro de Usuários.
+- RF-01 (Cadastro de Perfil / Login).
+- RNF-01.03 (Usabilidade).
+- RNF-06.01 (Segurança).
 
-## UC04 - Consultar Usuários do Sistema
-
-### Objetivo
-
-Permitir que usuários autorizados visualizem e pesquisem usuários cadastrados no sistema por meio de listagem, filtros, ordenação e paginação.
+## UC03 - Campo de Cadastro de Usuário
 
 ### Atores
 
-- Administrador.
-- Técnico/Funcionário autorizado.
-- Estagiário com permissão de visualização.
+- Administrador (primário)
+- Usuário (secundário)
+
+### Objetivo
+
+Garantir que novos usuários possam ser registrados no sistema com informações válidas e seguras, possibilitando o controle de acesso conforme o perfil
+
+### Descrição
+
+Criação e validação de campos obrigatórios no formulário de cadastro, contendo nome, e-mail, login, senha e tipo de perfil
 
 ### Pré-condições
 
-- O usuário deve estar autenticado.
-- O usuário deve possuir permissão para visualizar usuários.
-- Devem existir usuários cadastrados ou o sistema deve estar apto a informar ausência de resultados.
-
-### Fluxo Principal
-
-1. O usuário acessa a área de gestão ou consulta de usuários.
-2. O sistema exibe a lista de usuários cadastrados.
-3. O sistema apresenta campos de filtro, como nome, e-mail e perfil de acesso.
-4. O usuário informa um ou mais filtros, quando necessário.
-5. O usuário aciona a busca ou o sistema filtra os dados em tempo real.
-6. O sistema consulta os registros no banco de dados.
-7. O sistema exibe os resultados em tabela com ID, nome, e-mail, perfil de acesso e status.
-8. O sistema oculta informações sensíveis, como hash de senha.
-9. O sistema destaca visualmente o status do usuário, como ativo ou inativo.
-10. O sistema apresenta ações permitidas conforme o perfil do ator, como visualizar, editar ou desativar.
-11. O sistema organiza os resultados com paginação.
-
-### Fluxos Alternativos e Exceções
-
-- **FA01 - Nenhum resultado encontrado:** o sistema exibe a mensagem "Nenhum usuário encontrado" ou "Nenhum usuário localizado para este critério".
-- **FA02 - Usuário sem permissão:** o sistema bloqueia o acesso e exibe a mensagem "Acesso negado".
-- **FA03 - Ordenação de colunas:** o usuário seleciona uma coluna e o sistema reordena os resultados, como A-Z ou Z-A.
-- **FA04 - Restrição por hierarquia:** o sistema oculta ações de edição ou desativação em registros de usuários com cargo superior ao do ator atual.
-- **FE01 - Falha na consulta:** em caso de falha ao recuperar dados, o sistema exibe a mensagem "Não foi possível carregar a lista de usuários. Tente atualizar a página".
+- O administrador deve estar autenticado no sistema
+- O sistema deve estar em funcionamento
 
 ### Pós-condições
 
+- Usuário cadastrado com sucesso no banco de dados
+- Usuário apto a acessar o sistema conforme seu perfil
+- Em caso de erro, os dados inválidos não devem ser salvos no sistema
+
+### Fluxo Principal
+
+- O administrador acessa o sistema
+- O administrador seleciona o ícone “Gerenciamento De Usuários”
+- O administrador seleciona o ícone “Novo Usuário”
+- O sistema exibi o formulário de cadastro
+- O administrador preenche os seguintes campos:
+  - Nome
+  - Login
+  - E-mail
+  - Senha
+  - Tipo De Perfil
+- O administrador seleciona o ícone “Salvar”
+- O sistema valida os dados informados
+- O sistema armazena o novo usuário no banco de dados
+- O sistema exibi uma mensagem de confirmação de cadastro
+
+### Fluxo Alternativo
+
+#### Dados inválidos ou incompleto
+
+Caso algum campo obrigatório não for preenchido ou ser preenchido de forma incorreta
+
+- O sistema destaca os campos inválidos em vermelho
+- Exibi mensagem de erro
+- Solicita correção dos dados do usuário
+
+#### Senha fora do padrão
+
+Caso a senha tenha menos que 8 caracteres
+
+- O sistema bloqueia o cadastro
+- O sistema exibi mensagem informando o requisito mínimo
+
+### Regras de Negócio
+
+- A senha deve conter no mínimo 8 caracteres
+- O login deve ser único no sistema
+- O e-mail deve possuir um formato válido
+- O perfil deve ser obrigatoriamente definido
+
+### Regras de Segurança
+
+- Senhas devem ser armazenadas de forma criptografada
+- Apenas os administradores podem cadastrar usuários
+- Dados sensíveis devem ser protegidos
+
+### Requisitos Relacionados
+
+- Requisitos Funcionais: RF-01 - Cadastro de Perfil (login)
+- RF-02 - Cadastro de Usuários
+- RF-06 - Controle de Acesso
+- Requisitos Não Funcionais: RNF-02.01 (segurança) - Senha mínima de 8 caracteres
+- RNF-02.02 (desempenho) - Indicação visual de erros no campo
+- RNF-02.03 (usabilidade) - Garantia de armazenamento correto
+
+## UC04 - Consultar/Listar Usuários do Sistema
+
+### Objetivos
+
+- Permitir a busca e visualização de usuários cadastrados no sistema por meio de filtros como nome, e-mail ou tipo de perfil, exibindo os resultados em lista para facilitar a localização.
+- Permitir que usuários autorizados visualizem a relação de todos os usuários cadastrados, facilitando o gerenciamento de perfis e o acesso rápido a ferramentas de controle.
+
+### Atores
+
+- Usuário do sistema
+- Administrador
+- Funcionário autorizado
+- Funcionário
+- Estagiário (apenas visualização)
+
+### Pré-condições
+
+- O usuário deve estar autenticado no sistema.
+- Devem existir usuários cadastrados no sistema.
+- O ator deve possuir permissão de "Visualizar Usuários" (UC02).
+
+### Pós-condições
+
+- O sistema exibe uma lista de usuários conforme os filtros aplicados.
+- Nenhuma alteração é realizada nos dados (somente leitura).
 - A lista é exibida de forma organizada, paginada e atualizada.
-- Nenhuma alteração é realizada nos dados durante a consulta.
-- O usuário pode prosseguir para ações permitidas, como edição ou desativação, quando autorizado.
+- O usuário pode prosseguir para a edição (UC008) ou desativação de um perfil.
 
-### Requisitos Relacionados
+### Fluxo Principal
 
-- RF05 - Consultar Usuários.
-- RNF05 - Consulta de Usuários.
-- RNF06 - Segurança e controle de acesso.
+#### Consulta de Usuários
+
+1. O usuário acessa a tela de consulta de usuários.
+2. O sistema exibe os campos de filtro:
+   - nome
+   - e-mail
+   - tipo de perfil
+3. O usuário informa um ou mais filtros (opcional).
+4. O usuário aciona a opção de busca.
+5. O sistema consulta os dados cadastrados.
+6. O sistema aplica os filtros informados.
+7. O sistema exibe uma lista com os resultados contendo:
+   - nome
+   - e-mail
+   - tipo de perfil
+8. O usuário pode visualizar os registros encontrados.
+
+#### Listagem de Usuários
+
+1. O usuário terá acesso ao menu lateral e clica na opção "Gestão de Usuários".
+2. O sistema realiza uma consulta no banco de dados para buscar os registros de usuários.
+3. O sistema exibe uma tabela contendo as colunas: ID, Nome, E-mail, Perfil de Acesso e Status, ocultando informações sensíveis que só devem ser vistas na edição (como o Hash da senha)
+4. O sistema aplica um destaque visual no campo Status (ex: Verde para "Ativo" e Cinza para "Inativo").
+5. Para cada linha, o sistema disponibiliza ícones de ação (Visualizar, Editar, Desativar) de acordo com o perfil do ator.
+6. O usuário pode utilizar a barra de busca para filtrar por Nome ou E-mail.
+7. O sistema organiza os dados em páginas (paginação), garantindo que o carregamento respeite o tempo de resposta (RNF-01.02).
+
+### Fluxos Alternativos
+
+#### FA01 - Nenhum resultado encontrado
+
+Nenhum usuário corresponde aos filtros informados.
+
+O sistema exibe mensagem: "Nenhum usuário encontrado".
+
+#### FA02 - Usuário sem permissão
+
+O usuário não possui permissão para consultar usuários.
+
+O sistema bloqueia o acesso.
+
+Exibe mensagem: "Acesso negado".
+
+#### FA03 - Falha na consulta
+
+Erro ao acessar o banco de dados.
+
+O sistema exibe mensagem: "Erro ao realizar consulta. Tente novamente".
+
+#### FA04 - Aplicar Filtro de Busca
+
+O usuário digita um termo no campo de busca.
+
+O sistema filtra a lista em tempo real. Se não houver correspondência, exibe: "Nenhum usuário localizado para este critério".
+
+#### FA05 - Ordenação de Colunas
+
+O usuário clica no cabeçalho de uma coluna (ex: Nome).
+
+O sistema reordena a lista automaticamente (A-Z ou Z-A).
+
+#### FA06 - Restrição de Hierarquia (Segurança)
+
+O sistema identifica o nível de acesso do usuário conectado.
+
+O sistema oculta os ícones de "Editar" e "Desativar" em registros de usuários com cargo superior ao do ator atual (conforme UC02).
+
+### Fluxo de Exceções
+
+#### FE01 - Falha na Recuperação de Dados
+
+Ocorre uma falha de comunicação com o banco de dados.
+
+O sistema exibe: "Não foi possível carregar a lista de usuários. Tente atualizar a página".
+
+### Requisitos e Regras Relacionadas
+
+- RF-02: Listar Usuários.
+- RNF-01.02: Desempenho (A consulta deve retornar os dados em até 3 segundos).
+- RNF-19: Compatibilidade (A tabela deve manter o funcionamento adequado em diferentes resoluções de tela).
+- Regras de Negócio: Preenchimento de filtros; exibição de status visual para facilitar a identificação rápida.
 
 ## UC05 - Alterar Senha com Validação de Segurança
 
 ### Objetivo
 
-Permitir que o usuário autenticado altere sua senha, garantindo validação da senha atual, complexidade da nova senha e armazenamento seguro por hash.
+Permitir que o usuário autenticado altere sua senha de acesso ao sistema de estoque da assistência técnica, garantindo a integridade dos dados através de criptografia e requisitos de complexidade.
 
 ### Atores
 
-- Usuário autenticado.
-- Administrador.
-- Técnico/Funcionário autorizado.
-- Estagiário.
+- Usuário (Administrador, Técnico, Estagiário).
 
 ### Pré-condições
 
-- O usuário deve estar autenticado.
-- O sistema deve possuir algoritmo de hash configurado.
-- O usuário deve ter permissão para acessar o próprio perfil.
+- O usuário deve estar autenticado no sistema (UC01).
+- O sistema deve possuir um algoritmo de hash configurado (RNF-01.01).
+- O usuário deve ter permissão de acesso ao seu próprio perfil (UC02).
 
 ### Fluxo Principal
 
-1. O usuário acessa a área de Meu Perfil ou Configurações.
-2. O usuário seleciona a opção Alterar Senha.
-3. O sistema exibe os campos Senha Atual, Nova Senha e Confirmação da Nova Senha.
-4. O usuário preenche os campos e solicita o salvamento.
-5. O sistema busca o hash da senha atual no banco de dados.
-6. O sistema valida se a senha atual informada corresponde ao hash armazenado.
-7. O sistema valida se a nova senha cumpre os requisitos de segurança.
-8. O sistema verifica se a nova senha e a confirmação são idênticas.
-9. O sistema gera um novo hash para a nova senha.
-10. O sistema atualiza a senha no banco de dados.
-11. O sistema exibe mensagem de sucesso.
-12. O sistema encerra a sessão atual e solicita novo login.
+1. O usuário terá acesso a área de "Meu Perfil" ou "Configurações" no sistema de estoque.
+2. O usuário seleciona a opção "Alterar Senha".
+3. O sistema exibe campos para: Senha Atual, Nova Senha e Confirmação da Nova Senha.
+4. O usuário preenche os dados e solicita o salvamento.
+5. O sistema busca o hash da senha atual no banco de dados e valida se coincide com a senha digitada.
+6. O sistema valida se a "Nova Senha" cumpre os requisitos de força (8 caracteres, maiúsculas, minúsculas, números e símbolos).
+7. O sistema verifica se a "Nova Senha" e a "Confirmação" são idênticas.
+8. O sistema gera um novo hash para a nova senha e atualiza o banco de dados (RNF-18).
+9. O sistema exibe mensagem de sucesso, encerra a sessão atual e solicita novo login.
 
-### Regras de Validação
+### Fluxos Alternativos
 
-- A nova senha deve conter no mínimo 8 caracteres.
-- A nova senha deve conter letra maiúscula e letra minúscula.
-- A nova senha deve conter pelo menos um número.
-- A nova senha deve conter pelo menos um caractere especial.
-- A nova senha não pode ser igual à senha atual.
-- Todos os campos devem ser preenchidos antes do salvamento.
+#### FA01 - Senha Atual Inválida
 
-### Fluxos Alternativos e Exceções
+O sistema identifica que o hash da senha digitada não corresponde ao armazenado.
 
-- **FA01 - Senha atual inválida:** o sistema identifica que a senha informada não corresponde ao hash armazenado e exibe "Senha atual incorreta".
-- **FA02 - Senha fraca:** o sistema destaca os campos com erro e informa quais requisitos não foram atendidos.
-- **FA03 - Nova senha igual à anterior:** o sistema exibe "A nova senha não pode ser igual à senha atual".
-- **FA04 - Confirmação divergente:** o sistema exibe "A confirmação de senha não coincide".
-- **FE01 - Erro de conexão com banco de dados:** o sistema exibe "Erro interno. Tente novamente mais tarde" e nenhuma alteração é gravada.
+Exibe mensagem: "Senha atual incorreta".
+
+O processo é reiniciado no Passo 3.
+
+#### FA02 - Senha Fraca (Não atende aos requisitos)
+
+O sistema detecta falta de caracteres especiais, números ou tamanho insuficiente.
+
+O sistema destaca os campos com erro e exibe a mensagem correspondente:
+
+- "A senha deve conter no mínimo 8 caracteres".
+- "A senha deve conter pelo menos uma letra maiúscula e minúscula".
+- "A senha deve conter pelo menos um número".
+- "A senha deve conter pelo menos um caractere especial".
+
+#### FA03 - Nova Senha igual à Anterior
+
+O sistema compara o novo hash com o antigo e identifica que são iguais.
+
+O sistema exibirá a mensagem: "A nova senha não pode ser igual à senha atual".
+
+O usuário permanece na tela para informar uma nova senha.
+
+#### FA04 - Divergência na Confirmação
+
+Os campos "Nova Senha" e "Confirmação" possuem valores diferentes.
+
+Exibe mensagem: "A confirmação de senha não coincide".
+
+### Fluxo de Exceções
+
+#### FE01 - Erro de Conexão com Banco de Dados
+
+Falha ao acessar o banco ou processar o hash.
+
+O sistema exibe: "Erro interno. Tente novamente mais tarde".
+
+Nenhuma alteração é gravada.
 
 ### Pós-condições
 
-- A nova senha é armazenada exclusivamente em formato hash.
-- A sessão anterior é invalidada.
-- O usuário deve autenticar-se novamente.
+- A senha é armazenada exclusivamente em formato hash (criptografada).
+- O acesso anterior é invalidado, exigindo nova autenticação.
 
-### Requisitos Relacionados
+### Requisitos e Regras Relacionadas
 
-- RF01 - Realizar Login.
-- RF03 - Editar Usuários.
-- RNF01 - Login.
-- RNF06 - Segurança e controle de acesso.
+- RF06 / RF-03: Realizar login e Editar Usuários.
+- RNF-01.01: Armazenamento de senhas de forma criptografada.
+- RNF-18 (Criptografia): Proteção de dados sensíveis no tráfego e armazenamento.
+- Regras de Negócio: Preenchimento obrigatório de todos os campos antes do salvamento.
 
-## UC06 - Recuperar Senha por E-mail
+## UC06 - Alteração de Senha através do E-mail
 
-### Objetivo
+### Descrição
 
-Permitir que o usuário recupere ou redefina sua senha por meio de validação enviada ao e-mail cadastrado.
+O caso deve detalhar o processo de de alteração de senha através do e-mail
+
+### Ator
+
+- Usuário
+
+### Pré-condições
+
+O usuário deve estar previamente cadastrado no sistema.
+
+### Fluxo Básico
+
+1. Usuário acessa tela de login
+2. O usuário tenta a senha 5 vezes e bloqueia
+3. O usuário clica em “esqueci minha senha”
+4. O Usuário solicita recuperação de senha
+5. o sistema pede para que o usuário informe o e-mail cadastrado
+6. o sistema valida o e-mail do usuário, mandado código no e-mail
+7. Após a validação o e-mail envia um link que leva o usuário até a tela de redefinição de senha
+8. o usuário altera a senha
+9. o sistema direciona o usuário a tela de início para iniciar o processo de login com a nova senha
+
+### Pós-condições
+
+Um e-mail é enviado para o usuário para o confirmação da troca de senha feita com sucesso.
+
+### Fluxo Alternativo
+
+#### Reenvio de Link de Recuperação
+
+1. No passo 7, o usuário percebe que não recebeu o e-mail com o link (ou o e-mail caiu na caixa de spam).
+2. O usuário retorna à tela do sistema e clica em "Reenviar e-mail de recuperação".
+3. O sistema invalida o link anterior e envia um novo e-mail com um link atualizado.
+4. O caso de uso retorna ao passo 7.
+
+### Fluxo de Exceção
+
+- E-mail inválido: Sistema identifica formato incorreto (ex: sem "@") e solicita nova digitação.
+- E-mail não cadastrado: Sistema informa que o e-mail não foi encontrado ou exibe mensagem de segurança e encerra o envio.
+- Link expirado: Usuário clica no link após o tempo limite; sistema exibe erro e solicita nova requisição.
+- Divergência de senha: Usuário digita senhas diferentes nos campos de confirmação; sistema solicita correção.
+- Senha fraca: Senha não atende aos requisitos de segurança; sistema exige nova senha com caracteres especiais/mínimos.
+
+## UC07 - Exclusão de Usuário
+
+### Descrição
+
+Permite que um usuário encerre sua conta no sistema ou que um administrador remova um usuário específico, resultando na remoção dos dados pessoais e revogação de todos os acessos.
 
 ### Atores
 
-- Usuário.
+- usuário
+- Administrador
 
 ### Pré-condições
 
 - O usuário deve estar previamente cadastrado no sistema.
-- O usuário deve possuir e-mail cadastrado e ativo.
-- O sistema deve estar apto a enviar e-mails de recuperação.
+- Ter uma conta ativa
 
-### Fluxo Principal
+### Fluxo Básico
 
-1. O usuário acessa a tela de login.
-2. O usuário seleciona a opção Esqueci minha senha.
-3. O sistema solicita o e-mail cadastrado.
-4. O usuário informa o e-mail.
-5. O sistema valida o formato do e-mail.
-6. O sistema verifica se o e-mail está cadastrado.
-7. O sistema envia código ou link de recuperação ao e-mail validado.
-8. O usuário acessa o link ou informa o código recebido.
-9. O sistema direciona o usuário para a tela de redefinição de senha.
-10. O usuário informa a nova senha e a confirmação.
-11. O sistema valida a senha conforme os requisitos de segurança.
-12. O sistema atualiza a senha em formato hash.
-13. O sistema redireciona o usuário para a tela de login.
-14. O sistema envia e-mail de confirmação da alteração realizada com sucesso.
+1. O usuário faz login e acessa sua conta ativa
+2. O usuário acessa as configurações do sistema
+3. O Usuário seleciona a opção de exclusão de conta
+4. O sistema manda uma mensagem na tela se o usuário tem certeza de que vai excluir a conta
+5. O usuário seleciona que sim
+6. O sistema solicita que o usuário insira o login e senha
+7. O sistema valida a credencial
+8. O sistema inicia o processo de exclusão da conta, removendo dados.
+9. O sistema encerra a sessão atual do usuário.
+10. O sistema exibe uma mensagem confirmando que a operação foi concluída com sucesso.
 
-### Fluxos Alternativos e Exceções
+### Fluxo Alternativo
 
-- **FA01 - Reenvio de recuperação:** se o usuário não receber o e-mail, ele pode solicitar reenvio; o sistema invalida o link anterior e envia um novo link.
-- **FE01 - E-mail inválido:** o sistema identifica formato incorreto e solicita nova digitação.
-- **FE02 - E-mail não cadastrado:** o sistema informa que o e-mail não foi encontrado ou exibe mensagem genérica de segurança.
-- **FE03 - Link expirado:** o sistema informa que o link expirou e solicita nova requisição.
-- **FE04 - Confirmação divergente:** o sistema solicita correção quando os campos de senha não coincidem.
-- **FE05 - Senha fraca:** o sistema exige nova senha quando os requisitos mínimos de segurança não são atendidos.
+1. No passo 2 administrador seleciona um usuário em uma lista.
+2. O sistema pode pular a exigência de senha do usuário alvo, exigindo apenas a senha do próprio administrador.
+
+### Fluxo de Exceção
+
+1. No passo 8, o sistema verifica se o usuário possui pendências financeiras ou processos em aberto que impedem a exclusão.
+2. O sistema exibe o erro: "Não é possível excluir a conta enquanto houver assinaturas ativas ou débitos pendentes."
+3. O processo é encerrado.
 
 ### Pós-condições
 
-- A senha é redefinida com sucesso quando todas as validações são atendidas.
-- O usuário deve realizar login com a nova senha.
-- Um e-mail de confirmação é enviado ao endereço vinculado à conta.
+Notificação: Um e-mail de confirmação é enviado ao endereço vinculado à conta informando sobre o encerramento.
 
-### Requisitos Relacionados
+## UC08 - Cadastro de Produtos
 
-- RF01 - Realizar Login.
-- RNF01 - Login.
-- RNF06 - Segurança e controle de acesso.
+### Ator
 
-## UC07 - Excluir Usuário
+- Usuário
 
 ### Objetivo
 
-Permitir que uma conta seja encerrada pelo próprio usuário ou removida por um administrador autorizado, revogando os acessos associados.
+Permitir o registro de novos produtos no sistema com validação de dados obrigatórios.
 
-### Atores
+### Descrição
 
-- Usuário.
-- Administrador.
+Organizar as informações dos produtos, possibilitando que sejam utilizados nas operações de estoque, como entrada e saída, controle e quantidade. Registrar novos produtos, manter as informações atualizadas, permitir controle e navegação de estoque, movimentação de produtos.
 
-### Pré-condições
+### Funcionalidade do Cadastro de Produtos
 
-- O usuário deve estar previamente cadastrado.
-- A conta deve estar ativa.
-- O ator deve estar autenticado.
-- O administrador deve possuir permissão para excluir usuários quando a ação for administrativa.
+#### Cadastro de Produtos
 
-### Fluxo Principal
+Permite adicionar um novo produto no sistema, sendo as informações cadastrais:
 
-1. O usuário realiza login e acessa sua conta ativa.
-2. O usuário acessa as configurações do sistema.
-3. O usuário seleciona a opção de exclusão de conta.
-4. O sistema solicita confirmação da exclusão.
-5. O usuário confirma a operação.
-6. O sistema solicita login e senha para validar a identidade do usuário.
-7. O sistema valida as credenciais.
-8. O sistema inicia o processo de exclusão da conta.
-9. O sistema remove ou inativa os dados conforme as regras de negócio.
-10. O sistema encerra a sessão atual.
-11. O sistema exibe mensagem confirmando que a operação foi concluída com sucesso.
+- Nome do produto
+- Categoria
+- Quantidade inicial
+- Código de barras ou código SKU
 
-### Fluxos Alternativos e Exceções
+### Fluxo Básico
 
-- **FA01 - Exclusão por administrador:** o administrador seleciona um usuário em uma lista, confirma a ação e valida sua própria senha para concluir a exclusão do usuário selecionado.
-- **FE01 - Pendências vinculadas à conta:** se houver pendências ou processos em aberto que impeçam a exclusão, o sistema bloqueia a operação e informa que a conta não pode ser excluída enquanto houver pendências ativas.
-- **FE02 - Credenciais inválidas:** se a validação de identidade falhar, o sistema impede a exclusão e solicita nova autenticação.
+1. O usuário acessa o sistema
+2. O usuário acessa o gerenciamento de produtos
+3. O usuário seleciona o ícone “Novo Produto” no sistema
+4. O usuário preenche os dados do produto
+5. O usuário salva o cadastro
+6. O sistema valida as informações no armazenamento
 
-### Pós-condições
+### Funcionalidades Relacionadas
 
-- A conta é removida ou inativada conforme regra definida pelo sistema.
-- Todos os acessos associados são revogados.
-- A sessão atual é encerrada.
-- Um e-mail de confirmação é enviado ao endereço vinculado à conta.
+#### Edição de Produto
 
-### Requisitos Relacionados
+Permite alterar informações de um produto já cadastrado
 
-- RF04 - Excluir Usuários.
-- RNF04 - Exclusão de Usuários.
-- RNF06 - Segurança e controle de acesso.
+#### Exclusão de Produto
 
-## UC08 - Cadastrar Produto
+Permite remover produtos do sistema
 
-### Objetivo
+#### Consulta de Produtos
 
-Permitir o registro de novos produtos no sistema com validação de dados obrigatórios, possibilitando controle de estoque, entrada, saída e consulta de itens.
-
-### Atores
-
-- Administrador.
-- Técnico/Funcionário autorizado.
-
-### Pré-condições
-
-- O usuário deve estar autenticado.
-- O usuário deve possuir permissão para cadastrar produtos.
-- O sistema deve estar disponível.
-
-### Campos Obrigatórios
-
-- Nome do produto.
-- Categoria.
-- Quantidade inicial.
-- Código de barras ou SKU.
-
-### Fluxo Principal
-
-1. O usuário acessa o sistema.
-2. O usuário acessa o gerenciamento de produtos.
-3. O usuário seleciona a opção Novo Produto.
-4. O sistema exibe o formulário de cadastro de produto.
-5. O usuário preenche os dados obrigatórios.
-6. O usuário solicita o salvamento.
-7. O sistema valida as informações informadas.
-8. O sistema armazena o produto.
-9. O sistema confirma o cadastro.
-
-### Fluxos Alternativos e Exceções
-
-- **FA01 - Campos obrigatórios não preenchidos:** o sistema impede a finalização do cadastro e solicita o preenchimento dos campos.
-- **FA02 - Dados inválidos:** o sistema informa inconsistências e solicita correção antes do salvamento.
-- **FA03 - Usuário sem permissão:** o sistema bloqueia a operação e informa que o usuário não está autorizado.
+Permite visualizar e buscar produtos cadastrados
 
 ### Regras de Negócio
 
-- Todos os campos obrigatórios devem estar preenchidos.
-- Os dados do produto devem estar corretos antes do salvamento.
-- Apenas usuários autorizados podem cadastrar ou alterar dados de produtos.
-- O cadastro deve evitar inconsistências nas informações do estoque.
+- Todos os campos obrigatórios do cadastro de produtos devem estar preenchidos, caso algum campo obrigatório esteja vazio o cadastro de produto não pode ser finalizado
+- Os dados do produto devem esgar preenchidos corretamente antes do salvamento
+- Permitir edição de dados do produto apenas para usuários autorizados
+- Evitar inconsistências nas informações do produto
 
-### Pós-condições
+### Requisitos Utilizados
 
-- O produto é cadastrado no sistema.
-- O produto fica disponível para operações de estoque.
-
-### Requisitos Relacionados
-
-- RF07 - Cadastrar Produtos.
-- RNF07 - Cadastro de Produtos.
-
-## UC09 - Consultar Produtos
-
-### Objetivo
-
-Permitir que usuários autorizados visualizem e busquem produtos cadastrados no sistema.
-
-### Atores
-
-- Administrador.
-- Técnico/Funcionário autorizado.
-
-### Pré-condições
-
-- O usuário deve estar autenticado.
-- O usuário deve possuir permissão para consultar produtos.
-
-### Fluxo Principal
-
-1. O usuário acessa o gerenciamento de produtos.
-2. O sistema exibe a lista de produtos cadastrados.
-3. O usuário informa critérios de busca, quando necessário.
-4. O sistema consulta os produtos cadastrados.
-5. O sistema exibe os produtos encontrados com suas informações principais.
-6. O usuário visualiza os registros para apoiar operações de estoque.
-
-### Fluxos Alternativos e Exceções
-
-- **FA01 - Nenhum produto encontrado:** o sistema informa que não há produtos correspondentes aos critérios pesquisados.
-- **FA02 - Usuário sem permissão:** o sistema bloqueia o acesso à consulta.
-- **FE01 - Falha na consulta:** o sistema informa erro ao recuperar os produtos e solicita nova tentativa.
-
-### Pós-condições
-
-- Os produtos são exibidos para consulta.
-- Nenhuma alteração é realizada nos registros durante a consulta.
-
-### Requisitos Relacionados
-
-- RF08 - Consultar Produtos.
-- RNF08 - Consulta de Produtos.
-
-## UC10 - Editar Produto
-
-### Objetivo
-
-Permitir que usuários autorizados alterem informações de produtos já cadastrados, mantendo os dados atualizados e consistentes.
-
-### Atores
-
-- Administrador.
-- Técnico/Funcionário autorizado, conforme permissão definida.
-
-### Pré-condições
-
-- O usuário deve estar autenticado.
-- O usuário deve possuir permissão para editar produtos.
-- O produto deve estar cadastrado no sistema.
-
-### Fluxo Principal
-
-1. O usuário acessa o gerenciamento de produtos.
-2. O usuário localiza o produto desejado.
-3. O usuário seleciona a opção de edição.
-4. O sistema exibe os dados atuais do produto.
-5. O usuário altera as informações necessárias.
-6. O usuário solicita o salvamento.
-7. O sistema valida os dados alterados.
-8. O sistema atualiza o produto no cadastro.
-9. O sistema exibe mensagem de confirmação.
-
-### Fluxos Alternativos e Exceções
-
-- **FA01 - Dados inválidos ou incompletos:** o sistema impede o salvamento e solicita correção.
-- **FA02 - Usuário sem permissão:** o sistema bloqueia a edição.
-- **FE01 - Produto não localizado:** o sistema informa que o produto não está disponível para edição.
-
-### Pós-condições
-
-- As informações do produto são atualizadas.
-- O estoque passa a utilizar os dados atualizados.
-
-### Requisitos Relacionados
-
-- RF09 - Editar Produtos.
-- RNF09 - Edição de Produtos.
-
-## UC11 - Excluir Produto
-
-### Objetivo
-
-Permitir que usuários autorizados removam produtos do sistema quando a exclusão estiver de acordo com as regras de negócio.
-
-### Atores
-
-- Administrador.
-- Técnico/Funcionário autorizado, conforme permissão definida.
-
-### Pré-condições
-
-- O usuário deve estar autenticado.
-- O usuário deve possuir permissão para excluir produtos.
-- O produto deve estar cadastrado no sistema.
-
-### Fluxo Principal
-
-1. O usuário acessa o gerenciamento de produtos.
-2. O usuário localiza o produto desejado.
-3. O usuário seleciona a opção de exclusão.
-4. O sistema solicita confirmação da operação.
-5. O usuário confirma a exclusão.
-6. O sistema valida se o produto pode ser removido.
-7. O sistema remove ou inativa o produto conforme a regra de negócio.
-8. O sistema exibe mensagem de confirmação.
-
-### Fluxos Alternativos e Exceções
-
-- **FA01 - Cancelamento da exclusão:** o usuário cancela a confirmação e o sistema mantém o produto sem alterações.
-- **FA02 - Usuário sem permissão:** o sistema bloqueia a exclusão.
-- **FE01 - Produto com vínculo operacional:** se o produto possuir movimentações ou vínculos que impeçam a remoção direta, o sistema bloqueia a exclusão e orienta a inativação, quando aplicável.
-
-### Pós-condições
-
-- O produto é removido ou inativado conforme as regras do sistema.
-- O produto deixa de estar disponível para novas operações quando removido ou inativado.
-
-### Requisitos Relacionados
-
-- RF10 - Excluir Produtos.
-- RNF10 - Exclusão de Produtos.
-
+- Requisitos Funcionais: RF07 – Cadastro De Produtos
+- Requisitos Não Funcionais: RNF07.1 – Usabilidade
