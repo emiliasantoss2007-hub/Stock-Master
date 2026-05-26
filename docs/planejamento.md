@@ -2,65 +2,62 @@
 # CRONOGRAMA OFICIAL - STOCK MASTER
 
 ## PLANEJAMENTO DE ENTREGAS 
+```
 ┌───────────────┬──────────────────────────────────────────────┐
-│ PERÍODO       │ OBJETIVO DA ENTREGA                         │
+│ PERÍODO       │ OBJETIVO DA ENTREGA                          │
 ├───────────────┼──────────────────────────────────────────────┤
-│ 25/05 → 28/05│ Revisão técnica e consolidação da            │
-│               │ documentação                                │
+│ 25/05 → 28/05 │ Revisão técnica e consolidação da            │
+│               │ documentação                                 │
 ├───────────────┼──────────────────────────────────────────────┤
-│ 29/05 → 04/06│ Escrita da versão bruta da monografia        │
+│ 29/05 → 04/06 │ Escrita da versão bruta da monografia        │
 ├───────────────┼──────────────────────────────────────────────┤
-│ 05/06 → 11/06│ Revisão estrutural e padronização da         │
-│               │ monografia                                  │
+│ 05/06 → 11/06 │ Revisão estrutural e padronização da         │
+│               │ monografia                                   │
 ├───────────────┼──────────────────────────────────────────────┤
-│ 12/06 → 16/06│ Validação final, geração do PDF e entrega    │
-│               │ oficial                                     │
+│ 12/06 → 16/06 │    Validação final, geração do PDF e entrega │
+│               │ oficial                                      │
 └───────────────┴──────────────────────────────────────────────┘
+```
+# PERÍODO 1 — REVISÃO TÉCNICA E CONSOLIDAÇÃO
+> 25/05 → 28/05
 
-PERÍODO 1 — REVISÃO TÉCNICA E CONSOLIDAÇÃO
-
-25/05 → 28/05
-
-Objetivo:
+## Objetivo:
 Consolidar toda a documentação técnica e validar coerência entre os documentos antes do desenvolvimento do DER e do Modelo Lógico.
 
-Regra obrigatória:
+## Regra obrigatória:
 Toda revisão deve comparar:
-
-documentação atual do GitHub;
-primeira documentação disponível no Drive.
+- documentação atual do GitHub;
+- primeira documentação disponível no Drive.
 
 O objetivo não é recriar documentos do zero, mas consolidar, corrigir inconsistências e padronizar informações.
 
-Dependência crítica:
+##  Dependência crítica:
 O DER e o Modelo Lógico somente devem ser desenvolvidos após:
-
-Visão Geral;
-RF;
-RNF;
-RN;
-UC;
+- Visão Geral;
+- RF;
+- RNF;
+- RN;
+- UC;
 estarem coerentes entre si.
 
-Validação do professor:
+## Validação do professor:
 O professor irá validar:
+- integração entre RF e UC;
+- integração entre UC e DER;
+- integração entre DER e modelagem;
+- coerência entre documentação técnica e monografia.
 
-integração entre RF e UC;
-integração entre UC e DER;
-integração entre DER e modelagem;
-coerência entre documentação técnica e monografia.
+## Entregas obrigatórias:
 
-Entregas obrigatórias:
+- documentação técnica consolidada;
+- coerência técnica validada;
+- DER/modelo lógico iniciado ou finalizado;
+- arquitetura básica definida.
 
-documentação técnica consolidada;
-coerência técnica validada;
-DER/modelo lógico iniciado ou finalizado;
-arquitetura básica definida.
-PERÍODO 2 — MONOGRAFIA BRUTA
+# PERÍODO 2 — MONOGRAFIA BRUTA
+>29/05 → 04/06
 
-29/05 → 04/06
-
-Objetivo:
+## Objetivo:
 Produzir a primeira versão completa da monografia, mesmo sem refinamento final.
 
 Capítulos obrigatórios:
@@ -72,34 +69,32 @@ Modelagem do Sistema;
 Arquitetura/Solução;
 Considerações Finais.
 
-Meta principal:
+## Meta principal:
 Finalizar todo o conteúdo bruto da monografia para permitir revisão e refinamento nas próximas etapas.
 
-PERÍODO 3 — REVISÃO DA MONOGRAFIA
+# PERÍODO 3 — REVISÃO DA MONOGRAFIA
+> 05/06 → 11/06
 
-05/06 → 11/06
-
-Objetivo:
+## Objetivo:
 Refinar estrutura acadêmica, corrigir padronização e integrar todos os elementos técnicos.
 
-Itens obrigatórios:
+## Itens obrigatórios:
 
-completar capítulos pendentes;
-inserir diagramas;
-criar elementos pré-textuais;
-criar elementos pós-textuais;
-revisar estrutura textual;
-padronizar imagens;
-revisar organização dos capítulos.
+- completar capítulos pendentes;
+- inserir diagramas;
+- criar elementos pré-textuais;
+- criar elementos pós-textuais;
+- revisar estrutura textual;
+- padronizar imagens;
+- revisar organização dos capítulos.
 
-Meta principal:
+## Meta principal:
 Deixar a monografia estruturalmente completa e padronizada.
 
-PERÍODO 4 — ENTREGA FINAL
+# PERÍODO 4 — ENTREGA FINAL
+>12/06 → 16/06
 
-12/06 → 16/06
-
-Objetivo:
+## Objetivo:
 Validar coerência final do projeto e gerar versão oficial de entrega.
 
 Checklist obrigatório:
