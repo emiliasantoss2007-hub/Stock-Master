@@ -1,0 +1,106 @@
+# Estrutura Técnica e Tecnologias Utilizadas no Projeto
+
+## Objetivo
+
+Definir a estrutura técnica, arquitetura e tecnologias utilizadas no desenvolvimento do sistema de controle de estoque, incluindo Front-end, Back-end, banco de dados e organização da solução.
+
+---
+
+## 1. Front-end
+
+O Front-end será responsável pela parte visual do sistema e pela interação do usuário com as funcionalidades disponíveis. Serão utilizadas as seguintes tecnologias:
+
+- **HTML:** responsável pela estrutura das páginas;
+- **CSS:** responsável pela aparência visual e organização das telas;
+- **JavaScript:** responsável pelas interações e funcionamento das funcionalidades do sistema.
+
+O Front-end permitirá que o usuário realize operações como:
+
+- login no sistema;
+- cadastro de produtos;
+- controle de estoque;
+- registro de movimentações;
+- visualização de relatórios.
+
+---
+
+## 2. Back-end
+
+O Back-end será responsável pelo funcionamento interno do sistema, processamento das informações e comunicação com o banco de dados. Serão utilizadas as seguintes tecnologias:
+
+- **Node.js:** utilizado para executar o sistema no servidor;
+- **Express.js:** utilizado para facilitar a criação das rotas e integração entre o sistema e o banco de dados.
+
+O Back-end terá como funções:
+
+- processar informações;
+- validar dados;
+- realizar autenticação de usuários;
+- conectar o sistema ao banco de dados;
+- gerenciar movimentações e relatórios.
+
+---
+
+## 3. Banco de Dados
+
+O banco de dados utilizado será o **MySQL**.
+
+O MySQL será responsável pelo armazenamento e gerenciamento dos dados do sistema, incluindo:
+
+- usuários;
+- produtos;
+- estoque;
+- movimentações;
+- relatórios.
+
+A escolha do MySQL foi realizada por ser um banco de dados bastante utilizado, seguro e eficiente para sistemas de gerenciamento.
+
+---
+
+## 4. Arquitetura do Sistema
+
+O sistema utilizará uma arquitetura dividida em três partes:
+
+- Front-end;
+- Back-end;
+- Banco de Dados.
+
+Essa arquitetura permite maior organização e integração entre as funcionalidades do sistema.
+
+**Fluxo básico da arquitetura:**
+
+```
+Usuário → Front-end → Back-end → Banco de Dados
+```
+
+O Front-end envia as informações para o Back-end, que processa os dados e realiza a comunicação com o banco de dados.
+
+---
+
+## 5. Tecnologias Utilizadas
+
+**Front-end**
+- HTML
+- CSS
+- JavaScript
+
+**Back-end**
+- Node.js
+- Express.js
+
+**Banco de Dados**
+- MySQL
+
+---
+
+## 6. Estrutura da Solução
+
+O sistema será desenvolvido para auxiliar no gerenciamento de estoque, permitindo o controle de produtos, usuários e movimentações. A solução será composta pelos seguintes módulos:
+
+- Cadastro de usuários;
+- Cadastro de produtos;
+- Controle de estoque;
+- Registro de movimentações;
+- Geração de relatórios.
+
+O sistema permitirá maior organização das informações, melhor controle do estoque e acompanhamento das entradas e saídas de produtos.
