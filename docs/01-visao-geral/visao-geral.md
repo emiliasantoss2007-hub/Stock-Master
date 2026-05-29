@@ -93,7 +93,7 @@ com interface intuitiva e responsiva, facilitando o uso por todos os usuários
 
 ## Benefícios Esperados
 
-●  Maior controle sobre produtos e movimentações de estoque.
+● Maior controle sobre produtos e movimentações de estoque.
 ● Redução de inconsistências nas informações registradas.
 ● Melhor rastreabilidade das operações realizadas.
 ● Mais segurança no acesso às funcionalidades.
