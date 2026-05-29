@@ -1,579 +1,305 @@
-# Requisitos do Sistema Stock Master
+# Requisitos do Sistema 
 
-## RF - 01 - Cadastro de Perfil
+>Requisitos Funcionais (RF) e Requisitos Não Funcionais (RNF).
 
-### O que é?
+---
 
-É a funcionalidade do sistema que permite que usuários cadastrados acessem a plataforma utilizando login e senha, garantindo que apenas pessoas autorizadas possam entrar no sistema.
+## 1. Módulo de Autenticação e Segurança
 
-### Por que existe?
+### RF-01 — Controle de Acesso e Autenticação de Perfil
 
-O login existe para garantir a segurança do sistema, controlando o acesso dos usuários e protegendo as informações armazenadas. Através do login, o sistema identifica ousuário e aplica as permissões de acordo com o seu perfil de acesso.
+**Descrição:** O sistema deve permitir que os usuários realizem o acesso à plataforma mediante o fornecimento de credenciais de login e senha válidas.
 
-### Quem usa?
+**Atores:** Administrador e Técnico.
 
-Administrador e técnico.
+**Operações do Sistema:** Validação das credenciais informadas contra o registro de base de dados e inicialização da sessão com base no nível de permissão associado.
 
-### Fluxo detalhado
+**Integração:** Vinculado diretamente a **RN01** e **UC01**.
 
-1. Usuário acessa a tela inicial do sistema.
-2. Sistema exibe o formulário de login.
-3. Usuário informa login e senha.
-4. Usuário clica no botão Entrar.
-5. Sistema valida as credenciais informadas.
-6. Se os dados estiverem corretos, o sistema permite o acesso e redireciona o usuário para a tela principal.
-7. Se os dados estiverem incorretos, o sistema exibe uma mensagem informando erro de login ou senha e solicita nova tentativa.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-01
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 01.01 | Segurança | As senhas dos usuários devem ser armazenadas deforma criptografada no banco de dados, garantindo a proteção das credenciais. |
-| RNF – 01.02 | Desempenho | O sistema deve validar as credenciais de acesso em até 3 segundos. |
-| RNF – 01.03 | Usabilidade | O sistema deve apresentar mensagens claras e compreensíveis em caso de erro de login ou senha incorreta. |
+|---|---|---|
+| RNF-01.01 | Segurança | As senhas dos usuários devem ser armazenadas de forma criptografada no banco de dados, garantindo a proteção das credenciais. |
+| RNF-01.02 | Segurança | O sistema deve limitar a quantidade de tentativas consecutivas de login inválidas por usuário. |
+| RNF-01.03 | Segurança | O sistema deve autenticar o usuário por login e senha válidos antes de liberar acesso ao sistema. |
+| RNF-01.04 | Desempenho | O sistema deve validar as credenciais de acesso em até 3 segundos. |
+| RNF-01.05 | Usabilidade | O sistema deve apresentar mensagens claras e compreensíveis em caso de erro de login ou senha incorreta. |
 
-## RF - 02 - Cadastro de Usuários
+---
 
-### O que é?
+### RF-02 — Recuperação de Acesso Técnico
 
-É a funcionalidade do sistema que permite o cadastro de novos usuários, definindo suas informações básicas e seu perfil de acesso no sistema, como Administrador ou Técnico.
+**Descrição:** O sistema deve prover funcionalidade para alteração de credenciais de acesso em caso de esquecimento ou necessidade de atualização de segurança.
 
-### Por que existe?
+**Atores:** Administrador e Técnico.
 
-É a funcionalidade do sistema que permite o cadastro de novos usuários, definindo suas informações básicas e seu perfil de acesso no sistema, como Administrador ou Técnico.
+**Operações do Sistema:** Envio de requisição de redefinição, validação da identidade do solicitante e gravação da nova senha.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **UC04**.
 
-Administrador.
-
-### Fluxo detalhado
-
-1. Administrador acessa o sistema.
-2. Seleciona a opção Gerenciamento de Usuários.
-3. Clica em Novo Usuário.
-4. Sistema exibe o formulário de cadastro.
-5. Administrador preenche os dados do usuário (nome, login, e-mail, senha e perfil).
-6. Administrador clica em Salvar.
-7. Sistema valida as informações inseridas.
-8. Se os dados estiverem corretos, o sistema registra o novo usuário e exibe uma mensagem de confirmação.
-9. Se houver erro, o sistema indica os campos que precisam ser corrigidos, destacando os campos em cor vermelho.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-02
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 02.01 | Segurança | O sistema deve exigir senha com no mínimo 8caracteres, garantindo maior proteção das contas dos usuários. |
-| RNF – 02.02 | Desempenho | O sistema deve indicar visualmente quando os campos obrigatórios não forem preenchidos corretamente. |
-| RNF – 02.03 | Usabilidade | O sistema deve garantir que os dados cadastrados sejam armazenados corretamente no banco de dados. |
+|---|---|---|
+| RNF-02.01 | Segurança | O sistema deve exigir senha com no mínimo 8 caracteres, contendo letras e números, garantindo maior proteção às contas dos usuários. |
+| RNF-02.02 | Usabilidade | O sistema deve indicar visualmente quando os campos obrigatórios não forem preenchidos corretamente. |
+| RNF-02.03 | Confiabilidade | O sistema deve garantir que os dados cadastrados sejam armazenados corretamente no banco de dados. |
 
-## RF - 03 - Editar Usuários
+---
 
-### O que é?
+## 2. Módulo de Gestão de Usuários
 
-É a funcionalidade do sistema que permite alterar as informações de usuários já cadastrados, como nome, e-mail, senha ou perfil.
+### RF-03 — Cadastro de Usuários
 
-### Por que existe?
+**Descrição:** O sistema deve permitir a inclusão de novos usuários na plataforma, tornando obrigatório o preenchimento de nome, login único, senha e a definição do perfil de acesso.
 
-A edição de usuários existe para manter as informações atualizadas, permitindo correções ou alterações necessárias nos dados dos usuários.
+**Atores:** Administrador.
 
-### Quem usa?
+**Operações do Sistema:** Verificação de exclusividade do login, aplicação de criptografia na credencial de texto e persistência dos dados.
 
-Administrador.
+**Integração:** Vinculado diretamente a **RN02** e **UC07**.
 
-### Fluxo detalhado
-
-1. Administrador acessa o sistema e realiza o login.
-2. Administrador seleciona Gerenciamento de Usuários.
-3. Sistema exibe a lista de usuários cadastrados.
-4. Administrador seleciona o usuário que deseja editar.
-5. Sistema exibe o formulário com as informações do usuário.
-6. Administrador realiza as alterações necessárias.
-7. Administrador clica em Salvar.
-8. Sistema valida as informações e atualiza os dados no sistema.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-03
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 03.01 | Segurança | A edição de usuários deve ser permitida apenas para usuários autorizados. |
-| RNF – 03.02 | Desempenho | O sistema deve apresentar interface clara para facilitar a atualização das informações. |
-| RNF – 03.03 | Usabilidade | O sistema deve garantir que as alterações sejam armazenadas corretamente no banco de dados. |
+|---|---|---|
+| RNF-03.01 | Segurança | A edição de usuários deve ser permitida apenas para usuários autorizados. |
+| RNF-03.02 | Segurança | O sistema deve notificar o usuário sempre que houver alteração em suas informações cadastrais. |
+| RNF-03.03 | Usabilidade | O sistema deve apresentar interface clara para facilitar a atualização das informações. |
+| RNF-03.04 | Confiabilidade | O sistema deve garantir que as alterações sejam armazenadas corretamente no banco de dados. |
 
-## RF - 04 - Excluir Usuários
+---
 
-### O que é?
+### RF-04 — Modificação de Dados de Usuários
 
-É a funcionalidade do sistema que permite remover usuários cadastrados do sistema.
+**Descrição:** O sistema deve permitir a alteração das informações cadastrais e dos perfis de acesso dos usuários previamente registrados.
 
-### Por que existe?
+**Atores:** Administrador.
 
-A exclusão de usuários existe para manter o sistema organizado, removendo usuários que não possuem mais acesso ou que foram cadastrados incorretamente.
+**Operações do Sistema:** Recuperação dos dados da identidade, validação dos novos parâmetros informados e atualização do registro.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **RN02** e **UC08**.
 
-Administrador
-
-### Fluxo detalhado
-
-1. Administrador acessa o sistema e realiza o login.
-2. Administrador seleciona Gerenciamento de Usuários.
-3. Sistema exibe a lista de usuários cadastrados.
-4. Administrador seleciona o usuário que deseja excluir.
-5. Administrador clica na opção Excluir.
-6. Sistema solicita confirmação da exclusão.
-7. Administrador confirma a operação.
-8. Sistema remove o usuário e exibe mensagem de confirmação.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-04
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 04.01 | Segurança | A exclusão de usuários deve ser permitida apenas para administradores. |
-| RNF – 04.02 | Desempenho | O sistema deve garantir que o usuário seja removido corretamente do banco de dados. |
+|---|---|---|
+| RNF-04.01 | Segurança | A exclusão de usuários deve ser permitida apenas para administradores. |
+| RNF-04.02 | Confiabilidade | O sistema deve garantir que o usuário seja removido corretamente do banco de dados. |
 
-## RF - 05 - Consultar Usuários
+---
 
-### O que é?
+### RF-05 — Inativação ou Exclusão Lógica de Usuários
 
-É a funcionalidade do sistema que permite visualizar e pesquisar os usuários cadastrados, apresentando suas informações registradas no sistema.
+**Descrição:** O sistema deve permitir a remoção ou a suspensão do acesso de um usuário da base de dados ativa do sistema.
 
-### Por que existe?
+**Atores:** Administrador.
 
-A consulta de usuários existe para facilitar a visualização e o acompanhamento dos usuários cadastrados, permitindo que administradores verifiquem as informações e a organização dos acessos ao sistema.
+**Operações do Sistema:** Solicitação de confirmação de segurança e alteração do status do usuário para "Inativo" ou remoção lógica.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **RN03**.
 
-Administrador
-
-### Fluxo detalhado
-
-1. Administrador acessa o sistema e realiza o login.
-2. Administrador seleciona a opção Gerenciamento de Usuários.
-3. Sistema exibe a lista de usuários cadastrados.
-4. Administrador pode visualizar as informações dos usuários.
-5. Administrador pode utilizar busca ou filtros para localizar um usuário específico.
-6. Sistema apresenta os resultados da consulta.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-05
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 05.01 | Segurança | O sistema deve apresentar os resultados da consulta em até 3 segundos. |
-| RNF – 05.02 | Desempenho | A interface deve apresentar os usuários deforma organizada e de fácil visualização. |
-| RNF – 05.03 | Usabilidade | A funcionalidade de consulta deve estar disponível sempre que o sistema estiver em funcionamento. |
+|---|---|---|
+| RNF-05.01 | Desempenho | O sistema deverá apresentar os resultados da consulta em até 3 segundos. |
+| RNF-05.02 | Usabilidade | A interface deve apresentar aos usuários de forma organizada e de fácil visualização. |
+| RNF-05.03 | Usabilidade | A funcionalidade de consulta deve estar disponível sempre que o sistema estiver em funcionamento. |
 
-## RF - 06 - Login
+---
 
-### O que é?
+### RF-06 — Consulta e Listagem de Usuários
 
-É a funcionalidade do sistema que controla o acesso dos usuários às diferentes funcionalidades, de acordo com o perfil definido para cada usuário, como Administrador ou Técnico.
+**Descrição:** O sistema deve disponibilizar uma interface para a busca e visualização estruturada de todos os usuários cadastrados.
 
-### Por que existe?
+**Atores:** Administrador.
 
-O controle de acesso existe para garantir a segurança do sistema, permitindo que cada usuário utilize apenas as funcionalidades autorizadas para seu perfil. Isso evita acessos indevidos e ajuda a manter a organização e integridade das operações realizadas no sistema.
+**Operações do Sistema:** Leitura da base de dados e exibição das identidades com paginação de resultados.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **UC09**.
 
-Administrador e Técnico.
-
-### Fluxo detalhado
-
-1. Usuário acessa o sistema e realiza o login.
-2. Sistema identifica o perfil do usuário autenticado.
-3. Sistema verifica as permissões associadas ao perfil do usuário.
-4. Sistema libera o acesso apenas às funcionalidades permitidas para aquele perfil.
-5. Caso o usuário tente acessar uma funcionalidade não permitida, o sistema bloqueia o acesso.
-6. Sistema exibe uma mensagem informando que o usuário não possui permissão para acessar aquela funcionalidade.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-06
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 06.01 | Segurança | O sistema deve garantir que apenas usuários autorizados possam acessar determinadas funcionalidades, de acordo com seu perfil. |
-| RNF – 06.02 | Desempenho | O sistema deve aplicar corretamente as permissões configuradas para cada perfil durante ouso do sistema. |
-| RNF – 06.03 | Usabilidade | O controle de acesso deveestar sempre ativo durante o uso do sistema, garantindo que as permissões sejam verificadas continuamente. |
+|---|---|---|
+| RNF-06.01 | Segurança | O sistema deve garantir que apenas usuários autorizados possam acessar determinadas funcionalidades, de acordo com seu perfil. |
+| RNF-06.02 | Segurança | O sistema deve aplicar corretamente as configurações definidas para cada perfil durante o uso do sistema. |
+| RNF-06.03 | Segurança | O controle de acesso deve estar sempre ativo durante o uso do sistema, garantindo que as permissões sejam verificadas continuamente. |
 
-## RF - 07 - Cadastro de Produtos
+---
 
-### O que é?
+## 3. Módulo de Gestão de Produtos e Inventário
 
-É a funcionalidade do sistema que permite o cadastro de novos produtos, registrando informações necessárias para sua identificação e controle no sistema, como nome do produto, categoria, quantidade em estoque e outras características relevantes.
+### RF-07 — Cadastro de Produtos
 
-### Por que existe?
+**Descrição:** O sistema deve permitir a inserção de novos itens no catálogo da assistência técnica, exigindo o preenchimento obrigatório da nomenclatura, categoria, lote inicial, código SKU e classificação fiscal (**NCM**).
 
-O cadastro de produtos existe para organizar e controlar os itens disponíveis no sistema, permitindo que os usuários registrem e acompanhem os produtos armazenados. Isso facilita a gestão do estoque e o controle das operações realizadas.
+**Atores:** Administrador.
 
-### Quem usa?
+**Operações do Sistema:** Validação de campos obrigatórios, verificação de exclusividade do código SKU e gravação do registro de produto.
 
-Administrador e Técnico.
+**Integração:** Vinculado diretamente a **RN04**.
 
-### Fluxo detalhado
-
-1. Usuário acessa o sistema e realiza o login.
-2. Usuário seleciona a opção Gerenciamento de Produtos.
-3. Usuário clica em Novo Produto.
-4. Sistema exibe o formulário de cadastro de produto.
-5. Usuário preenche as informações necessárias (nome, categoria, quantidade etc.).
-6. Usuário clica em Salvar.
-7. Sistema valida os dados inseridos.
-8. Se os dados estiverem corretos, o sistema registra o produto no banco de dados e exibe mensagem de confirmação.
-9. Se houver erro, o sistema informa quais campos precisam ser corrigidos.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-07
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 07.01 | Segurança | O sistema deve apresentar um formulário de cadastro claro e de fácil preenchimento para os usuários. |
-| RNF – 07.02 | Desempenho | O sistema deve garantir que as informações do produto sejam armazenadas corretamente no banco de dados. |
-| RNF – 07.03 | Usabilidade | O sistema deve registrar o cadastro do produto em até 3 segundos após a confirmação do usuário. |
+|---|---|---|
+| RNF-07.01 | Usabilidade | O sistema deve apresentar um formulário de cadastro claro e de fácil preenchimento para os usuários. |
+| RNF-07.02 | Confiabilidade | O sistema deve garantir que as informações do produto sejam armazenadas corretamente no banco de dados. |
+| RNF-07.03 | Desempenho | O sistema deve registrar o cadastro do produto em até 3 segundos após a confirmação do usuário. |
 
-## RF - 08 - Consultar Produtos
+---
 
-### O que é?
+### RF-08 — Edição de Especificações de Produtos
 
-É a funcionalidade do sistema que permite visualizar e pesquisar os produtos cadastrados, apresentando suas informações armazenadas no sistema, como nome, categoria, SKU ou código de barras e quantidade disponível.
+**Descrição:** O sistema deve permitir a modificação dos metadados e parâmetros logísticos de produtos previamente existentes no catálogo.
 
-### Por que existe?
+**Atores:** Administrador.
 
-A consulta de produtos existe para permitir que os usuários visualizem rapidamente os itens cadastrados, facilitando o acompanhamento e o controle das informações registradas no sistema.
+**Operações do Sistema:** Carregamento das propriedades do item e salvamento das atualizações após validação técnica de dados.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **RN05**.
 
-Administrador e Técnico.
-
-### Fluxo detalhado
-
-1. Usuário acessa o sistema e realiza o login.
-2. Usuário seleciona a opção Gerenciamento de Produtos.
-3. Sistema exibe a lista de produtos cadastrados.
-4. Usuário pode visualizar as informações dos produtos disponíveis.
-5. Usuário pode utilizar campos de busca ou filtros para localizar um produto específico.
-6. Sistema apresenta os resultados da consulta conforme os critérios informados.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-08
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 08.01 | Segurança | A interface de consulta deve apresentar os produtos de forma organizada e de fácil visualização. |
-| RNF – 08.02 | Desempenho | A funcionalidade de consulta de produtos deve estar disponível sempre que o sistema estiver em funcionamento. |
-| RNF – 08.03 | Usabilidade | O sistema deve exibir os resultados da consulta em até 3 segundos. |
+|---|---|---|
+| RNF-08.01 | Desempenho | A funcionalidade de consulta de produtos deve estar disponível sempre que o sistema estiver em funcionamento. |
+| RNF-08.02 | Usabilidade | A interface de consulta deve apresentar os produtos de forma organizada e de fácil visualização. |
+| RNF-08.03 | Usabilidade | O sistema deve exibir os resultados da consulta em até 3 segundos. |
 
-## RF - 09 - Editar Produtos
+---
 
-### O que é?
+### RF-09 — Remoção Lógica de Produtos
 
-É a funcionalidade do sistema que permite alterar as informações de umproduto já cadastrado, como nome, SKU ou códigos de barras, categoria, quantidade ou outras características registradas.
+**Descrição:** O sistema deve permitir a exclusão de itens do catálogo de produtos ativos do sistema.
 
-### Por que existe?
+**Atores:** Administrador.
 
-A edição de produtos existe para permitir a atualização das informações registradas no sistema, garantindo que os dados estejam sempre corretos e atualizados para o controle adequado dos itens.
+**Operações do Sistema:** Validação de integridade referencial para assegurar que o produto não possua movimentações históricas ou vínculos com Ordens de Serviço (OS) ativas antes de efetivar a remoção.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **RN06**.
 
-Administrador.
-
-### Fluxo detalhado
-
-1. Usuário acessa o sistema e realiza o login.
-2. Usuário seleciona a opção Gerenciamento de Produtos.
-3. Sistema exibe a lista de produtos cadastrados.
-4. Usuário seleciona o produto que deseja editar.
-5. Sistema exibe o formulário com as informações do produto.
-6. Usuário realiza as alterações necessárias.
-7. Usuário clica em Salvar.
-8. Sistema valida as informações inseridas.
-9. Se os dados estiverem corretos, o sistema atualiza o produto e exibe mensagem de confirmação.
-10. Se houver erro, o sistema indica os campos que precisam ser corrigidos.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-09
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 09.01 | Segurança | O sistema deve apresentar uma interface clara para facilitar a edição das informações do produto. |
-| RNF – 09.02 | Desempenho | O sistema deve garantir que as alterações realizadas sejam armazenadas corretamente no banco de dados. |
-| RNF – 09.03 | Usabilidade | O sistema deve atualizar as informações do produto em até 3 segundos. |
+|---|---|---|
+| RNF-09.01 | Confiabilidade | O sistema deve garantir que as alterações realizadas sejam armazenadas corretamente no banco de dados. |
+| RNF-09.02 | Usabilidade | O sistema deve apresentar uma interface clara para facilitar a edição das informações do produto. |
+| RNF-09.03 | Desempenho | O sistema deve atualizar as informações do produto em até 3 segundos. |
 
-## RF - 10 - Excluir Produtos
+---
 
-### O que é?
+### RF-10 — Consulta ao Catálogo de Insumos
 
-É a funcionalidade do sistema que permite remover um produto cadastrado do sistema, quando ele não for mais necessário ou estiver incorreto.
+**Descrição:** O sistema deve fornecer ferramentas de pesquisa indexada para a localização imediata de produtos com base em filtros de busca.
 
-### Por que existe?
+**Atores:** Administrador e Técnico.
 
-A exclusão de produtos existe para manter o sistema organizado e atualizado, removendo registros que não precisam mais permanecer no sistema.
+**Operações do Sistema:** Execução de consultas dinâmicas e exibição das especificações técnicas e do saldo atual do item em tela.
 
-### Quem usa?
+**Integração:** Vinculado diretamente a **RN04**.
 
-Administrado.
-
-### Fluxo detalhado
-
-1. Usuário acessa o sistema e realiza o login.
-2. Usuário seleciona a opção Gerenciamento de Produtos.
-3. Sistema exibe a lista de produtos cadastrados.
-4. Usuário seleciona o produto que deseja excluir.
-5. Usuário clica na opção Excluir.
-6. Sistema solicita confirmação da exclusão.
-7. Usuário confirma a operação.
-8. Sistema remove o produto do banco de dados e exibe mensagem de confirmação.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-10
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 10.01 | Segurança | A exclusão de produtos deve ser permitida apenas para usuários autorizados. |
-| RNF – 10.02 | Desempenho | O sistema deve garantir que o produto seja removido corretamente do banco de dados. |
+|---|---|---|
+| RNF-10.01 | Segurança | A exclusão de produtos deve ser permitida apenas para usuários autorizados. |
+| RNF-10.02 | Confiabilidade | O sistema deve garantir que o produto seja removido corretamente do banco de dados. |
 
-## RF - 11 - Histórico de Movimentação de Produto
+---
 
-### O que é?
+## 4. Módulo de Fluxos e Movimentações de Estoque
 
-É a funcionalidade do sistema que permite registrar e visualizar o histórico de movimentações dos produtos, como entradas e saídas realizadas no estoque.
+### RF-11 — Registro de Movimentações Lógicas
 
-### Por que existe?
+**Descrição:** O sistema deve processar de forma atômica o incremento ou decremento quantitativo do estoque a partir de transações de Entrada, Venda, Uso em Ordem de Serviço (OS) ou Expurgo (Perdas e Danos).
 
-O histórico de movimentação existe para permitir o acompanhamento das alterações realizadas no estoque, registrando todas as entradas e saídas de produtos. Isso ajuda no controle, organização e rastreabilidade das operações realizadas no sistema.
+**Atores:** Administrador e Técnico.
 
-### Quem usa?
+**Operações do Sistema:** Atualização matemática em tempo real do saldo disponível e gravação contínua na trilha de auditoria contendo data, hora (*timestamp*), tipo de movimentação, volume, **justificativa obrigatória** para expurgos e ID do operador.
 
-Administrador e Técnico.
+**Integração:** Vinculado diretamente a **RN07**, **RN08**, **RN09**, **RN10**, **UC05**, **UC11** e **UC012**.
 
-### Fluxo detalhado
-
-1. Usuário acessa o sistema e realiza o login.
-2. Usuário seleciona a opção Histórico de Movimentação.
-3. Sistema exibe a lista de movimentações registradas.
-4. Usuário pode visualizar informações como produto, tipo de movimentação (entrada ou saída), quantidade e data da operação.
-5. Usuário pode utilizar filtros ou busca para localizar movimentações específicas.
-6. Sistema apresenta os resultados da consulta conforme os critérios informados.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-11
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 11.01 | Confiabilidade | O sistema deve garantir que todas as movimentações realizadas sejam registradas corretamente no banco de dados. |
-| RNF – 11.02 | Desempenho | O sistema deve exibir histórico de movimentações em até 3 segundos. |
-| RNF – 11.03 | Usabilidade | As informações do histórico devem ser apresentadas de forma organizada e de fácil visualização. |
+|---|---|---|
+| RNF-11.01 | Confiabilidade | O sistema deve garantir que todas as transações realizadas sejam registradas corretamente no banco de dados. |
+| RNF-11.02 | Desempenho | O sistema deve exibir histórico de movimentações em até 3 segundos. |
+| RNF-11.03 | Usabilidade | As informações do histórico devem ser apresentadas de forma organizada e de fácil visualização. |
+| RNF-12.01 | Confiabilidade | O sistema deve garantir que a verificação da quantidade dos produtos seja realizada corretamente. |
+| RNF-12.02 | Desempenho | O sistema deve identificar e exibir alertas de estoque crítico em tempo adequado durante o uso do sistema. |
+| RNF-12.03 | Usabilidade | O alerta deve ser apresentado de forma clara e visível para facilitar a identificação dos usuários. |
+| RNF-13.01 | Confiabilidade | O sistema deve garantir que a quantidade inicial seja registrada corretamente no banco de dados. |
+| RNF-13.02 | Usabilidade | A interface deve permitir a inserção fácil da quantidade inicial. |
+| RNF-14.01 | Confiabilidade | O sistema deve garantir que a quantidade seja atualizada corretamente. |
+| RNF-14.02 | Desempenho | A atualização deve ocorrer em até 3 segundos. |
+| RNF-15.01 | Confiabilidade | O sistema deve impedir a saída maior do que o estoque disponível. |
+| RNF-15.02 | Confiabilidade | O sistema deve atualizar automaticamente a quantidade disponível em estoque após saída ou venda de produtos. |
+| RNF-15.02 | Segurança | A operação deve ser permitida apenas para usuários autorizados. |
+| RNF-16.01 | Confiabilidade | O sistema deve registrar corretamente o motivo da expurgo. |
+| RNF-16.02 | Segurança | A funcionalidade deve ser restrita aos administradores. |
 
-## RF - 12 - Alerta de estoque crítico
+---
 
-### O que é?
+## 5. Módulo de Inteligência Preventiva e Relatórios
 
-É a funcionalidade do sistema que permite identificar quando a quantidade de um produto atinge um nível mínimo definido, gerando um alerta para informar que o estoque está baixo.
+### RF-12 — Monitoramento e Alerta de Estoque Crítico
 
-### Por que existe?
+**Descrição:** O sistema deve monitorar em plano de fundo os volumes físicos de armazenamento e disparar alertas visuais proativos na interface.
 
-O alerta de estoque crítico existe para evitar a falta de produtos, permitindo que os responsáveis sejam informados quando a quantidade disponível estiver próxima do limite mínimo. Isso ajuda no controle e reposição adequada dos itens.
+**Atores:** Administrador e Técnico.
 
-### Quem usa?
+**Operações do Sistema:** Execução de rotina matemática automatizada que compara a quantidade disponível contra o estoque mínimo definido. O alerta deve ser gerado quando o saldo do produto for igual ou inferior a **30% do seu limite mínimo configurado**.
 
-Administrador.
+**Integração:** Vinculado diretamente a **RN11**.
 
-### Fluxo detalhado
+---
 
-1. Usuário acessa o sistema e realiza o login.
-2. Sistema verifica automaticamente a quantidade de produtos cadastrados no estoque.
-3. Sistema compara a quantidade disponível com o nível mínimo definido para cada produto.
-4. Caso a quantidade esteja abaixo ou igual ao limite mínimo, o sistema gera um alerta.
-5. Sistema exibe a notificação de estoque crítico para o usuário.
-6. Usuário pode acessar as informações do produto para verificar a necessidade de reposição.
+### RF-13 — Emissão de Relatório de Situação Atual do Estoque
 
-### Requisitos Não Funcional associados
+**Descrição:** O sistema deve permitir a geração de relatórios que consolidem o estado físico e o valor financeiro total do inventário corrente.
 
-| ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 12.01 | Confiabilidade | O sistema deve garantir que a verificação da quantidade de produtos seja realizada corretamente. |
-| RNF – 12.02 | Desempenho | O sistema deve identificar e exibir alertas de estoque crítico em tempo adequado durante o uso do sistema. |
-| RNF – 13.03 | Usabilidade | O alerta deve ser apresentado de forma clara e visível para facilitar identificação pelos usuários. |
+**Atores:** Administrador.
 
-## RF - 13 - Cadastro de Estoque
+**Operações do Sistema:** Consolidação estatística dos produtos, cálculo automatizado do custo patrimonial e destaque gráfico para itens abaixo do limite de segurança.
 
-### O que é?
+**Integração:** Vinculado diretamente a **RN12** e **UC010**.
 
-É a funcionalidade do sistema que permite registrar o estoque inicial de produtos, definindo a quantidade disponível no momento do cadastro.
+---
 
-### Por que existe?
+### RF-14 — Geração e Exportação de Histórico de Movimentações
 
-O cadastro de estoque existe para inicializar o controle de quantidades dos produtos, permitindo que o sistema tenha uma base correta para gerenciar entradas e saídas.
+**Descrição:** O sistema deve permitir a extração estruturada de dados cronológicos relativos aos fluxos de insumos.
 
-### Quem usa?
+**Atores:** Administrador.
 
-Administrador.
+**Operações do Sistema:** Aplicação de filtros avançados por período, tipo de fluxo ou Ordem de Serviço, renderização na interface e exportação para arquivo em formato PDF não editável contendo cabeçalho institucional de integridade.
 
-### Fluxo detalhado
+**Integração:** Vinculado diretamente a **RN12** e **UC012**.
 
-1. Usuário acessa o Gerenciamento de Estoque.
-2. Clica em Novo Registro de Estoque.
-3. Sistema exibe a lista de produtos cadastrados.
-4. Usuário seleciona um produto.
-5. Usuário informa dados adicionais (se necessário).
-6. Usuário clica em Salvar.
-7. Sistema registra o item no estoque e exibe confirmação.
-
-### Requisitos Não Funcional associados
+#### Requisitos Não Funcionais — RF-13 / RF-14
 
 | ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 13.01 | Confiabilidade | O sistema deve garantir que a quantidade inicial seja registrada corretamente no banco de dados. |
-| RNF – 13.02 | Usabilidade | A interface deve permitir fácil inserção da quantidade inicial. |
+|---|---|---|
+| RNF-17.01 | Desempenho | O relatório deve ser gerado em até 5 segundos. |
+| RNF-17.02 | Usabilidade | O relatório deve ser apresentado de forma clara e organizada. |
+| RNF-18.01 | Confiabilidade | O sistema deve armazenar as senhas dos usuários de forma criptografada no banco de dados. |
 
-## RF - 14 - Inclusão de Estoque
+---
 
-### O que é?
+## Quadro 1 — Matriz de Permissões por Perfil de Acesso
 
-É a funcionalidade que permite adicionar novas quantidades a um produto já existente no estoque.
-
-### Por que existe?
-
-Permite atualizar o estoque quando há reposição de produtos.
-
-### Quem usa?
-
-Administrador e Técnico.
-
-### Fluxo detalhado
-
-1. Usuário acessa o Gerenciamento de Estoque.
-2. Seleciona o produto desejado.
-3. Informa a quantidade a ser adicionada.
-4. Confirma a operação.
-5. Sistema atualiza o estoque e registra a movimentação.
-6. Sistema exibe mensagem de confirmação.
-
-### Requisitos Não Funcional associados
-
-| ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 14.01 | Confiabilidade | O sistema deve garantir que a quantidade seja atualizada corretamente. |
-| RNF – 14.02 | Desempenho | A atualização deve ocorrer em até 3 segundos. |
-
-## RF - 15 - Saída de Estoque e Venda
-
-### O que é?
-
-É a funcionalidade que permite registrar a saída de produtos do estoque devido a vendas.
-
-### Por que existe?
-
-Permite controlar a redução de estoque quando produtos são vendidos.
-
-### Quem usa?
-
-Administrador e Técnico.
-
-### Fluxo detalhado
-
-1. Usuário acessa a funcionalidade de saída de estoque.
-2. Seleciona o produto.
-3. Informa a quantidade a ser retirada.
-4. Confirma a operação.
-5. Sistema valida a disponibilidade.
-6. Sistema atualiza o estoque e registra a saída.
-7. Sistema exibe mensagem de confirmação.
-
-### Requisitos Não Funcional associados
-
-| ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 15.01 | Confiabilidade | O sistema deve impedir saída maior que o estoque disponível. |
-| RNF – 15.02 | Segurança | A operação deve ser permitida apenas para usuários autorizados. |
-
-## RF - 16 - Expurgo de Estoque
-
-### O que é?
-
-É a funcionalidade que permite retirar produtos do estoque por perda, dano ou vencimento.
-
-### Por que existe?
-
-Permite manter o estoque fiel à realidade, removendo itens inutilizáveis.
-
-### Quem usa?
-
-Administrador.
-
-### Fluxo detalhado
-
-1. Usuário acessa a funcionalidade de saída por expurgo.
-2. Seleciona o produto.
-3. Informa a quantidade e o motivo.
-4. Confirma a operação.
-5. Sistema atualiza o estoque e registra a movimentação.
-6. Sistema exibe mensagem de confirmação.
-
-### Requisitos Não Funcional associados
-
-| ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 16.01 | Confiabilidade | O sistema deve registrar corretamente o motivo do expurgo. |
-| RNF – 16.02 | Segurança | A funcionalidade deve ser restrita a administradores. |
-
-## RF - 17 - Relatório de Usuários
-
-### O que é?
-
-Permite gerar relatórios com informações dos usuários cadastrados.
-
-### Por que existe?
-
-Permite manter o estoque fiel à realidade, removendo itens inutilizáveis.
-
-### Quem usa?
-
-Administrador.
-
-### Fluxo detalhado
-
-1. Usuário acessa a área de relatórios.
-2. Seleciona Relatório de Usuários.
-3. Solicita a geração do relatório.
-4. Sistema exibe ou exporta os dados.
-
-### Requisitos Não Funcional associados
-
-| ID | Categoria | Descrição |
-| --- | --- | --- |
-| RNF – 17.01 | Desempenho | O relatório deve ser gerado em até 5 segundos. |
-| RNF – 17.02 | Usabilidade | O relatório deve ser apresentado de forma clara e organizada. |
-
-## RNF - 18 - Criptografia
-
-### O que é?
-
-É o requisito não funcional que define que o sistema deve proteger dados sensíveis por meio de criptografia, como senhas e informações dos usuários.
-
-### Por que existe?
-
-A criptografia existe para garantir a segurança das informações armazenadas e trafegadas no sistema, evitando acessos não autorizados e protegendo os dados contra vazamentos.
-
-### Quem usa?
-
-Administrador.
-
-### Regras associadas
-
-1. O sistema deve armazenar senhas de forma criptografada no banco de dados.
-2. O sistema deve proteger dados sensíveis durante o tráfego de informações.
-3. O sistema deve utilizar algoritmos seguros e atualizados.
-
-## RNF - 19 - Compatibilidade
-
-### O que é?
-
-É o requisito não funcional que define que o sistema deve funcionar corretamente em diferentes ambientes e navegadores.
-
-### Por que existe?
-
-A compatibilidade existe para garantir que os usuários consigam acessar e utilizar o sistema independentemente do navegador ou dispositivo utilizado.
-
-### Quem usa?
-
-Administrador e técnico.
-
-### Regras associadas
-
-1. O sistema deve ser compatível com os principais navegadores (Chrome, Edge e Firefox).
-2. O sistema deve manter funcionamento adequado em diferentes resoluções de tela.
-3. O sistema deve apresentar interface responsiva e adaptável.
-
+| ID do Requisito | Funcionalidade Principal | Administrador | Técnico |
+|---|---|---|---|
+| **RF-01 / RF-02** | Autenticação e Segurança | Executa | Executa |
+| **RF-03 ao RF-06** | Gerenciamento de Usuários (RBAC) | Executa | Bloqueado |
+| **RF-07 ao RF-09** | Cadastro, Edição e Exclusão de Produtos | Executa | Bloqueado |
+| **RF-10** | Consulta ao Catálogo | Executa | Executa |
+| **RF-11** | Registro de Movimentações (Entrada e Saída) | Executa | Executa |
+| **RF-11** | Registro de Movimentações (Expurgo/Perdas) | Executa | Bloqueado |
+| **RF-12** | Visualização de Alertas Críticos | Executa | Executa |
+| **RF-13 / RF-14** | Geração e Exportação de Relatórios | Executa | Bloqueado |
