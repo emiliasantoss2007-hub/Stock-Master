@@ -1,34 +1,12 @@
 [CAPA]
 
-NOME DA INSTITUIÇÃO
 
-CURSO
-
-NOME DOS AUTORES
-
-STOCK MASTER
-
-Sistema de Gerenciamento de Estoque para Assistência Técnica
-
-Cidade
-Ano
 
 ---
 
 [FOLHA DE ROSTO]
 
-NOME DOS AUTORES
 
-STOCK MASTER
-
-Sistema de Gerenciamento de Estoque para Assistência Técnica
-
-Monografia apresentada ao curso __________ da instituição __________ como requisito parcial para obtenção do título de __________.
-
-Orientador(a): ____________________
-
-Cidade
-Ano
 
 ---
 
