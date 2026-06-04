@@ -14,7 +14,7 @@ Administrador e Técnico
 2. O sistema deve estar disponível para acesso.
 
 **Fluxo Principal**
-
+```
 [Passo 1]: O usuário acessa a tela de login.
 [Passo 2]: O sistema exibe os campos de login e senha.
 [Passo 3]: O usuário informa suas credenciais.
@@ -22,7 +22,7 @@ Administrador e Técnico
 [Passo 5]: O sistema valida as credenciais informadas.
 [Passo 6]: O sistema autentica o usuário.
 [Passo 7]: O sistema direciona o usuário para a tela principal.
-
+```
 **Pós-condições:**
 1. O usuário é autenticado com sucesso.
 2. O sistema inicia a sessão do usuário.
@@ -60,13 +60,13 @@ Administrador.
 2. O administrador deve possuir permissão para cadastrar usuários.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O administrador seleciona a opção "Cadastrar Usuário".
 [Passo 2]: O sistema exibe o formulário de cadastro de usuário.
 [Passo 3]: O administrador preenche os dados solicitados (nome, e-mail, login, senha e perfil de acesso).
 [Passo 4]: O administrador confirma o cadastro.
 [Passo 5]: O sistema valida os dados, registra o novo usuário e exibe uma mensagem de sucesso.
-
+``` 
 **Pós - Condições:**
 1. O usuário é cadastrado no sistema.
 2. O usuário poderá acessar o sistema conforme as permissões atribuídas.
@@ -106,7 +106,7 @@ Administrador
 3. Deve existir ao menos um usuário cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O administrador acessa a opção "Perfis" no menu lateral.
 [Passo 2]: O sistema exibe as opções disponíveis:
 - consultar perfil;
@@ -120,7 +120,7 @@ Administrador
 [Passo 7]: O administrador confirma a operação.
 [Passo 8]: O sistema remove o usuário do sistema.
 [Passo 9]: O sistema exibe mensagem confirmando a "exclusão realizada com sucesso".
-
+``` 
 **Pós - Condições:**
 1. O usuário é removido do sistema.
 2. Os acessos do usuário são encerrados.
@@ -160,7 +160,7 @@ Administrador.
 3. Deve existir ao menos um usuário cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a tela de consulta de usuários.
 [Passo 2]: O sistema exibe os campos de filtro:
 - nome;
@@ -177,7 +177,7 @@ Administrador.
 - tipo de perfil
 
 [Passo 8]: O usuário visualiza os registros encontrados.
-
+``` 
 **Pós - Condições:**
 1. O sistema exibe uma lista de usuários conforme os filtros aplicados.
 2. Nenhuma alteração é realizada nos dados, sendo apenas uma consulta de leitura.
@@ -218,7 +218,7 @@ Administrador
 3. Deve existir ao menos um usuário cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O administrador acessa a opção "Perfis" no menu lateral.
 [Passo 2]: O sistema exibe as opções disponíveis:
 - consultar perfil;
@@ -239,7 +239,7 @@ Administrador
 [Passo 9]: O sistema valida os dados informados.
 [Passo 10]: O sistema salva as alterações realizadas.
 [Passo 11]: O sistema exibe mensagem de confirmação da edição realizada com sucesso.
-
+```
 **Pós - Condições:**
 1. Os dados do usuário são atualizados no sistema.
 2. As alterações realizadas são salvas no banco de dados.
@@ -282,7 +282,7 @@ Administrador e Técnico.
 2. O usuário deve possuir acesso ao próprio perfil.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a área "Meu Perfil" ou "Configurações".
 [Passo 2]: O usuário seleciona a opção "Alterar Senha".
 [Passo 3]: O sistema exibe os campos:
@@ -296,7 +296,7 @@ Administrador e Técnico.
 [Passo 7]: O sistema verifica se a nova senha e a confirmação são iguais.
 [Passo 8]: O sistema atualiza a senha do usuário.
 [Passo 9]: O sistema exibe mensagem de sucesso e solicita novo login.
-
+``` 
 **Pós - Condições:**
 1. A senha do usuário é atualizada no sistema.
 2. O sistema solicita novo login após a alteração da senha.
@@ -340,7 +340,7 @@ Administrador e Técnico.
 3. O sistema deve permitir envio de e-mails.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a tela de login.
 [Passo 2]: O usuário seleciona a opção "Esqueci minha senha".
 [Passo 3]: O sistema solicita o e-mail cadastrado.
@@ -353,7 +353,7 @@ Administrador e Técnico.
 [Passo 10]: O sistema valida se a nova senha atende os requisitos necessários.
 [Passo 11]: O sistema atualiza a senha do usuário.
 [Passo 12]: O sistema exibe mensagem confirmando a alteração da senha.
-
+``` 
 **Pós - Condições:**
 1. A senha do usuário é redefinida com sucesso.
 2. O usuário pode acessar o sistema com a nova senha.
@@ -398,7 +398,7 @@ Administrador e Técnico.
 2. O usuário deve possuir permissão para cadastrar produtos.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Produtos".
 [Passo 2]: O usuário seleciona a opção "Cadastrar Produto".
 [Passo 3]: O sistema exibe o formulário de cadastro.
@@ -407,7 +407,7 @@ Administrador e Técnico.
 [Passo 6]: O sistema valida os dados informados.
 [Passo 7]: O sistema registra o produto no banco de dados.
 [Passo 8]: O sistema exibe mensagem de confirmação do cadastro.
-
+```
 **Pós - Condições:**
 1. O produto é cadastrado com sucesso no sistema.
 2. O produto fica disponível para consulta e movimentação de estoque.
@@ -450,7 +450,7 @@ Administrador e Técnico.
 2. O produto deve estar cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Produtos".
 [Passo 2]: O usuário seleciona a opção "Consultar Produto".
 [Passo 3]: O sistema exibe a tela de pesquisa.
@@ -458,7 +458,7 @@ Administrador e Técnico.
 [Passo 5]: O sistema realiza a consulta do produto.
 [Passo 6]: O sistema exibe as informações do produto localizado.
 [Passo 7]: O usuário visualiza os dados do produto.
-
+``` 
 **Pós - Condições:**
 1. As informações do produto são exibidas ao usuário.
 
@@ -499,7 +499,7 @@ Administrador e Técnico
 2. O produto deve estar cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Produtos".
 [Passo 2]: O usuário seleciona a opção "Editar Produto".
 [Passo 3]: O sistema exibe a lista de produtos cadastrados.
@@ -510,7 +510,7 @@ Administrador e Técnico
 [Passo 8]: O sistema valida os dados informados.
 [Passo 9]: O sistema salva as alterações.
 [Passo 10]: O sistema exibe a mensagem "Produto atualizado com sucesso".
-
+```
 **Pós - Condições:**
 1. O usuário deve estar autenticado no sistema.
 2. O produto deve estar cadastrado no sistema.
@@ -551,7 +551,7 @@ Administrador e Técnico.
 2. O produto deve estar previamente cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Produtos".
 [Passo 2]: O sistema exibe os produtos cadastrados.
 [Passo 3]: O usuário seleciona o produto que deseja excluir.
@@ -559,7 +559,7 @@ Administrador e Técnico.
 [Passo 5]: O usuário confirma a operação.
 [Passo 6]: O sistema exclui o produto.
 [Passo 7]: O sistema exibe a mensagem "Produto excluído com sucesso".
-
+``` 
 **Pós - Condições:**
 1. O produto é excluído do sistema com sucesso.
 
@@ -603,7 +603,7 @@ Administrador e Técnico.
 3. O usuário deve possuir permissão para movimentar o estoque.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Movimentação de Estoque".
 [Passo 2]: O usuário seleciona a opção "Entrada de Produto".
 [Passo 3]: O sistema exibe os produtos cadastrados.
@@ -615,7 +615,7 @@ Administrador e Técnico.
 [Passo 9]: O sistema atualiza a quantidade disponível do produto.
 [Passo 10]: O sistema registra a movimentação no histórico.
 [Passo 11]: O sistema exibe mensagem de confirmação da operação.
-
+``` 
 **Pós - Condições:**
 1. A quantidade do produto é atualizada no estoque.
 2. A movimentação de entrada é registrada no histórico do sistema.
@@ -663,7 +663,7 @@ Administrador e Técnico.
 3. O produto deve estar previamente cadastrado no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Saída de Produto".
 [Passo 2]: O sistema exibe os produtos cadastrados.
 [Passo 3]: O usuário seleciona o produto e informa a quantidade a ser retirada.
@@ -673,7 +673,7 @@ Administrador e Técnico.
 [Passo 7]: O sistema registra a movimentação no histórico.
 [Passo 8]: O sistema verifica a necessidade de gerar alerta de estoque mínimo.
 [Passo 9]: O sistema exibe a mensagem de confirmação da operação.
-
+``` 
 **Pós - Condições:**
 1. A quantidade do produto é atualizada no estoque.
 2. A movimentação é registrada no histórico do sistema.
@@ -716,14 +716,14 @@ Administrador e Técnico
 3. Devem existir movimentações registradas no sistema.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Histórico de Estoque".
 [Passo 2]: O sistema exibe a tela de consulta.
 [Passo 3]: O usuário informa os filtros desejados (produto, data ou tipo de movimentação).
 [Passo 4]: O usuário solicita a pesquisa.
 [Passo 5]: O sistema consulta os registros de movimentação.
 [Passo 6]: O sistema exibe o histórico conforme os filtros informados.
-
+``` 
 **Pós - Condições:**
 1. O histórico de movimentações é exibido ao usuário conforme os filtros aplicados.
 
@@ -759,7 +759,7 @@ Administrador e Técnico
 3. O usuário deve possuir permissão para movimentar o estoque.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O usuário acessa a opção "Expurgo de Estoque".
 [Passo 2]: O sistema exibe os produtos cadastrados.
 [Passo 3]: O usuário seleciona o produto desejado.
@@ -769,7 +769,7 @@ Administrador e Técnico
 [Passo 7]: O sistema atualiza a quantidade disponível em estoque.
 [Passo 8]: O sistema registra a movimentação no histórico.
 [Passo 9]: O sistema exibe mensagem de confirmação da operação.
-
+``` 
 **Pós - Condições:**
 1. A quantidade do produto é atualizada no estoque.
 2. A movimentação de expurgo é registrada no histórico.
@@ -806,14 +806,14 @@ Administrador
 2. Devem existir movimentações registradas no estoque.
 
 **Fluxo Principal:**
-
+```
 [Passo 1]: O administrador acessa a opção "Relatórios".
 [Passo 2]: O administrador seleciona "Relatório de Movimentação".
 [Passo 3]: O sistema exibe os filtros disponíveis.
 [Passo 4]: O administrador informa os critérios de consulta.
 [Passo 5]: O sistema gera o relatório.
 [Passo 6]: O sistema exibe o relatório solicitado.
-
+```
 **Pós - Condições:**
 1. O relatório de movimentação é gerado e exibido ao administrador.
 
@@ -846,13 +846,13 @@ Administrador
 1. O administrador deve estar autenticado no sistema.
 
 **Fluxo Principal**
-
+``` 
 [Passo 1]: O administrador acessa a opção "Relatórios".
 [Passo 2]: O administrador seleciona "Relatório de Estoque".
 [Passo 3]: O sistema processa as informações do estoque.
 [Passo 4]: O sistema gera o relatório.
 [Passo 5]: O sistema exibe o relatório solicitado.
-
+```
 **Pós-condições**
 1. O relatório de estoque é gerado e exibido.
 
@@ -880,13 +880,13 @@ Administrador
 2. Devem existir produtos cadastrados.
 
 **Fluxo Principal:**
-
+``` 
 [Passo 1]: O administrador acessa a opção "Relatórios".
 [Passo 2]: O administrador seleciona "Relatório de Produtos".
 [Passo 3]: O sistema consulta os produtos cadastrados.
 [Passo 4]: O sistema gera o relatório.
 [Passo 5]: O sistema exibe o relatório solicitado.
-
+``` 
 **Pós-condições**
 - O relatório de produtos é gerado e exibido.
 - Fluxo Principal
@@ -915,14 +915,14 @@ Administrador
 2. Um relatório deve ter sido gerado pelo sistema.
 
 **Fluxo Principal:**
-
+```
 [Passo 1]: O administrador acessa um relatório gerado pelo sistema.
 [Passo 2]: O administrador seleciona a opção "Exportar Relatório".
 [Passo 3]: O sistema exibe os formatos disponíveis para exportação.
 [Passo 4]: O administrador escolhe o formato desejado (PDF ou Excel).
 [Passo 5]: O sistema gera o arquivo no formato selecionado.
 [Passo 6]: O sistema disponibiliza o relatório para download.
-
+``` 
 **Pós-condições:**
 1. O relatório é exportado no formato selecionado pelo administrador.
 
