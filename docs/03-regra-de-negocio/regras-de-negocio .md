@@ -4,6 +4,7 @@
 2. Módulo de Gestão de Produtos
 3. Módulo de Controle de Estoque
 
+## 1. Módulo de Usuário e Autenticação
 | ID | Regra De Negócio | Aplica-se a | RF Relacionado | RNF Relacionado |
 |----|-----------------|-------------|----------------|-----------------|
 | RN - 01 | A recuperação de senha somente poderá ser realizada por usuários previamente cadastrados | Administrador e Técnico | RF-03 | RNF-01.03 |
@@ -11,6 +12,7 @@
 | RN - 03 | Apenas administradores podem cadastrar novos usuários. | Administrador | RF-04 | RNF-06.01 |
 | RN - 04 | Apenas usuários autorizados podem editar dados cadastrais de usuários. | Administrador | RF-05 | RNF-03.01 |
 
+## 2. Módulo de Gestão de Produtos
 | ID | Regra De Negócio | Aplica-se a | RF Relacionado | RNF Relacionado |
 |----|-----------------|-------------|----------------|-----------------|
 | RN - 05 | Cada produto deve possuir um código SKU único. | Administrador e Técnico | RF-08 | RNF-07.02 |
@@ -18,6 +20,7 @@
 | RN - 07 | O gerenciamento de produtos deve respeitar as permissões definidas para cada perfil de usuário. | Administrador e Técnico | RF-08, RF-09 e RF-10 | RNF-06.01 e RNF-06.02 |
 | RN - 08 | Somente produtos cadastrados podem ser consultados ou movimentados no sistema. | Administrador e Técnico | RF-11 | RNF-08.01 |
 
+## 3. Módulo de Controle de Estoque
 | ID | Regra De Negócio | Aplica-se a | RF Relacionado | RNF Relacionado |
 |----|-----------------|-------------|----------------|-----------------|
 | RN - 9 | Somente produtos cadastrados podem receber entrada de estoque. | Administrador e Técnico | RF-12 | RNF-13.01 |
