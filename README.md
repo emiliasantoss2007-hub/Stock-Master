@@ -86,7 +86,8 @@ stock-master/
 │
 ├── frontend/
 │
-├── MONOGRAFIA-entrega.md
+├── MONOGRAFIA.V1-entrega.pdf
+├── MONOGRAFIA.V2-entrega.pdf
 │
 └── README.md
 ```
