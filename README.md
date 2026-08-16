@@ -55,7 +55,6 @@ Model
 Banco de Dados
 
 ## Tecnologias
-
 Front-end
 HTML5
 CSS3
@@ -67,7 +66,6 @@ Banco de Dados
 MySQL
 
 ## Estrutura do Projeto
-
 stock-master/
 │
 ├── docs/
