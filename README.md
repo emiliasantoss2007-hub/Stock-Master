@@ -54,7 +54,8 @@ Model
    ↓
 Banco de Dados
 
-## Tecnologias
+Tecnologias
+
 Front-end
 HTML5
 CSS3
@@ -65,7 +66,7 @@ Express.js
 Banco de Dados
 MySQL
 
-## Estrutura do Projeto
+ Estrutura do Projeto
 stock-master/
 │
 ├── docs/
@@ -81,6 +82,6 @@ stock-master/
 │
 └── README.md
 
-## Documentação
+ Documentação
 
 A documentação detalhada do projeto, incluindo requisitos, regras de negócio, modelagem e demais definições, está disponível nos arquivos correspondentes do projeto.
