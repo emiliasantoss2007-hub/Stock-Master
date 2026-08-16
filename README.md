@@ -1,152 +1,73 @@
-# Stock Master
----
+# StockMaster
 
-### Sistema de gerenciamento de estoque desenvolvido para assistência técnica, com foco em controle operacional, rastreabilidade de movimentações, segurança de acesso e monitoramento de estoque crítico.
+Sistema web de gerenciamento de estoque desenvolvido para uma assistência técnica, com foco na organização dos produtos e no controle das movimentações de estoque.
 
----
 ## Status do Projeto
->Em desenvolvimento
+
+> 🚧 Em desenvolvimento
 
 ## Sobre o Projeto
 
-O Stock Master foi projetado para centralizar e organizar as operações de estoque de uma assistência técnica, permitindo o gerenciamento de:
+O **StockMaster** tem como proposta centralizar e organizar as operações relacionadas ao estoque de uma assistência técnica.
 
-- Usuários e permissões
-- Produtos
-- Entradas e saídas de estoque
-- Expurgo de produtos
-- Histórico de movimentações
-- Alertas de estoque crítico
-- Relatórios operacionais
+A aplicação será voltada para o gerenciamento de:
 
-O sistema busca reduzir inconsistências, aumentar a segurança das operações e melhorar o controle sobre os itens armazenados.
+- Usuários;
+- Produtos;
+- Movimentações de estoque;
+- Histórico de movimentações;
+- Relatórios;
+- Controle de estoque crítico.
 
---- 
+O projeto busca proporcionar maior organização e controle das informações relacionadas ao estoque.
 
-## Objetivos do Sistema
+## Principais Funcionalidades
 
-- Controlar o estoque de forma centralizada
-- Garantir rastreabilidade das movimentações
-- Restringir acessos conforme perfil do usuário
-- Reduzir erros operacionais
-- Facilitar consultas e auditorias
-- Monitorar níveis críticos de estoque
+- 🔐 **Autenticação e controle de acesso**
+- 👥 **Gerenciamento de usuários**
+- 📦 **Gerenciamento de produtos**
+- 📥 **Entrada de estoque**
+- 📤 **Saída de estoque**
+- 🗑️ **Expurgo de estoque**
+- 📋 **Histórico de movimentações**
+- ⚠️ **Monitoramento de estoque crítico**
+- 📊 **Relatórios**
 
---- 
-## Perfis de Usuário
+## Arquitetura
 
-### Administrador
+O projeto será desenvolvido utilizando o padrão **MVC (Model-View-Controller)**, organizando a aplicação em diferentes responsabilidades:
 
-Responsável por:
+- **View:** interface e interação com o usuário;
+- **Controller:** controle das requisições e fluxo da aplicação;
+- **Model:** gerenciamento dos dados e comunicação com o banco.
 
-- Gerenciar usuários
-- Gerenciar produtos
-- Controlar permissões
-- Gerar relatórios
-- Executar operações críticas
-- Realizar expurgo de estoque
-- Técnico
+### Fluxo da Arquitetura
 
-Responsável por:
+```text
+Usuário
+   ↓
+View
+   ↓
+Controller
+   ↓
+Model
+   ↓
+Banco de Dados
 
-- Consultar produtos
-- Registrar entradas de estoque
-- Registrar saídas de estoque
-- Consultar movimentações
+## Tecnologias
 
----
-
-## Funcionalidades Principais
-
-### Autenticação e Controle de Acesso
-- Login com validação segura
-- Controle de permissões por perfil
-- Restrição de funcionalidades conforme usuário
-- Criptografia de senhas
-- Controle de tentativas de login
-
-### Gestão de Usuários
-
-- Cadastro de usuários
-- Edição de usuários
-- Exclusão de usuários
-- Consulta de usuários
-- Alteração de senha
-- Recuperação de senha por e-mail
-
-### Gestão de Produtos
-
-- Cadastro de produtos
-- Consulta de produtos
-- Edição de produtos
-- Exclusão de produtos
-
-### Controle de Estoque
-
-- Cadastro inicial de estoque
-- Entrada de produtos
-- Saída de produtos
-- Expurgo de produtos
-- Atualização automática do estoque
-
-### Histórico e Auditoria
-
-- Registro de movimentações
-- Rastreabilidade completa das operações
-- Histórico com:
-  - Tipo de movimentação
-  - Produto
-  - Quantidade
-  - Data da operação
-
-### Alertas e Relatórios
-
-- Monitoramento de estoque crítico
-- Alertas automáticos
-- Relatórios operacionais
-
----
-## Regras de Negócio
-### Controle de Acesso
-- Apenas usuários autenticados podem acessar o sistema
-- Permissões são aplicadas conforme perfil
-
-### Cadastro de Usuários
-- Apenas administradores podem cadastrar usuários
-- Login deve ser único
-- Senha mínima de 8 caracteres
-
-### Controle de Estoque
-- Entradas devem possuir quantidade maior que zero
-- Saídas não podem ultrapassar o estoque disponível
-- Expurgo exige justificativa
-
-### Auditoria
-- Toda movimentação deve ser registrada
-
-## Requisitos Não Funcionais
-
-### Segurança
-- Senhas criptografadas
-- Controle de permissões
-- Proteção de dados sensíveis
-
-### Desempenho
-- Operações principais devem responder em até 3 segundos
-
-### Compatibilidade
-- Compatível com:
-  - Google Chrome
-  - Microsoft Edge
-  - Mozilla Firefox
-
-### Usabilidade
-- Interface responsiva
-- Navegação intuitiva
-- Feedback visual para erros e validações
+Front-end
+HTML5
+CSS3
+JavaScript
+Back-end
+Node.js
+Express.js
+Banco de Dados
+MySQL
 
 ## Estrutura do Projeto
-```
+
 stock-master/
 │
 ├── docs/
@@ -161,5 +82,7 @@ stock-master/
 ├── MONOGRAFIA-entrega.md
 │
 └── README.md
-```
-## Fluxo Geral do Sistema
+
+## Documentação
+
+A documentação detalhada do projeto, incluindo requisitos, regras de negócio, modelagem e demais definições, está disponível nos arquivos correspondentes do projeto.
