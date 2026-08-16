@@ -53,18 +53,28 @@ Controller
 Model
    ↓
 Banco de Dados
+```
 
-Tecnologias
-Front-end
-HTML5
-CSS3
-JavaScript
-Back-end
-Node.js
-Express.js
-Banco de Dados
-MySQL
-Estrutura do Projeto
+## Tecnologias
+
+### Front-end
+
+- HTML5
+- CSS3
+- JavaScript
+
+### Back-end
+
+- Node.js
+- Express.js
+
+### Banco de Dados
+
+- MySQL
+
+## Estrutura do Projeto
+
+```text
 stock-master/
 │
 ├── docs/
@@ -79,6 +89,8 @@ stock-master/
 ├── MONOGRAFIA-entrega.md
 │
 └── README.md
-Documentação
+```
+
+## Documentação
 
 A documentação detalhada do projeto, incluindo requisitos, regras de negócio, modelagem e demais definições, está disponível nos arquivos correspondentes do projeto.
