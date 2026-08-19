@@ -72,29 +72,29 @@ Banco de Dados
 StockMaster/
 │
 ├── Backend/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── config/
-│   └── middlewares/
+│ ├── controllers/
+│ ├── models/
+│ ├── routes/
+│ ├── config/
+│ └── middlewares/
 │
 ├── frontend/
-│   ├── views/
-│   ├── css/
-│   ├── js/
-│   └── assets/
-│       ├── images/
-│       └── icons/
+│ ├── views/
+│ ├── css/
+│ ├── js/
+│ └── assets/
+│ ├── images/
+│ └── icons/
 │
 ├── database/
-│   └── schema.sql
+│ └── schema.sql
 │
 ├── docs/
-│   ├── 01-visao-geral.md
-│   ├── 02-requisitos.md
-│   ├── 03-regras-de-negocios.md
-│   ├── 04-modelagem.md
-│   └── 05-banco.md
+│ ├── 01-visao-geral.md
+│ ├── 02-requisitos.md
+│ ├── 03-regras-de-negocios.md
+│ ├── 04-modelagem.md
+│ └── 05-banco.md
 │
 ├── tests/
 │
@@ -103,7 +103,3 @@ StockMaster/
 ├── MONOGRAFIA.V1- com declaração da empresa.pdf
 ├── Monografia_StockMaster-V2.pdf
 └── README.md
-
-## Documentação
-
-A documentação detalhada do projeto, incluindo requisitos, regras de negócio, modelagem e demais definições, está disponível nos arquivos correspondentes do projeto.
