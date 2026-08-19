@@ -1,0 +1,547 @@
+/* =========================================================
+   STOCK MASTER - ESTRUTURA BASE DO FRONT-END
+   style.css
+   ========================================================= */
+
+
+/* =========================================================
+   1. VARIÁVEIS
+   ========================================================= */
+
+:root {
+
+    --primary: #114bb8;
+
+    --primary-dark: #072669;
+
+    --text: #ffffff;
+
+    --text-muted: #d6e2ff;
+
+    --input-bg: rgba(255, 255, 255, 0.14);
+
+    --input-border: rgba(255, 255, 255, 0.22);
+
+    --card-border: rgba(255, 255, 255, 0.30);
+
+    --error: #ffb4b4;
+
+}
+
+
+/* =========================================================
+   2. RESET
+   ========================================================= */
+
+* {
+
+    margin: 0;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+html {
+
+    font-size: 16px;
+
+}
+
+
+body {
+
+    min-height: 100vh;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    color: var(--text);
+
+}
+
+
+/* =========================================================
+   3. PÁGINA DE LOGIN
+   ========================================================= */
+
+.login-page {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 32px 20px;
+
+
+    /* Fundo inspirado na imagem de referência */
+
+    background:
+
+        linear-gradient(135deg,
+            transparent 0 18%,
+            rgba(30, 92, 210, .35) 18% 28%,
+            transparent 28% 48%,
+            rgba(15, 62, 170, .45) 48% 65%,
+            transparent 65%),
+
+        linear-gradient(45deg,
+            transparent 0 30%,
+            rgba(27, 76, 183, .30) 30% 44%,
+            transparent 44% 68%,
+            rgba(10, 47, 145, .35) 68%),
+
+        linear-gradient(135deg,
+            #062f9f,
+            #0a43c7 50%,
+            #092e91);
+
+    background-size:
+        900px 900px,
+        1000px 1000px,
+        cover;
+
+}
+
+
+/* =========================================================
+   4. CARD DE LOGIN
+   ========================================================= */
+
+.login-card {
+
+    width: min(100%, 650px);
+
+    padding: 48px 58px;
+
+    border:
+        1px solid var(--card-border);
+
+    border-radius: 28px;
+
+    background:
+        rgba(37, 91, 190, 0.34);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    box-shadow:
+
+        0 24px 60px rgba(0, 0, 0, 0.18),
+
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+}
+
+
+/* =========================================================
+   5. CABEÇALHO
+   ========================================================= */
+
+.login-icon {
+
+    width: 64px;
+
+    height: 64px;
+
+    margin:
+        0 auto 24px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border:
+        1px solid rgba(255, 255, 255, .20);
+
+    border-radius: 17px;
+
+    background:
+        rgba(255, 255, 255, .12);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .12);
+
+    font-size: 27px;
+
+}
+
+
+.login-header {
+
+    text-align: center;
+
+    margin-bottom: 42px;
+
+}
+
+
+.login-header h1 {
+
+    margin-bottom: 8px;
+
+    font-size:
+        clamp(28px, 4vw, 38px);
+
+    line-height: 1.15;
+
+}
+
+
+.login-header p {
+
+    color:
+        var(--text-muted);
+
+    font-size: 17px;
+
+}
+
+
+/* =========================================================
+   6. FORMULÁRIO
+   ========================================================= */
+
+.login-form {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 24px;
+
+}
+
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+}
+
+
+.form-group label {
+
+    font-size: 17px;
+
+    font-weight: 500;
+
+}
+
+
+/* =========================================================
+   7. CAMPOS
+   ========================================================= */
+
+.input-wrapper {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.input-icon {
+
+    position: absolute;
+
+    left: 20px;
+
+    z-index: 1;
+
+    font-size: 25px;
+
+    opacity: .95;
+
+}
+
+
+.input-wrapper input {
+
+    width: 100%;
+
+    height: 64px;
+
+    padding:
+        0 55px 0 62px;
+
+    border:
+        1px solid var(--input-border);
+
+    border-radius: 15px;
+
+    outline: none;
+
+    color:
+        var(--text);
+
+    background:
+        var(--input-bg);
+
+    font-size: 17px;
+
+    transition:
+        border-color .2s,
+        box-shadow .2s,
+        background .2s;
+
+}
+
+
+.input-wrapper input::placeholder {
+
+    color:
+        rgba(255, 255, 255, .72);
+
+}
+
+
+.input-wrapper input:focus {
+
+    border-color:
+        rgba(255, 255, 255, .75);
+
+    background:
+        rgba(255, 255, 255, .18);
+
+    box-shadow:
+        0 0 0 4px rgba(255, 255, 255, .10);
+
+}
+
+
+/* =========================================================
+   8. BOTÃO MOSTRAR SENHA
+   ========================================================= */
+
+.password-toggle {
+
+    position: absolute;
+
+    right: 17px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 23px;
+
+    opacity: .85;
+
+}
+
+
+.password-toggle:hover {
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   9. MENSAGENS DE ERRO
+   ========================================================= */
+
+.form-error {
+
+    min-height: 18px;
+
+    color:
+        var(--error);
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   10. BOTÃO ENTRAR
+   ========================================================= */
+
+.login-button {
+
+    width: 100%;
+
+    height: 66px;
+
+    margin-top: 4px;
+
+    border: 0;
+
+    border-radius: 15px;
+
+    background: #ffffff;
+
+    color:
+        var(--primary-dark);
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, .10);
+
+    transition:
+        transform .2s,
+        box-shadow .2s;
+
+}
+
+
+.login-button:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, .16);
+
+}
+
+
+.login-button:active {
+
+    transform:
+        translateY(0);
+
+}
+
+
+/* =========================================================
+   11. RECUPERAÇÃO DE SENHA
+   ========================================================= */
+
+.forgot-password {
+
+    align-self: center;
+
+    color:
+        var(--text-muted);
+
+    font-size: 16px;
+
+    text-decoration: none;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, .45);
+
+    padding-bottom: 2px;
+
+}
+
+
+.forgot-password:hover {
+
+    color: white;
+
+    border-color: white;
+
+}
+
+
+/* =========================================================
+   12. MENSAGEM DO FORMULÁRIO
+   ========================================================= */
+
+.form-message {
+
+    min-height: 20px;
+
+    text-align: center;
+
+    color:
+        var(--text-muted);
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================================
+   13. RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .login-page {
+
+        padding:
+            20px 14px;
+
+    }
+
+
+    .login-card {
+
+        padding:
+            35px 24px;
+
+        border-radius: 22px;
+
+    }
+
+
+    .login-header {
+
+        margin-bottom: 30px;
+
+    }
+
+
+    .login-header h1 {
+
+        font-size: 28px;
+
+    }
+
+
+    .login-header p {
+
+        font-size: 15px;
+
+    }
+
+
+    .input-wrapper input {
+
+        height: 58px;
+
+        font-size: 15px;
+
+    }
+
+
+    .login-button {
+
+        height: 58px;
+
+    }
+
+}
