@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Tela inicial do sistema Stock Master">
+
+    <title>Stock Master | Login</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js"></script>
+</head>
+
+<body>
+
+    <main class="login-page">
+
+        <section class="login-card" aria-labelledby="login-title">
+
+            <!-- Ícone -->
+            <div class="login-icon" aria-hidden="true">
+                <span>🔒</span>
+            </div>
+
+
+            <!-- Cabeçalho -->
+            <header class="login-header">
+
+                <h1 id="login-title">
+                    Bem-vindo de volta
+                </h1>
+
+                <p>
+                    Entre com suas credenciais para continuar
+                </p>
+
+            </header>
+
+
+            <!-- Formulário -->
+            <form id="loginForm" class="login-form">
+
+                <!-- Usuário -->
+                <div class="form-group">
+
+                    <label for="usuario">
+                        Usuário
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon" aria-hidden="true">
+                            ♙
+                        </span>
+
+                        <input type="text" id="usuario" name="usuario" placeholder="seu.usuario" autocomplete="username"
+                            required>
+
+                    </div>
+
+                    <small class="form-error" id="usuarioError"></small>
+
+                </div>
+
+
+                <!-- Senha -->
+                <div class="form-group">
+
+                    <label for="senha">
+                        Senha
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon" aria-hidden="true">
+                            🔒
+                        </span>
+
+                        <input type="password" id="senha" name="senha" placeholder="••••••••"
+                            autocomplete="current-password" required>
+
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Mostrar senha"
+                            aria-pressed="false">
+                            ◉
+                        </button>
+
+                    </div>
+
+                    <small class="form-error" id="senhaError"></small>
+
+                </div>
+
+
+                <!-- Botão -->
+                <button type="submit" class="login-button">
+                    Entrar
+                </button>
+
+
+                <!-- Recuperação de senha -->
+                <a href="#" class="forgot-password" id="forgotPassword">
+                    Esqueci minha senha
+                </a>
+
+
+                <!-- Mensagem -->
+                <p class="form-message" id="formMessage" aria-live="polite"></p>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
