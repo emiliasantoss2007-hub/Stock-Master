@@ -4,14 +4,13 @@ Sistema web de gerenciamento de estoque desenvolvido para uma assistência técn
 
 ## Status do Projeto
 
-> 🚧 Em desenvolvimento
+🚧 Em desenvolvimento
 
 ## Sobre o Projeto
 
 O **StockMaster** tem como proposta centralizar e organizar as operações relacionadas ao estoque de uma assistência técnica.
 
 A aplicação será voltada para o gerenciamento de:
-
 - Usuários;
 - Produtos;
 - Movimentações de estoque;
@@ -43,54 +42,68 @@ O projeto será desenvolvido utilizando o padrão **MVC (Model-View-Controller)*
 
 ### Fluxo da Arquitetura
 
-```text
 Usuário
-   ↓
+↓
 View
-   ↓
+↓
 Controller
-   ↓
+↓
 Model
-   ↓
+↓
 Banco de Dados
-```
+
 
 ## Tecnologias
 
 ### Front-end
-
 - HTML5
 - CSS3
 - JavaScript
 
 ### Back-end
-
 - Node.js
 - Express.js
 
 ### Banco de Dados
-
 - MySQL
 
 ## Estrutura do Projeto
 
-```text
-stock-master/
+StockMaster/
 │
-├── docs/
-│   ├── 01-visao-geral.md
-│   ├── 02-requisitos.md
-│   ├── 03-regras-de-negocios.md
-│   ├── 04-modelagem.md
-│   └── 05-banco.md
+├── Backend/
+│ ├── controllers/
+│ ├── models/
+│ ├── routes/
+│ ├── config/
+│ └── middlewares/
 │
 ├── frontend/
+│ ├── views/
+│ ├── css/
+│ ├── js/
+│ └── assets/
+│ ├── images/
+│ └── icons/
 │
-├── MONOGRAFIA.V1-entrega.pdf
-├── MONOGRAFIA.V2-entrega.pdf
+├── database/
+│ └── schema.sql
 │
+├── docs/
+│ ├── 01-visao-geral.md
+│ ├── 02-requisitos.md
+│ ├── 03-regras-de-negocios.md
+│ ├── 04-modelagem.md
+│ └── 05-banco.md
+│
+├── tests/
+│
+├── .gitignore
+├── package.json
+├── MONOGRAFIA.V1- com declaração da empresa.pdf
+├── Monografia_StockMaster-V2.pdf
 └── README.md
-```
+plaintext
 
 ## Documentação
 
