@@ -69,7 +69,7 @@ Banco de Dados
 
 ## Estrutura do Projeto
 
-StockMaster/
+´´´StockMaster/
 │
 ├── Backend/
 │ ├── controllers/
@@ -102,4 +102,4 @@ StockMaster/
 ├── package.json
 ├── MONOGRAFIA.V1- com declaração da empresa.pdf
 ├── Monografia_StockMaster-V2.pdf
-└── README.md
+└── README.md´´´
