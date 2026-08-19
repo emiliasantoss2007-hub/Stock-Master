@@ -68,7 +68,6 @@ Banco de Dados
 - MySQL
 
 ## Estrutura do Projeto
-
 ´´´
 StockMaster/
 │
