@@ -68,7 +68,9 @@ Banco de Dados
 - MySQL
 
 ## Estrutura do Projeto
-´´´StockMaster/
+
+```
+StockMaster/
 │
 ├── Backend/
 │   ├── controllers/
@@ -101,4 +103,9 @@ Banco de Dados
 ├── package.json
 ├── MONOGRAFIA.V1- com declaração da empresa.pdf
 ├── Monografia_StockMaster-V2.pdf
-└── README.md´´´
+└── README.md
+```
+
+## Documentação
+
+A documentação detalhada do projeto, incluindo requisitos, regras de negócio, modelagem e demais definições, está disponível nos arquivos correspondentes do projeto.
