@@ -247,7 +247,9 @@ develop
 Validação
        ↓
 main
+
 12. Regras de desenvolvimento
+
 Não trabalhar diretamente na main;
 Cada integrante deve trabalhar em sua branch individual;
 Testar a funcionalidade localmente antes de realizar o push;
@@ -255,6 +257,7 @@ Utilizar commits que descrevam a alteração realizada;
 Pull Requests das branches individuais devem ter a develop como destino;
 Alterações no banco de dados devem ser alinhadas com a equipe;
 Não enviar arquivos .env para o repositório.
+
 13. Documentação
 
 A documentação do StockMaster está organizada na pasta docs.
