@@ -217,7 +217,7 @@ http://localhost:3001
 
 Para informações detalhadas sobre a configuração, consulte:
 
-[Configuração do ambiente](docs/07-guias/configuracao-ambiente.md)
+(docs/07-guias/configuracao-ambiente.md)
 
 ---
 
