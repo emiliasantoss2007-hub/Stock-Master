@@ -41,8 +41,8 @@ O projeto possui protótipos das interfaces desenvolvidas durante a etapa de def
 
 Para configurar o projeto em uma nova máquina, siga os guias na ordem:
 
-1. [Como clonar o repositório](docs/07-guias/clonagem.md)
-2. [Como configurar o ambiente](docs/07-guias/configuracao-ambiente.md)
+1. [Como clonar o repositório](docs/08-guias/clonagem.md)
+2. [Como configurar o ambiente](docs/08-guias/configuracao-ambiente.md)
 
 Após configurar o ambiente, o projeto poderá ser executado localmente.
 
@@ -161,7 +161,8 @@ StockMaster/
 │   ├── 04-modelagem/
 │   ├── 05-banco/
 │   ├── 06-monografia/
-│   └── 07-guias/
+│   ├── 07-arquitetura/
+│   └── 08-guias/
 │
 ├── tests/
 │
@@ -217,7 +218,7 @@ http://localhost:3001
 
 Para informações detalhadas sobre a configuração, consulte:
 
-(docs/07-guias/configuracao-ambiente.md)
+[Configuração do ambiente](docs/08-guias/configuracao-ambiente.md)
 
 ---
 
@@ -305,12 +306,13 @@ A documentação do StockMaster está organizada na pasta [`docs`](docs/).
 | Modelagem | [`docs/04-modelagem`](docs/04-modelagem) |
 | Banco de dados | [`docs/05-banco`](docs/05-banco) |
 | Monografia | [`docs/06-monografia`](docs/06-monografia) |
-| Guias | [`docs/07-guias`](docs/07-guias) |
+| Arquitetura | [`docs/07-arquitetura`](docs/07-arquitetura) |
+| Guias | [`docs/08-guias`](docs/08-guias) |
 
 ### Guias
 
-- [Como clonar o repositório](docs/07-guias/clonagem.md)
-- [Como configurar o ambiente](docs/07-guias/configuracao-ambiente.md)
+- [Como clonar o repositório](docs/08-guias/clonagem.md)
+- [Como configurar o ambiente](docs/08-guias/configuracao-ambiente.md)
 
 ---
 A documentação, arquitetura, banco de dados e ambiente de desenvolvimento estão estruturados. A próxima etapa consiste na implementação e integração das funcionalidades do sistema.
