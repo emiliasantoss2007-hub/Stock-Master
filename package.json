@@ -1,0 +1,30 @@
+{
+  "name": "stock-master",
+  "version": "1.0.0",
+  "description": "Sistema web de gerenciamento de estoque desenvolvido para uma assistência técnica, com foco na organização dos produtos e no controle das movimentações de estoque.",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emiliasantoss2007-hub/Stock-Master.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/emiliasantoss2007-hub/Stock-Master/issues"
+  },
+  "homepage": "https://github.com/emiliasantoss2007-hub/Stock-Master#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.24.3"
+  }
+}
