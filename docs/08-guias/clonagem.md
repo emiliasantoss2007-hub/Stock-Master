@@ -73,4 +73,4 @@ As branches individuais serão criadas a partir de `develop`.
 
 Após clonar o repositório, siga o guia:
 
-**Configuração do ambiente**
+[Configuração do ambiente](./configuracao-ambiente.md)
