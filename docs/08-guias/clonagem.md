@@ -10,53 +10,67 @@ Para verificar:
 
 ```bash
 git --version
+```
 
 Se aparecer a versão do Git, está instalado corretamente.
 
-2. Clonar o repositório
+## 2. Clonar o repositório
 
 Abra o terminal na pasta onde deseja salvar o projeto e execute:
 
+```bash
 git clone https://github.com/emiliasantoss2007-hub/Stock-Master.git
-3. Acessar a pasta do projeto
+```
+
+## 3. Acessar a pasta do projeto
 
 Após a clonagem:
 
+```bash
 cd Stock-Master
+```
 
-4. Abrir no VS Code
+## 4. Abrir no VS Code
 
 Execute:
 
+```bash
 code .
+```
 
 Ou abra a pasta Stock-Master manualmente pelo VS Code.
 
-5. Verificar o repositório
+## 5. Verificar o repositório
 
 Para confirmar que o projeto está conectado ao GitHub:
 
+```bash
 git remote -v
+```
 
 Deve aparecer o repositório:
 
+```
 https://github.com/emiliasantoss2007-hub/Stock-Master.git
+```
 
-6. Verificar as branches
+## 6. Verificar as branches
 
 Para visualizar as branches disponíveis:
 
+```bash
 git branch -a
+```
 
 O projeto possui as branches principais:
 
-main — versão estável do projeto.
-develop — integração das funcionalidades desenvolvidas pela equipe.
+- **main** — versão estável do projeto.
+- **develop** — integração das funcionalidades desenvolvidas pela equipe.
 
-As branches individuais serão criadas a partir de develop.
+As branches individuais serão criadas a partir de `develop`.
 
-Próximo passo
+## Próximo passo
 
 Após clonar o repositório, siga o guia:
 
-Configuração do ambiente
+[Configuração do ambiente](./configuracao-ambiente.md)
