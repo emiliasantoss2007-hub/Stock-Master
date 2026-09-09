@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Central de relatórios do StockMaster">
+
+    <title>StockMaster | Central de Relatórios</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/relatorios.css">
+
+    <script src="../js/relatorios.js" defer></script>
+
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação">
+                <a href="dashboard_adm.html" id="dashboardLink"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="usuarios.html" id="usuariosLink"><span class="nav-icon">♙</span>Usuários</a>
+                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
+                <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
+                <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
+                <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
+                <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
+                <a href="login.html">↪ Sair</a>
+            </div>
+
+        </aside>
+
+        <main class="main-area">
+
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Central de Relatórios</strong>
+                </div>
+                <div class="user-area">
+                    <div>
+                        <strong id="userRole">Administrador</strong>
+                        <small id="username">admin.stockmaster</small>
+                    </div>
+                    <span class="avatar" id="userAvatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
+                    <span>Relatórios</span>
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Central de Relatórios</h1>
+                        <p>Selecione o tipo de relatório e os filtros desejados.</p>
+                    </div>
+                </header>
+
+                <section class="panel">
+
+                    <div id="mensagemArea"></div>
+                    <div id="visualizarRelatorioArea" style="display: none; margin-top: 15px;">
+                        <a href="#" id="btnVisualizarRelatorio" class="btn btn-primary">
+                            Visualizar relatório </a> 
+                        </div>
+
+                    <form id="formRelatorio">
+
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="tipoRelatorio">Tipo de relatório *</label>
+                                <select id="tipoRelatorio" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="movimentacoes">Movimentações de estoque</option>
+                                    <option value="estoque">Estoque atual</option>
+                                    <option value="produtos">Produtos cadastrados</option>
+                                </select>
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="filtroCategoria">Categoria</label>
+                                <select id="filtroCategoria"><option value="">Todas</option></select>
+                            </div>
+                        </div>
+
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="dataInicio">Data inicial</label>
+                                <input type="date" id="dataInicio">
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="dataFim">Data final</label>
+                                <input type="date" id="dataFim">
+                            </div>
+                        </div>
+
+                        <div class="acoes-pagina">
+    <button type="reset" class="btn btn-secondary">Limpar</button>
+    <button type="submit" class="btn btn-primary">Gerar relatório</button>
+</div>
+
+<div id="visualizarRelatorioArea" style="display: none; margin-top: 10px;">
+    <a
+        href="#"
+        id="btnVisualizarRelatorio"
+        class="btn btn-primary"
+    >
+        Visualizar relatório
+    </a>
+</div>
+
+                    </form>
+
+                </section>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gerenciamento de usuários StockMaster">
+    <title>StockMaster | Gerenciar usuários</title>
+
+    <!-- CONEXÃO CSS: layout geral -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+    <!-- CONEXÃO CSS: regras específicas do módulo de usuários -->
+    <link rel="stylesheet" href="../css/usuarios.css">
+
+    <!-- CONEXÃO JS: comportamento da listagem -->
+    <script src="../js/usuarios.js" defer></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação do Administrador">
+                <!-- HREF: usuarios.html -> dashboard-admin.html -->
+                <a href="dashboard_adm.html">
+                    <span class="nav-icon">⌂</span>
+                    Dashboard
+                </a>
+
+                <!-- HREF: item atual -->
+                <a href="usuarios.html" class="active">
+                    <span class="nav-icon">♙</span>
+                    Usuários
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="produtos.html">
+                    <span class="nav-icon">▣</span>
+                    Produtos
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="entrada_estoque.html">
+                    <span class="nav-icon">＋</span>
+                    Entrada de estoque
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="saída_estoque.html">
+                    <span class="nav-icon">−</span>
+                    Saída de estoque
+                </a>
+
+                <a href="expurgo_estoque.html">
+                    <span class="nav-icon">⌫</span>
+                    Expurgo
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="historico_movimentacao.html">
+                    <span class="nav-icon">◷</span>
+                    Histórico
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="relatorios.html">
+                    <span class="nav-icon">▤</span>
+                    Relatórios
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <!-- HREF DESTINO FUTURO -->
+                <a href="perfil.html">⚙ Meu perfil</a>
+
+                <!-- HREF: usuarios.html -> login.html -->
+                <a href="login.html">↪ Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Gerenciamento de usuários</strong>
+                </div>
+
+                <div class="user-area">
+                    <div>
+                        <strong>Administrador</strong>
+                        <small>admin.stockmaster</small>
+                    </div>
+                    <span class="avatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+                <div class="breadcrumb">
+                    <!-- HREF: usuarios.html -> dashboard-admin.html -->
+                    <a href="dashboard-admin.html">Início</a> /
+                    Gerenciar usuários
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Gerenciar usuários</h1>
+                        <p>Consulte, edite e gerencie os usuários cadastrados.</p>
+                    </div>
+
+                    <div class="page-actions">
+                        <!-- HREF: usuarios.html -> cadastro-usuario.html -->
+                        <a href="cadastrar_usuarios.html" class="button button-primary">
+                            + Cadastrar usuário
+                        </a>
+                    </div>
+                </header>
+
+                <section class="toolbar" aria-label="Filtros de usuários">
+                    <div class="toolbar-field">
+                        <label for="searchUser">Buscar usuário</label>
+                        <input
+                            type="search"
+                            id="searchUser"
+                            placeholder="Nome, e-mail ou login"
+                        >
+                    </div>
+
+                    <div class="toolbar-field">
+                        <label for="filterProfile">Filtrar por perfil</label>
+                        <select id="filterProfile">
+                            <option value="">Todos os perfis</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Técnico">Técnico</option>
+                        </select>
+                    </div>
+
+                    <div class="toolbar-field">
+                        <label for="filterStatus">Filtrar por status</label>
+                        <select id="filterStatus">
+                            <option value="">Todos os status</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2>Usuários cadastrados</h2>
+                        <span id="usersCount">3 usuários</span>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>Login</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="usersTableBody">
+                                <tr data-name="Ana Souza" data-login="ana.souza" data-profile="Administrador" data-status="Ativo">
+                                    <td>
+                                        <div class="user-cell">
+                                            <span class="user-cell-avatar">AS</span>
+                                            <div>
+                                                <strong>Ana Souza</strong>
+                                                <small>ana.souza@stockmaster.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>ana.souza</td>
+                                    <td>Administrador</td>
+                                    <td><span class="status status-success">Ativo</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <!-- HREF FUTURO: usuarios.html -> editar-usuario.html -->
+                                            <a href="editar_usuario.html?id=1" class="table-action table-action-edit">Editar</a>
+                                            <button type="button" class="table-action table-action-delete delete-user" data-user="Ana Souza">Excluir</button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr data-name="Carlos Lima" data-login="carlos.lima" data-profile="Técnico" data-status="Ativo">
+                                    <td>
+                                        <div class="user-cell">
+                                            <span class="user-cell-avatar">CL</span>
+                                            <div>
+                                                <strong>Carlos Lima</strong>
+                                                <small>carlos.lima@stockmaster.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>carlos.lima</td>
+                                    <td>Técnico</td>
+                                    <td><span class="status status-success">Ativo</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <!-- HREF FUTURO: usuarios.html -> editar-usuario.html -->
+                                            <a href="editar_usuario.html?id=2" class="table-action table-action-edit">Editar</a>
+                                            <button type="button" class="table-action table-action-delete delete-user" data-user="Carlos Lima">Excluir</button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr data-name="Marina Alves" data-login="marina.alves" data-profile="Técnico" data-status="Inativo">
+                                    <td>
+                                        <div class="user-cell">
+                                            <span class="user-cell-avatar">MA</span>
+                                            <div>
+                                                <strong>Marina Alves</strong>
+                                                <small>marina.alves@stockmaster.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>marina.alves</td>
+                                    <td>Técnico</td>
+                                    <td><span class="status status-danger">Inativo</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <!-- HREF FUTURO: usuarios.html -> editar-usuario.html -->
+                                            <a href="editar_usuario.html?id=3" class="table-action table-action-edit">Editar</a>
+                                            <button type="button" class="table-action table-action-delete delete-user" data-user="Marina Alves">Excluir</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="form-message" id="usersMessage" aria-live="polite"></p>
+                </section>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

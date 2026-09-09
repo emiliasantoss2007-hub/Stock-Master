@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Detalhes do produto StockMaster"
+    >
+
+    <title>StockMaster | Detalhes do produto</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/produtos.css">
+
+    <script src="../js/produto_detalhes.js" defer></script>
+
+</head>
+
+
+<body>
+
+    <div class="dashboard-layout">
+
+
+        <!-- ========================================
+             SIDEBAR
+        ========================================= -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-mark">
+                    SM
+                </div>
+
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+
+            </div>
+
+
+            <p class="nav-title">
+                Menu principal
+            </p>
+
+
+            <nav
+                class="sidebar-nav"
+                aria-label="Navegação"
+            >
+
+                <a
+                    href="dashboard_adm.html"
+                    id="dashboardLink"
+                >
+                    <span class="nav-icon">⌂</span>
+                    Dashboard
+                </a>
+
+
+                <a
+                    href="usuarios.html"
+                    id="usuariosLink"
+                >
+                    <span class="nav-icon">♙</span>
+                    Usuários
+                </a>
+
+
+                <a
+                    href="produtos.html"
+                    id="produtosLink"
+                    class="active"
+                >
+                    <span class="nav-icon">▣</span>
+
+                    <span id="produtosMenuText">
+                        Produtos
+                    </span>
+
+                </a>
+
+
+                <a href="entrada_estoque.html">
+
+                    <span class="nav-icon">＋</span>
+
+                    Entrada de estoque
+
+                </a>
+
+
+                <a href="saída_estoque.html">
+
+                    <span class="nav-icon">−</span>
+
+                    Saída de estoque
+
+                </a>
+
+
+                <a
+                    href="expurgo_estoque.html"
+                    id="expurgoLink"
+                >
+
+                    <span class="nav-icon">⌫</span>
+
+                    Expurgo
+
+                </a>
+
+
+                <a href="historico_movimentacao.html">
+
+                    <span class="nav-icon">◷</span>
+
+                    Histórico
+
+                </a>
+
+
+                <a
+                    href="relatorios.html"
+                    id="relatoriosLink"
+                >
+
+                    <span class="nav-icon">▤</span>
+
+                    Relatórios
+
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <a href="perfil.html">
+                    ⚙ Meu perfil
+                </a>
+
+                <a href="login.html">
+                    ↪ Sair
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- ========================================
+             ÁREA PRINCIPAL
+        ========================================= -->
+
+        <main class="main-area">
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar-context">
+
+                    <small>
+                        Área autenticada
+                    </small>
+
+                    <strong>
+                        Detalhes do produto
+                    </strong>
+
+                </div>
+
+
+                <div class="user-area">
+
+                    <div>
+
+                        <strong id="userRole">
+                            Administrador
+                        </strong>
+
+                        <small id="username">
+                            admin.stockmaster
+                        </small>
+
+                    </div>
+
+
+                    <span
+                        class="avatar"
+                        id="userAvatar"
+                    >
+                        AD
+                    </span>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- CONTEÚDO -->
+
+            <section class="content">
+
+
+                <!-- BREADCRUMB -->
+
+                <div class="breadcrumb">
+
+                    <a
+                        href="dashboard_adm.html"
+                        id="breadcrumbLink"
+                    >
+                        Início
+                    </a>
+
+                    /
+
+                    <a
+                        href="produtos.html"
+                        id="breadcrumbProdutosLink"
+                    >
+                        <span id="breadcrumbProdutosText">
+                            Produtos
+                        </span>
+                    </a>
+
+                    /
+
+                    <span>
+                        Detalhes
+                    </span>
+
+                </div>
+
+
+
+                <!-- CABEÇALHO -->
+
+                <header class="page-header">
+
+                    <div>
+
+                        <h1>
+                            Detalhes do produto
+                        </h1>
+
+                        <p>
+                            Visualize as informações completas do produto
+                            cadastrado no estoque.
+                        </p>
+
+                    </div>
+
+                </header>
+
+
+
+                <!-- ========================================
+                     INFORMAÇÕES DO PRODUTO
+                ========================================= -->
+
+                <section class="panel product-details-panel">
+
+
+                    <div class="product-details-header">
+
+                        <div class="product-thumb product-details-thumb">
+                            ▣
+                        </div>
+
+
+                        <div>
+
+                            <h2>
+                                Tela LCD 6.5
+                            </h2>
+
+                            <p>
+                                Componente para smartphones compatíveis.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- DADOS PRINCIPAIS -->
+
+                    <div class="product-details-grid">
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                SKU
+                            </span>
+
+                            <strong>
+                                SM-TEL-001
+                            </strong>
+
+                        </div>
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                Categoria
+                            </span>
+
+                            <strong>
+                                Tela
+                            </strong>
+
+                        </div>
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                Código de barras
+                            </span>
+
+                            <strong>
+                                7891234560012
+                            </strong>
+
+                        </div>
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                Valor unitário
+                            </span>
+
+                            <strong>
+                                R$ 289,90
+                            </strong>
+
+                        </div>
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                Quantidade em estoque
+                            </span>
+
+                            <strong>
+                                12 unidades
+                            </strong>
+
+                        </div>
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                Estoque mínimo
+                            </span>
+
+                            <strong>
+                                5 unidades
+                            </strong>
+
+                        </div>
+
+
+                        <div class="product-detail-item">
+
+                            <span>
+                                Situação
+                            </span>
+
+                            <strong class="product-status">
+                                Disponível
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- DESCRIÇÃO -->
+
+                    <div class="product-details-description">
+
+                        <h3>
+                            Descrição
+                        </h3>
+
+                        <p>
+                            Tela LCD para smartphones compatíveis.
+                            Componente destinado à substituição durante
+                            serviços de manutenção.
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- AÇÕES -->
+
+                    <div class="product-form-actions">
+
+                        <a
+                            href="produtos.html"
+                            id="voltarProdutosLink"
+                            class="product-button-secondary"
+                        >
+                            Voltar para produtos
+                        </a>
+
+
+                        <a
+                            href="editar_produto.html?id=1"
+                            id="editarProdutoLink"
+                            class="button button-primary"
+                        >
+                            Editar produto
+                        </a>
+
+                    </div>
+
+
+                </section>
+
+
+            </section>
+        </main>
+    </div>
+</body>
+</html>

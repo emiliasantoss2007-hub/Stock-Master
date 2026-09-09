@@ -1,0 +1,128 @@
+/* ========================================
+   STOCKMASTER
+   CSS ESPECÍFICO — HISTÓRICO DE MOVIMENTAÇÃO
+======================================== */
+
+.filtros-historico {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.campo-especifico {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 180px;
+}
+
+.campo-especifico label {
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.campo-especifico input,
+.campo-especifico select {
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    outline: none;
+    background: #ffffff;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.campo-especifico input:focus,
+.campo-especifico select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 20px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-primary { background: var(--primary); color: #ffffff; }
+.btn-secondary { background: #ffffff; color: var(--primary); border: 1px solid var(--primary); }
+
+/* ---------- Tabela ---------- */
+
+.tabela-padrao {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-padrao thead th {
+    background: var(--primary);
+    color: #ffffff;
+    text-align: left;
+    padding: 12px;
+    font-size: 12px;
+}
+
+.tabela-padrao tbody td {
+    padding: 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tabela-padrao tbody tr:nth-child(even) {
+    background: #F5F7FA;
+}
+
+.tabela-padrao tbody tr:hover {
+    background: var(--primary-soft);
+}
+
+.badge-tipo {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.badge-entrada { background: #E6F4EA; color: var(--success); }
+.badge-saida { background: #FDECEA; color: var(--danger); }
+.badge-expurgo { background: #FFF6E0; color: #F9A825; }
+
+@media (max-width: 760px) {
+    .filtros-historico { flex-direction: column; align-items: stretch; }
+
+    .tabela-padrao, .tabela-padrao thead, .tabela-padrao tbody,
+    .tabela-padrao th, .tabela-padrao td, .tabela-padrao tr { display: block; }
+
+    .tabela-padrao thead { display: none; }
+
+    .tabela-padrao tbody tr {
+        margin-bottom: 12px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+    }
+
+    .tabela-padrao tbody td {
+        border: none;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .tabela-padrao tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--text);
+    }
+}

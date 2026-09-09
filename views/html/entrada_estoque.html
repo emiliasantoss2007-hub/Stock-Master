@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Registro de entradas de produtos no estoque do StockMaster">
+
+    <title>StockMaster | Entrada de Estoque</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/entrada_estoque.css">
+
+    <script src="../js/entrada_estoque.js" defer></script>
+
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação">
+                <a href="dashboard_adm.html" id="dashboardLink"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="usuarios.html" id="usuariosLink"><span class="nav-icon">♙</span>Usuários</a>
+                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
+                <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
+                <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
+                <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
+                <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
+                <a href="login.html">↪ Sair</a>
+            </div>
+
+        </aside>
+
+        <main class="main-area">
+
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Entrada de Estoque</strong>
+                </div>
+                <div class="user-area">
+                    <div>
+                        <strong id="userRole">Administrador</strong>
+                        <small id="username">admin.stockmaster</small>
+                    </div>
+                    <span class="avatar" id="userAvatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
+                    <span>Entrada de Estoque</span>
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Entrada de Estoque</h1>
+                        <p>Registre a chegada de novos itens ao estoque.</p>
+                    </div>
+                </header>
+
+                <section class="panel">
+
+                    <div id="mensagemArea"></div>
+
+                    <form id="formEntrada">
+
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="produtoSelect">Produto *</label>
+                                <select id="produtoSelect" required>
+                                    <option value="">Selecione um produto...</option>
+                                </select>
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="quantidade">Quantidade recebida *</label>
+                                <input type="number" id="quantidade" min="1" required>
+                            </div>
+                        </div>
+
+                        <p class="info-estoque" id="infoEstoque"></p>
+
+                        <div class="acoes-pagina">
+                            <button type="reset" class="btn btn-secondary">Limpar</button>
+                            <button type="submit" class="btn btn-primary">Registrar entrada</button>
+                        </div>
+
+                    </form>
+
+                </section>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
