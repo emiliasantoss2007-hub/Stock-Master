@@ -37,35 +37,39 @@ const forgotPassword =
    2. MOSTRAR / OCULTAR SENHA
    ========================================================= */
 
-togglePassword.addEventListener(
-    "click",
-    () => {
+togglePassword.addEventListener("click", () => {
 
-        const mostrarSenha =
-            senhaInput.type === "password";
+    if (senhaInput.type === "password") {
 
-
-        senhaInput.type =
-            mostrarSenha
-                ? "text"
-                : "password";
-
+        senhaInput.type = "text";
 
         togglePassword.setAttribute(
             "aria-label",
-            mostrarSenha
-                ? "Ocultar senha"
-                : "Mostrar senha"
+            "Ocultar senha"
         );
-
 
         togglePassword.setAttribute(
             "aria-pressed",
-            String(mostrarSenha)
+            "true"
+        );
+
+    } else {
+
+        senhaInput.type = "password";
+
+        togglePassword.setAttribute(
+            "aria-label",
+            "Mostrar senha"
+        );
+
+        togglePassword.setAttribute(
+            "aria-pressed",
+            "false"
         );
 
     }
-);
+
+});
 
 
 /* =========================================================
@@ -128,51 +132,60 @@ loginForm.addEventListener(
     (event) => {
 
         // Impede o recarregamento da página
-
         event.preventDefault();
 
-
-        // Executa a validação
-
-        if (
-            !validarLogin()
-        ) {
-
+        // Executa a validação dos campos
+        if (!validarLogin()) {
             return;
-
         }
 
+        // Usuários fictícios para o protótipo
+        const usuarios = {
+            "administrador@gmail.com": {
+                senha: "12345678",
+                perfil: "adm",
+                destino: "dashboard_adm.html"
+            },
 
-        /*
-         * Nesta etapa o sistema ainda não possui
-         * um Back-end implementado.
-         *
-         * Futuramente, esta área poderá realizar
-         * uma requisição HTTP para o Controller
-         * responsável pela autenticação.
-         */
+            "tecnico@gmail.com": {
+                senha: "12345678",
+                perfil: "tecnico",
+                destino: "dashboard_tec.html"
+            }
+        };
 
-        formMessage.textContent =
-            "Dados válidos. " +
-            "A autenticação será implementada posteriormente.";
+        const usuario =
+            usuarioInput.value.trim().toLowerCase();
 
+        const senha =
+            senhaInput.value.trim();
+
+        const usuarioEncontrado =
+            usuarios[usuario];
+
+        // Verifica usuário e senha
+        if (
+            !usuarioEncontrado ||
+            usuarioEncontrado.senha !== senha
+        ) {
+
+            formMessage.textContent =
+                "Usuário ou senha inválidos.";
+
+            return;
+        }
+
+        // Redireciona para o dashboard correspondente
+        window.location.href =
+            usuarioEncontrado.destino;
     }
 );
 
-
-/* =========================================================
-   5. RECUPERAÇÃO DE SENHA
-   ========================================================= */
-
-forgotPassword.addEventListener(
-    "click",
-    (event) => {
-
-        event.preventDefault();
-
-
-        formMessage.textContent =
-            "A recuperação de senha será implementada posteriormente.";
-
-    }
-);
+         /*
+         * Nesta etapa o sistema ainda não possui
+         * um Back-end implementado.
+         *
+         * Futuramente, esta área poderá realizar
+         * uma requisição HTTP para o Controller
+         * responsável pela autenticação.
+         */
