@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard do Administrador StockMaster">
+    <title>StockMaster | Dashboard Administrador</title>
+
+    <!-- CONEXÃO CSS: views/html -> views/css -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação do Administrador">
+                <!-- HREF: dashboard-admin.html -> dashboard-admin.html -->
+                <a href="dashboard_adm.html" id="dashboardLink">
+                    <span class="nav-icon">⌂</span> Dashboard </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/usuarios.html -->
+                <a href="usuarios.html">
+                    <span class="nav-icon">♙</span>
+                    Usuários
+                </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/produtos.html -->
+                <a href="produtos.html?origem=adm">
+                    <span class="nav-icon">▣</span>
+                    Produtos
+                </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/entrada-estoque.html -->
+                <a href="entrada_estoque.html?origem=adm">
+                    <span class="nav-icon">＋</span>
+                    Entrada de estoque
+                </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/saida-estoque.html -->
+                <a href="saída_estoque.html?origem=adm">
+                    <span class="nav-icon">−</span>
+                    Saída de estoque
+                </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/expurgo-estoque.html -->
+                <a href="expurgo_estoque.html">
+                    <span class="nav-icon">⌫</span>
+                    Expurgo
+                </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/historico.html -->
+                <a href="historico_movimentacao.html?origem=adm">
+                    <span class="nav-icon">◷</span>
+                    Histórico
+                </a>
+
+                <!-- HREF DESTINO FUTURO: views/html/relatorios.html -->
+                <a href="relatorios.html">
+                    <span class="nav-icon">▤</span>
+                    Relatórios
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <!-- HREF DESTINO FUTURO: views/html/perfil.html -->
+                <a href="perfil.html?origem=adm">⚙ Meu perfil</a>
+
+                <!-- HREF: dashboard-admin.html -> login.html -->
+                <a href="login.html">↪ Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Dashboard do Administrador</strong>
+                </div>
+
+                <div class="user-area">
+                    <div>
+                        <strong>Administrador</strong>
+                        <small>admin.stockmaster</small>
+                    </div>
+                    <span class="avatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /Produtos
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Visão geral</h1>
+                        <p>Acompanhe os principais indicadores do StockMaster.</p>
+                    </div>
+
+                    <!-- HREF DESTINO FUTURO: views/html/relatorios.html -->
+                    <a href="relatorios.html" class="button button-primary">
+                        Central de relatórios
+                    </a>
+                </header>
+
+                <section class="dashboard-grid" aria-label="Indicadores principais">
+                    <article class="metric-card">
+                        <small>Produtos cadastrados</small>
+                        <strong>248</strong>
+                        <span>+12 neste mês</span>
+                    </article>
+
+                    <article class="metric-card">
+                        <small>Usuários ativos</small>
+                        <strong>18</strong>
+                        <span>Todos os perfis</span>
+                    </article>
+
+                    <article class="metric-card">
+                        <small>Itens em estoque</small>
+                        <strong>1.426</strong>
+                        <span>Saldo atualizado</span>
+                    </article>
+
+                    <article class="metric-card">
+                        <small>Itens críticos</small>
+                        <strong>07</strong>
+                        <span class="status-warning">Requer atenção</span>
+                    </article>
+                </section>
+
+                <section class="dashboard-columns">
+                    <article class="panel">
+                        <div class="panel-header">
+                            <h2>Movimentações recentes</h2>
+
+                            <!-- HREF DESTINO FUTURO: views/html/historico.html -->
+                            <a href="historico_movimentacao.html">Ver histórico</a>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Tipo</th>
+                                        <th>Quantidade</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Display LCD 6.1</td>
+                                        <td>Saída</td>
+                                        <td>02</td>
+                                        <td><span class="status status-success">Registrada</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bateria modelo A20</td>
+                                        <td>Entrada</td>
+                                        <td>30</td>
+                                        <td><span class="status status-success">Registrada</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Conector USB-C</td>
+                                        <td>Saída</td>
+                                        <td>18</td>
+                                        <td><span class="status status-warning">Estoque crítico</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+
+                    <aside class="panel">
+                        <div class="panel-header">
+                            <h2>Alertas do sistema</h2>
+                        </div>
+
+                        <div class="alert-list">
+                            <div class="alert alert-warning">
+                                <strong>Estoque crítico</strong>
+                                7 produtos atingiram o limite mínimo.
+                            </div>
+
+                            <div class="alert alert-info">
+                                <strong>Relatório disponível</strong>
+                                Consulte as movimentações do período atual.
+                            </div>
+                        </div>
+                    </aside>
+                </section>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

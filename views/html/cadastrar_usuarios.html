@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cadastro de usuário StockMaster">
+    <title>StockMaster | Cadastro de usuário</title>
+
+    <!-- CONEXÃO CSS: layout geral -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+    <!-- CONEXÃO CSS: regras específicas do módulo -->
+    <link rel="stylesheet" href="../css/usuarios.css">
+
+    <!-- CONEXÃO JS: validação do cadastro -->
+    <script src="../js/cadastrar_usuarios.js" defer></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação do Administrador">
+                <!-- HREF: cadastro-usuario.html -> dashboard-admin.html -->
+                <a href="dashboard_adm.html">
+                    <span class="nav-icon">⌂</span>
+                    Dashboard
+                </a>
+
+                <!-- HREF: cadastro-usuario.html -> usuarios.html -->
+                <a href="usuarios.html" class="active">
+                    <span class="nav-icon">♙</span>
+                    Usuários
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="produtos.html">
+                    <span class="nav-icon">▣</span>
+                    Produtos
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="entrada_estoque.html">
+                    <span class="nav-icon">＋</span>
+                    Entrada de estoque
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="saída_estoque.html">
+                    <span class="nav-icon">−</span>
+                    Saída de estoque
+                </a>
+
+                <a href="expurgo_estoque.html" id="expurgoLink">
+                    <span class="nav-icon">⌫</span>Expurgo</a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="historico_movimentacao.html">
+                    <span class="nav-icon">◷</span>
+                    Histórico
+                </a>
+
+                <!-- HREF DESTINO FUTURO -->
+                <a href="relatorios.html">
+                    <span class="nav-icon">▤</span>
+                    Relatórios
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <!-- HREF DESTINO FUTURO -->
+                <a href="perfil.html">⚙ Meu perfil</a>
+
+                <!-- HREF: cadastro-usuario.html -> login.html -->
+                <a href="login.html">↪ Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Novo usuário</strong>
+                </div>
+
+                <div class="user-area">
+                    <div>
+                        <strong>Administrador</strong>
+                        <small>admin.stockmaster</small>
+                    </div>
+                    <span class="avatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+                <div class="breadcrumb">
+                    <!-- HREF: cadastro-usuario.html -> dashboard-admin.html -->
+                    <a href="dashboard-admin.html">Início</a> /
+                    <!-- HREF: cadastro-usuario.html -> usuarios.html -->
+                    <a href="usuarios.html">Usuários</a> /
+                    Cadastro
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Cadastrar usuário</h1>
+                        <p>Preencha os dados para criar um novo acesso ao StockMaster.</p>
+                    </div>
+                </header>
+
+                <section class="panel form-panel">
+                    <form id="userForm" novalidate>
+                        <div class="form-grid">
+                            <div class="form-field form-field-full">
+                                <label for="nome">Nome completo</label>
+                                <input type="text" id="nome" name="nome" placeholder="Ex.: João da Silva">
+                                <small id="nomeError"></small>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email" name="email" placeholder="usuario@exemplo.com">
+                                <small id="emailError"></small>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="login">Login</label>
+                                <input type="text" id="login" name="login" placeholder="nome.usuario">
+                                <small id="loginError"></small>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="senha">Senha</label>
+                                <input type="password" id="senha" name="senha" placeholder="Mínimo de 8 caracteres">
+                                <small id="senhaError"></small>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="perfil">Perfil de acesso</label>
+                                <select id="perfil" name="perfil">
+                                    <option value="">Selecione um perfil</option>
+                                    <option value="Administrador">Administrador</option>
+                                    <option value="Técnico">Técnico</option>
+                                </select>
+                                <small id="perfilError"></small>
+                            </div>
+                        </div>
+
+                        <p class="form-message" id="formMessage" aria-live="polite"></p>
+
+                        <div class="form-actions">
+                            <!-- HREF: cadastro-usuario.html -> usuarios.html -->
+                            <a href="usuarios.html" class="button-secondary">Cancelar</a>
+                            <button type="submit" class="button button-primary">Cadastrar usuário</button>
+                        </div>
+                    </form>
+                </section>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
