@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Redefinição de senha do sistema Stock Master">
+    <title>Stock Master | Redefinir senha</title>
+
+    <link rel="stylesheet" href="../css/recuperar_senha.css">
+    <script src="../js/redefinir_senha.js" defer></script>
+
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-card" aria-labelledby="reset-title">
+            <div class="auth-icon" aria-hidden="true">🔐</div>
+
+            <header class="auth-header">
+                <h1 id="reset-title">Redefinir senha</h1>
+                <p>Crie uma nova senha para voltar a acessar o Stock Master.</p>
+            </header>
+
+            <div class="auth-steps" aria-label="Etapa 2 de 2">
+                <span class="auth-step"></span>
+                <span class="auth-step auth-step--active"></span>
+            </div>
+
+            <form id="resetForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="novaSenha">Nova senha</label>
+
+                    <div class="input-wrapper">
+                        <span class="input-icon" aria-hidden="true">🔒</span>
+                        <input
+                            type="password"
+                            id="novaSenha"
+                            name="novaSenha"
+                            placeholder="Mínimo de 8 caracteres"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                    <small class="form-error" id="novaSenhaError" aria-live="polite"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmarSenha">Confirmar nova senha</label>
+
+                    <div class="input-wrapper">
+                        <span class="input-icon" aria-hidden="true">🔒</span>
+                        <input
+                            type="password"
+                            id="confirmarSenha"
+                            name="confirmarSenha"
+                            placeholder="Repita a nova senha"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                    <small class="form-error" id="confirmarSenhaError" aria-live="polite"></small>
+                </div>
+
+                <button type="submit" class="auth-button">
+                    Salvar nova senha
+                </button>
+
+                <!-- HREF: redefinir-senha.html -> login.html -->
+                <a href="login.html" class="auth-link">
+                    Voltar para o login
+                </a>
+
+                <p class="form-message" id="formMessage" aria-live="polite"></p>
+            </form>
+
+            <p class="auth-note">
+                A nova senha deve possuir pelo menos 8 caracteres e as confirmações devem ser iguais.
+            </p>
+        </section>
+    </main>
+</body>
+</html>
