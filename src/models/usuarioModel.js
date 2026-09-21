@@ -2,7 +2,12 @@ const db = require("../config/database");
 
 
 /*
- * Busca um usuário pelo ID
+ * Busca um usuário pelo ID.
+ *
+ * Utilizado para:
+ * - Identificar o usuário que será editado;
+ * - Carregar os dados atuais na tela;
+ * - Confirmar a persistência após a atualização.
  */
 function buscarPorId(id) {
 
@@ -22,26 +27,32 @@ function buscarPorId(id) {
             WHERE u.id_usuario = ?
         `;
 
-        db.query(sql, [id], (erro, resultados) => {
+        db.query(
+            sql,
+            [id],
+            (erro, resultados) => {
 
-            if (erro) {
-                reject(erro);
-                return;
+                if (erro) {
+                    return reject(erro);
+                }
+
+                resolve(
+                    resultados[0]
+                );
             }
-
-            resolve(resultados[0]);
-
-        });
-
+        );
     });
-
 }
 
 
 /*
- * Verifica se o login já pertence a outro usuário
+ * Verifica se o login já está sendo utilizado
+ * por outro usuário.
  */
-function verificarLogin(login, idUsuario) {
+function verificarLogin(
+    login,
+    idUsuario
+) {
 
     return new Promise((resolve, reject) => {
 
@@ -49,7 +60,8 @@ function verificarLogin(login, idUsuario) {
             SELECT id_usuario
             FROM usuario
             WHERE login = ?
-            AND id_usuario <> ?
+              AND id_usuario <> ?
+            LIMIT 1
         `;
 
         db.query(
@@ -58,24 +70,26 @@ function verificarLogin(login, idUsuario) {
             (erro, resultados) => {
 
                 if (erro) {
-                    reject(erro);
-                    return;
+                    return reject(erro);
                 }
 
-                resolve(resultados.length > 0);
-
+                resolve(
+                    resultados.length > 0
+                );
             }
         );
-
     });
-
 }
 
 
 /*
- * Verifica se o e-mail já pertence a outro usuário
+ * Verifica se o e-mail já está sendo utilizado
+ * por outro usuário.
  */
-function verificarEmail(email, idUsuario) {
+function verificarEmail(
+    email,
+    idUsuario
+) {
 
     return new Promise((resolve, reject) => {
 
@@ -83,7 +97,8 @@ function verificarEmail(email, idUsuario) {
             SELECT id_usuario
             FROM usuario
             WHERE email = ?
-            AND id_usuario <> ?
+              AND id_usuario <> ?
+            LIMIT 1
         `;
 
         db.query(
@@ -92,24 +107,35 @@ function verificarEmail(email, idUsuario) {
             (erro, resultados) => {
 
                 if (erro) {
-                    reject(erro);
-                    return;
+                    return reject(erro);
                 }
 
-                resolve(resultados.length > 0);
-
+                resolve(
+                    resultados.length > 0
+                );
             }
         );
-
     });
-
 }
 
 
 /*
- * Atualiza os dados do usuário
+ * Atualiza os dados do usuário utilizando
+ * uma transação.
+ *
+ * Dados alterados:
+ * - nome
+ * - email
+ * - login
+ * - id_nivel_acesso
+ *
+ * O id_usuario é utilizado para identificar
+ * o registro e não é alterado.
+ *
+ * senha_hash e status não fazem parte da
+ * operação RF-05 definida anteriormente.
  */
-function atualizar(
+async function atualizarComTransacao(
     idUsuario,
     nome,
     email,
@@ -117,47 +143,254 @@ function atualizar(
     idNivelAcesso
 ) {
 
-    return new Promise((resolve, reject) => {
+    /*
+     * Inicia a transação.
+     */
+    await new Promise(
+        (resolve, reject) => {
 
-        const sql = `
-            UPDATE usuario
-            SET
-                nome = ?,
-                email = ?,
-                login = ?,
-                id_nivel_acesso = ?
-            WHERE id_usuario = ?
-        `;
+            db.beginTransaction(
+                (erro) => {
 
-        db.query(
-            sql,
-            [
-                nome,
-                email,
-                login,
-                idNivelAcesso,
-                idUsuario
-            ],
-            (erro, resultado) => {
+                    if (erro) {
+                        return reject(erro);
+                    }
 
-                if (erro) {
-                    reject(erro);
-                    return;
+                    resolve();
                 }
+            );
+        }
+    );
 
-                resolve(resultado);
 
+    try {
+
+        /*
+         * Verifica se o usuário existe.
+         *
+         * FOR UPDATE bloqueia o registro durante
+         * a transação.
+         */
+        const usuario =
+            await query(
+                `
+                    SELECT id_usuario
+                    FROM usuario
+                    WHERE id_usuario = ?
+                    FOR UPDATE
+                `,
+                [idUsuario]
+            );
+
+
+        if (usuario.length === 0) {
+
+            throw Object.assign(
+                new Error(
+                    "Usuário não encontrado."
+                ),
+                {
+                    statusCode: 404
+                }
+            );
+        }
+
+
+        /*
+         * Verifica duplicidade do login.
+         */
+        const loginExistente =
+            await query(
+                `
+                    SELECT id_usuario
+                    FROM usuario
+                    WHERE login = ?
+                      AND id_usuario <> ?
+                    LIMIT 1
+                `,
+                [
+                    login,
+                    idUsuario
+                ]
+            );
+
+
+        if (loginExistente.length > 0) {
+
+            throw Object.assign(
+                new Error(
+                    "O login informado já está em uso."
+                ),
+                {
+                    statusCode: 409
+                }
+            );
+        }
+
+
+        /*
+         * Verifica duplicidade do e-mail.
+         */
+        const emailExistente =
+            await query(
+                `
+                    SELECT id_usuario
+                    FROM usuario
+                    WHERE email = ?
+                      AND id_usuario <> ?
+                    LIMIT 1
+                `,
+                [
+                    email,
+                    idUsuario
+                ]
+            );
+
+
+        if (emailExistente.length > 0) {
+
+            throw Object.assign(
+                new Error(
+                    "O e-mail informado já está em uso."
+                ),
+                {
+                    statusCode: 409
+                }
+            );
+        }
+
+
+        /*
+         * Atualiza os dados.
+         */
+        const resultado =
+            await query(
+                `
+                    UPDATE usuario
+                    SET
+                        nome = ?,
+                        email = ?,
+                        login = ?,
+                        id_nivel_acesso = ?
+                    WHERE id_usuario = ?
+                `,
+                [
+                    nome,
+                    email,
+                    login,
+                    idNivelAcesso,
+                    idUsuario
+                ]
+            );
+
+
+        /*
+         * Garante que exatamente um usuário
+         * tenha sido atualizado.
+         */
+        if (
+            resultado.affectedRows !== 1
+        ) {
+
+            throw Object.assign(
+                new Error(
+                    "Nenhum usuário foi atualizado."
+                ),
+                {
+                    statusCode: 409
+                }
+            );
+        }
+
+
+        /*
+         * Confirma a transação.
+         */
+        await new Promise(
+            (resolve, reject) => {
+
+                db.commit(
+                    (erro) => {
+
+                        if (erro) {
+                            return reject(erro);
+                        }
+
+                        resolve();
+                    }
+                );
             }
         );
 
-    });
 
+        /*
+         * Confirma a persistência fazendo
+         * uma nova consulta após o COMMIT.
+         */
+        return await buscarPorId(
+            idUsuario
+        );
+
+
+    } catch (erro) {
+
+        /*
+         * Caso qualquer etapa da operação
+         * falhe, desfaz todas as alterações.
+         */
+        await new Promise(
+            (resolve) => {
+
+                db.rollback(
+                    () => resolve()
+                );
+            }
+        );
+
+        throw erro;
+    }
+}
+
+
+/*
+ * Função auxiliar para executar queries
+ * utilizando Promise.
+ */
+function query(
+    sql,
+    params
+) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            db.query(
+                sql,
+                params,
+                (erro, resultados) => {
+
+                    if (erro) {
+                        return reject(erro);
+                    }
+
+                    resolve(
+                        resultados
+                    );
+                }
+            );
+        }
+    );
 }
 
 
 module.exports = {
+
     buscarPorId,
+
     verificarLogin,
+
     verificarEmail,
-    atualizar
+
+    atualizarComTransacao
+
 };

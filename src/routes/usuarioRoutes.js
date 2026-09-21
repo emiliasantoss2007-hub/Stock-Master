@@ -1,29 +1,32 @@
-const express = require("express");
+const express = require('express');
 
-const router = express.Router();
+const router =
+    express.Router();
 
 const usuarioController =
-    require("../controllers/usuarioController");
+    require('../controllers/usuarioController');
 
 
 /*
- * Buscar usuário
+ * RF-05
  *
- * GET /api/usuarios/:id
+ * Carrega os dados atuais do usuário
+ * para preencher a tela de edição.
  */
 router.get(
-    "/:id",
+    '/:id',
     usuarioController.buscarUsuario
 );
 
 
 /*
- * Editar usuário
+ * RF-05
  *
- * PUT /api/usuarios/:id
+ * Atualiza os dados cadastrais
+ * e o perfil do usuário.
  */
 router.put(
-    "/:id",
+    '/:id',
     usuarioController.atualizarUsuario
 );
 

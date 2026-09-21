@@ -1,33 +1,48 @@
 const express = require("express");
+
 const path = require("path");
+
 
 const usuarioRoutes =
     require("./src/routes/usuarioRoutes");
 
 
-const app = express();
+const app =
+    express();
+
 
 const PORT = 3001;
 
 
 /*
- * Permite receber JSON nas requisições
+ * Permite receber JSON nas requisições.
  */
-app.use(express.json());
+app.use(
+    express.json()
+);
 
 
 /*
- * Disponibiliza HTML, CSS, JS e imagens
+ * Disponibiliza HTML, CSS, JS
+ * e imagens da pasta views.
  */
 app.use(
     express.static(
-        path.join(__dirname, "views")
+        path.join(
+            __dirname,
+            "views"
+        )
     )
 );
 
 
 /*
- * Rotas de usuários
+ * Rotas de usuários.
+ *
+ * Todas as rotas definidas em
+ * usuarioRoutes.js serão iniciadas por:
+ *
+ * /api/usuarios
  */
 app.use(
     "/api/usuarios",
@@ -36,35 +51,43 @@ app.use(
 
 
 /*
- * Página inicial
+ * Página inicial.
  */
-app.get("/", (req, res) => {
+app.get(
+    "/",
+    (req, res) => {
 
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "html",
-            "login.html"
-        )
-    );
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "html",
+                "login.html"
+            )
+        );
 
-});
+    }
+);
 
 
 /*
- * Inicialização
+ * Inicialização do servidor.
  */
-app.listen(PORT, () => {
+app.listen(
+    PORT,
+    () => {
 
-    console.log(
-        `Servidor rodando em http://localhost:${PORT}`
-    );
+        console.log(
+            `Servidor rodando em http://localhost:${PORT}`
+        );
 
-});
+    }
+);
 
 
 /*
- * Conexão com banco
+ * Conexão com o banco de dados.
  */
-require("./src/config/database");
+require(
+    "./src/config/database"
+);

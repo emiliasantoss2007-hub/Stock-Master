@@ -1,262 +1,117 @@
-document.addEventListener("DOMContentLoaded", () => {
-
-    const editForm =
-        document.querySelector("#editUserForm");
-
-    const formMessage =
-        document.querySelector("#formMessage");
-
-    const userIdInput =
-        document.querySelector("#userId");
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
 
-    const fields = {
-
-        nome:
-            document.querySelector("#nome"),
-
-        email:
-            document.querySelector("#email"),
-
-        login:
-            document.querySelector("#login"),
-
-        perfil:
-            document.querySelector("#perfil")
-
-    };
+        /*
+         * Formulário principal.
+         */
+        const editForm =
+            document.querySelector(
+                "#editUserForm"
+            );
 
 
-    const errors = {
-
-        nome:
-            document.querySelector("#nomeError"),
-
-        email:
-            document.querySelector("#emailError"),
-
-        login:
-            document.querySelector("#loginError"),
-
-        perfil:
-            document.querySelector("#perfilError")
-
-    };
+        /*
+         * Mensagem geral do formulário.
+         */
+        const formMessage =
+            document.querySelector(
+                "#formMessage"
+            );
 
 
-    /*
-     * Obtém o ID pela URL
-     *
-     * Exemplo:
-     * editar_usuario.html?id=1
-     */
-
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+        /*
+         * Campo oculto com o ID do usuário.
+         */
+        const userIdInput =
+            document.querySelector(
+                "#userId"
+            );
 
 
-    const userId =
-        params.get("id");
+        /*
+         * Campos do formulário.
+         */
+        const fields = {
+
+            nome:
+                document.querySelector(
+                    "#nome"
+                ),
+
+            email:
+                document.querySelector(
+                    "#email"
+                ),
+
+            login:
+                document.querySelector(
+                    "#login"
+                ),
+
+            perfil:
+                document.querySelector(
+                    "#perfil"
+                )
+
+        };
 
 
-    if (!userId) {
+        /*
+         * Mensagens individuais
+         * dos campos.
+         */
+        const errors = {
 
-        mostrarMensagem(
-            "Usuário não informado.",
-            "error"
-        );
+            nome:
+                document.querySelector(
+                    "#nomeError"
+                ),
 
-        return;
-    }
+            email:
+                document.querySelector(
+                    "#emailError"
+                ),
 
+            login:
+                document.querySelector(
+                    "#loginError"
+                ),
 
-    userIdInput.value = userId;
+            perfil:
+                document.querySelector(
+                    "#perfilError"
+                )
 
-
-    /*
-     * Carrega os dados atuais
-     */
-
-    carregarUsuario(userId);
-
-
-    /*
-     * Salvar alterações
-     */
-
-    editForm.addEventListener(
-        "submit",
-        salvarUsuario
-    );
+        };
 
 
-    /*
-     * Função para buscar usuário
-     */
-
-    async function carregarUsuario(id) {
-
-        try {
-
-            const resposta =
-                await fetch(
-                    `/api/usuarios/${id}`
-                );
-
-
-            const dados =
-                await resposta.json();
+        /*
+         * Obtém o ID do usuário pela URL.
+         *
+         * Exemplo:
+         *
+         * editar_usuario.html?id=1
+         */
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
 
 
-            if (!resposta.ok) {
-
-                throw new Error(
-                    dados.mensagem ||
-                    "Não foi possível carregar o usuário."
-                );
-
-            }
+        const userId =
+            params.get("id");
 
 
-            /*
-             * Preenche os campos
-             */
-
-            fields.nome.value =
-                dados.nome;
-
-            fields.email.value =
-                dados.email;
-
-            fields.login.value =
-                dados.login;
-
-            fields.perfil.value =
-                dados.id_nivel_acesso;
-
-
-        } catch (erro) {
+        /*
+         * Caso a página seja aberta sem
+         * informar o usuário.
+         */
+        if (!userId) {
 
             mostrarMensagem(
-                erro.message,
-                "error"
-            );
-
-        }
-
-    }
-
-
-    /*
-     * Salva alterações
-     */
-
-    async function salvarUsuario(event) {
-
-        event.preventDefault();
-
-
-        limparErros();
-
-
-        const nome =
-            fields.nome.value.trim();
-
-        const email =
-            fields.email.value.trim();
-
-        const login =
-            fields.login.value.trim();
-
-        const perfil =
-            fields.perfil.value;
-
-
-        let valido = true;
-
-
-        /*
-         * Nome
-         */
-
-        if (!nome) {
-
-            mostrarErro(
-                fields.nome,
-                errors.nome,
-                "Informe o nome completo."
-            );
-
-            valido = false;
-        }
-
-
-        /*
-         * E-mail
-         */
-
-        if (!email) {
-
-            mostrarErro(
-                fields.email,
-                errors.email,
-                "Informe o e-mail."
-            );
-
-            valido = false;
-
-        } else if (
-            !validarEmail(email)
-        ) {
-
-            mostrarErro(
-                fields.email,
-                errors.email,
-                "Informe um e-mail válido."
-            );
-
-            valido = false;
-        }
-
-
-        /*
-         * Login
-         */
-
-        if (!login) {
-
-            mostrarErro(
-                fields.login,
-                errors.login,
-                "Informe o login."
-            );
-
-            valido = false;
-        }
-
-
-        /*
-         * Perfil
-         */
-
-        if (!perfil) {
-
-            mostrarErro(
-                fields.perfil,
-                errors.perfil,
-                "Selecione o perfil."
-            );
-
-            valido = false;
-        }
-
-
-        if (!valido) {
-
-            mostrarMensagem(
-                "Corrija os campos destacados antes de continuar.",
+                "Usuário não informado.",
                 "error"
             );
 
@@ -264,180 +119,452 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        try {
-
-            const resposta =
-                await fetch(
-                    `/api/usuarios/${userId}`,
-                    {
-                        method: "PUT",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            /*
-                             * Autorização temporária
-                             * enquanto o projeto não possui
-                             * autenticação no Back-end.
-                             */
-
-                            "X-Perfil":
-                                localStorage.getItem(
-                                    "perfil"
-                                ) || "Administrador"
-                        },
-
-                        body: JSON.stringify({
-
-                            nome: nome,
-
-                            email: email,
-
-                            login: login,
-
-                            id_nivel_acesso:
-                                Number(perfil)
-
-                        })
-
-                    }
-                );
+        /*
+         * Armazena o ID no campo oculto.
+         */
+        userIdInput.value =
+            userId;
 
 
-            const dados =
-                await resposta.json();
+        /*
+         * Carrega os dados atuais
+         * do usuário.
+         */
+        carregarUsuario(
+            userId
+        );
 
 
-            if (!resposta.ok) {
+        /*
+         * Evento de envio do formulário.
+         */
+        editForm.addEventListener(
+            "submit",
+            salvarUsuario
+        );
 
-                throw new Error(
-                    dados.mensagem ||
-                    "Não foi possível atualizar o usuário."
+
+        /*
+         * Busca os dados atuais
+         * do usuário no Back-end.
+         */
+        async function carregarUsuario(
+            id
+        ) {
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        `/api/usuarios/${id}`
+                    );
+
+
+                const dados =
+                    await resposta.json();
+
+
+                /*
+                 * Verifica se a API
+                 * retornou erro.
+                 */
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        dados.mensagem ||
+                        "Não foi possível carregar o usuário."
+                    );
+                }
+
+
+                /*
+                 * Preenche os campos.
+                 */
+                fields.nome.value =
+                    dados.nome;
+
+
+                fields.email.value =
+                    dados.email;
+
+
+                fields.login.value =
+                    dados.login;
+
+
+                /*
+                 * O valor do select é o
+                 * id_nivel_acesso.
+                 *
+                 * 1 = Administrador
+                 * 2 = Técnico
+                 */
+                fields.perfil.value =
+                    dados.id_nivel_acesso;
+
+
+            } catch (erro) {
+
+                mostrarMensagem(
+                    erro.message,
+                    "error"
                 );
 
             }
 
+        }
 
-            mostrarMensagem(
-                "Usuário atualizado com sucesso.",
-                "success"
-            );
+
+        /*
+         * Executa a operação de edição.
+         */
+        async function salvarUsuario(
+            event
+        ) {
+
+            event.preventDefault();
 
 
             /*
-             * Retorna para a listagem
+             * Remove mensagens anteriores.
              */
-
-            setTimeout(() => {
-
-                window.location.href =
-                    "usuarios.html";
-
-            }, 1000);
+            limparErros();
 
 
-        } catch (erro) {
+            /*
+             * Obtém os dados preenchidos.
+             */
+            const nome =
+                fields.nome.value.trim();
 
-            mostrarMensagem(
-                erro.message,
-                "error"
+
+            const email =
+                fields.email.value.trim();
+
+
+            const login =
+                fields.login.value.trim();
+
+
+            const perfil =
+                fields.perfil.value;
+
+
+            let valido = true;
+
+
+            /*
+             * Validação do nome.
+             */
+            if (!nome) {
+
+                mostrarErro(
+                    fields.nome,
+                    errors.nome,
+                    "Informe o nome completo."
+                );
+
+                valido = false;
+            }
+
+
+            /*
+             * Validação do e-mail.
+             */
+            if (!email) {
+
+                mostrarErro(
+                    fields.email,
+                    errors.email,
+                    "Informe o e-mail."
+                );
+
+                valido = false;
+
+            } else if (
+                !validarEmail(
+                    email
+                )
+            ) {
+
+                mostrarErro(
+                    fields.email,
+                    errors.email,
+                    "Informe um e-mail válido."
+                );
+
+                valido = false;
+            }
+
+
+            /*
+             * Validação do login.
+             */
+            if (!login) {
+
+                mostrarErro(
+                    fields.login,
+                    errors.login,
+                    "Informe o login."
+                );
+
+                valido = false;
+            }
+
+
+            /*
+             * Validação do perfil.
+             */
+            if (!perfil) {
+
+                mostrarErro(
+                    fields.perfil,
+                    errors.perfil,
+                    "Selecione o perfil."
+                );
+
+                valido = false;
+            }
+
+
+            /*
+             * Interrompe se houver erros
+             * no preenchimento.
+             */
+            if (!valido) {
+
+                mostrarMensagem(
+                    "Corrija os campos destacados antes de continuar.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            try {
+
+
+                /*
+                 * Envia a atualização para
+                 * o Back-end.
+                 */
+                const resposta =
+                    await fetch(
+                        `/api/usuarios/${userId}`,
+                        {
+
+                            method: "PUT",
+
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json",
+
+
+                                /*
+                                 * Autorização temporária
+                                 * enquanto o projeto ainda
+                                 * não possui autenticação
+                                 * completa no Back-end.
+                                 */
+                                "X-Perfil":
+                                    localStorage.getItem(
+                                        "perfil"
+                                    ) ||
+                                    "Administrador"
+
+                            },
+
+
+                            /*
+                             * Dados enviados.
+                             */
+                            body:
+                                JSON.stringify({
+
+                                    nome:
+                                        nome,
+
+                                    email:
+                                        email,
+
+                                    login:
+                                        login,
+
+                                    id_nivel_acesso:
+                                        Number(
+                                            perfil
+                                        )
+
+                                })
+
+                        }
+                    );
+
+
+                /*
+                 * Converte a resposta para JSON.
+                 */
+                const dados =
+                    await resposta.json();
+
+
+                /*
+                 * Verifica se a API
+                 * retornou algum erro.
+                 */
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        dados.mensagem ||
+                        "Não foi possível atualizar o usuário."
+                    );
+                }
+
+
+                /*
+                 * Exibe mensagem de sucesso.
+                 */
+                mostrarMensagem(
+                    "Usuário atualizado com sucesso.",
+                    "success"
+                );
+
+
+                /*
+                 * Retorna para a listagem
+                 * após a mensagem.
+                 */
+                setTimeout(
+                    () => {
+
+                        window.location.href =
+                            "usuarios.html";
+
+                    },
+                    1000
+                );
+
+
+            } catch (erro) {
+
+                mostrarMensagem(
+                    erro.message,
+                    "error"
+                );
+
+            }
+
+        }
+
+
+        /*
+         * Validação de e-mail.
+         */
+        function validarEmail(
+            email
+        ) {
+
+            return (
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            ).test(
+                email
             );
 
         }
 
-    }
+
+        /*
+         * Exibe erro em um campo.
+         */
+        function mostrarErro(
+            campo,
+            elementoErro,
+            mensagem
+        ) {
+
+            campo.classList.add(
+                "field-invalid"
+            );
 
 
-    /*
-     * Validação de e-mail
-     */
+            elementoErro.textContent =
+                mensagem;
 
-    function validarEmail(email) {
-
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            .test(email);
-
-    }
+        }
 
 
-    /*
-     * Exibe erro em campo
-     */
-
-    function mostrarErro(
-        campo,
-        elementoErro,
-        mensagem
-    ) {
-
-        campo.classList.add(
-            "field-invalid"
-        );
-
-        elementoErro.textContent =
-            mensagem;
-
-    }
+        /*
+         * Remove os erros anteriores.
+         */
+        function limparErros() {
 
 
-    /*
-     * Limpa erros
-     */
+            Object.values(
+                errors
+            ).forEach(
+                (elemento) => {
 
-    function limparErros() {
+                    elemento.textContent =
+                        "";
 
-        Object.values(errors)
-            .forEach((elemento) => {
-
-                elemento.textContent = "";
-
-            });
+                }
+            );
 
 
-        Object.values(fields)
-            .forEach((campo) => {
+            Object.values(
+                fields
+            ).forEach(
+                (campo) => {
 
-                campo.classList.remove(
-                    "field-invalid"
-                );
+                    campo.classList.remove(
+                        "field-invalid"
+                    );
 
-            });
-
-
-        formMessage.textContent = "";
-
-        formMessage.className =
-            "form-message";
-
-    }
+                }
+            );
 
 
-    /*
-     * Mensagem geral
-     */
+            formMessage.textContent =
+                "";
 
-    function mostrarMensagem(
-        mensagem,
-        tipo
-    ) {
-
-        formMessage.textContent =
-            mensagem;
-
-
-        if (tipo === "success") {
 
             formMessage.className =
-                "form-message form-message-success";
+                "form-message";
 
-        } else {
+        }
 
-            formMessage.className =
-                "form-message form-message-error";
+
+        /*
+         * Exibe mensagem geral
+         * de sucesso ou erro.
+         */
+        function mostrarMensagem(
+            mensagem,
+            tipo
+        ) {
+
+            formMessage.textContent =
+                mensagem;
+
+
+            if (
+                tipo === "success"
+            ) {
+
+                formMessage.className =
+                    "form-message form-message-success";
+
+            } else {
+
+                formMessage.className =
+                    "form-message form-message-error";
+
+            }
 
         }
 
     }
-
-});
+);
