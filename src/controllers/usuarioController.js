@@ -1,3 +1,6 @@
+// Model responsável pelo cadastro de usuário
+const usuarioModel = require('../models/usuarioModel');
+
 // Controller responsável pelo cadastro de usuário
 const cadastrarUsuario = async (req, res) => {
 
@@ -42,10 +45,30 @@ const cadastrarUsuario = async (req, res) => {
         });
     }
 
-    // Dados validados com sucesso
-    return res.status(200).json({
-        message: "Dados validados com sucesso."
+   const dados = {
+    nome,
+    email,
+    login,
+    senha,
+    perfil
+};
+
+// Chama a função do Model para cadastrar o usuário
+usuarioModel.cadastrarUsuario(dados, (err, resultado) => {
+
+    if (err) {
+    return res.status(500).json({
+        message: err.message
     });
+}
+
+return res.status(201).json({
+        message: "Usuário cadastrado com sucesso.",
+        id_usuario: resultado.insertId
+    });
+
+});
+    
 };
 
 // Exporta o Controller para ser utilizado pelas rotas
