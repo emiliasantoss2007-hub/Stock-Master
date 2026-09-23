@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Recuperação de senha do sistema Stock Master">
+    <title>Stock Master | Recuperar senha</title>
+
+    <link rel="stylesheet" href="../css/recuperar_senha.css">
+    <script src="../js/recuperar_senha.js" defer></script>
+
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-card" aria-labelledby="recovery-title">
+            <div class="auth-icon" aria-hidden="true">✉</div>
+
+            <header class="auth-header">
+                <h1 id="recovery-title">Recuperar senha</h1>
+                <p>Informe seu e-mail cadastrado para iniciar a recuperação do acesso.</p>
+            </header>
+
+            <div class="auth-steps" aria-label="Etapa 1 de 2">
+                <span class="auth-step auth-step--active"></span>
+                <span class="auth-step"></span>
+            </div>
+
+            <form id="recoveryForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="email">E-mail cadastrado</label>
+
+                    <div class="input-wrapper">
+                        <span class="input-icon" aria-hidden="true">@</span>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="seu.email@exemplo.com"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+
+                    <small class="form-error" id="emailError" aria-live="polite"></small>
+                </div>
+
+                <button type="submit" class="auth-button">
+                    Continuar
+                </button>
+
+                <!-- HREF: recuperar-senha.html -> login.html -->
+                <a href="login.html" class="auth-link">
+                    Voltar para o login
+                </a>
+
+                <p class="form-message" id="formMessage" aria-live="polite"></p>
+            </form>
+
+            <p class="auth-note">
+                Enviaremos as instruções para o e-mail associado a um usuário cadastrado.
+            </p>
+        </section>
+    </main>
+</body>
+</html>

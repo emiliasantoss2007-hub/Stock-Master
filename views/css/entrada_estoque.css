@@ -1,0 +1,93 @@
+/* ========================================
+   STOCKMASTER
+   CSS ESPECÍFICO — ENTRADA DE ESTOQUE
+======================================== */
+
+.nome-da-secao {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.campo-especifico {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+}
+
+.campo-especifico label {
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.campo-especifico input,
+.campo-especifico select {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    outline: none;
+    background: #ffffff;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.campo-especifico input:focus,
+.campo-especifico select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.info-estoque {
+    color: var(--text);
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+.mensagem-sucesso,
+.mensagem-erro {
+    display: block;
+    padding: 12px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.mensagem-sucesso { background: #E6F4EA; }
+.mensagem-erro { background: #FDECEA; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 20px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-primary { background: var(--primary); color: #ffffff; }
+.btn-secondary { background: #ffffff; color: var(--primary); border: 1px solid var(--primary); }
+
+.acoes-pagina {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 760px) {
+    .nome-da-secao { flex-direction: column; align-items: stretch; }
+    .acoes-pagina { flex-direction: column; }
+}
