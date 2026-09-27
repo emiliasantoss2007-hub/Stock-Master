@@ -79,4 +79,42 @@ const editarUsuario = async (req, res) => {
   }
 };
 
-module.exports = { editarUsuario };
+const listarUsuarios = async (req, res) => {
+  try {
+    // 1. Filtros recebidos (query string)
+    const { busca, perfil, status } = req.query;
+
+    const filtros = {
+      busca,
+      perfil,
+      status
+    };
+
+    // 2. Consulta acionada (Model)
+    const usuarios = await UsuarioModel.listar(filtros);
+
+    // 3. Retorno tratado
+    return res.status(200).json({
+      sucesso: true,
+      total: usuarios.length,
+      filtrosAplicados: {
+        busca: busca || null,
+        perfil: perfil || null,
+        status: status || null
+      },
+      dados: usuarios
+    });
+  } catch (error) {
+    // 4. Erros tratados
+    console.error('Erro no RF-07 (consultar usuário):', error);
+    return res.status(500).json({
+      sucesso: false,
+      mensagem: 'Erro ao consultar usuários.'
+    });
+  }
+};
+
+module.exports = {
+  editarUsuario,
+  listarUsuarios
+};
