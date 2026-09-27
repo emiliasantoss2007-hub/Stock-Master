@@ -38,7 +38,11 @@ const forgotPassword =
    ========================================================= */
 
 togglePassword.addEventListener("click", () => {
+togglePassword.addEventListener("click", () => {
 
+    if (senhaInput.type === "password") {
+
+        senhaInput.type = "text";
     if (senhaInput.type === "password") {
 
         senhaInput.type = "text";
@@ -60,14 +64,32 @@ togglePassword.addEventListener("click", () => {
         togglePassword.setAttribute(
             "aria-label",
             "Mostrar senha"
+            "Ocultar senha"
+        );
+
+        togglePassword.setAttribute(
+            "aria-pressed",
+            "true"
+        );
+
+    } else {
+
+        senhaInput.type = "password";
+
+        togglePassword.setAttribute(
+            "aria-label",
+            "Mostrar senha"
         );
 
         togglePassword.setAttribute(
             "aria-pressed",
             "false"
+            "false"
         );
 
     }
+
+});
 
 });
 
@@ -171,21 +193,63 @@ loginForm.addEventListener(
 
             formMessage.textContent =
                 "Usuário ou senha inválidos.";
-
+        // Executa a validação dos campos
+        if (!validarLogin()) {
             return;
         }
 
+        // Usuários fictícios para o protótipo
+        const usuarios = {
+            "administrador@gmail.com": {
+                senha: "12345678",
+                perfil: "adm",
+                destino: "dashboard_adm.html"
+            },
+
+            "tecnico@gmail.com": {
+                senha: "12345678",
+                perfil: "tecnico",
+                destino: "dashboard_tec.html"
+            }
+        };
+
+        const usuario =
+            usuarioInput.value.trim().toLowerCase();
+
+        const senha =
+            senhaInput.value.trim();
+
+        const usuarioEncontrado =
+            usuarios[usuario];
+
+        // Verifica usuário e senha
+        if (
+            !usuarioEncontrado ||
+            usuarioEncontrado.senha !== senha
+        ) {
+
+            formMessage.textContent =
+                "Usuário ou senha inválidos.";
+
+            return;
+        }
+        localStorage.setItem(
+            "perfil",
+            usuarioEncontrado.perfil === "adm"
+                ? "Administrador"
+                : "Técnico"
+        );
         // Redireciona para o dashboard correspondente
         window.location.href =
             usuarioEncontrado.destino;
     }
 );
 
-         /*
-         * Nesta etapa o sistema ainda não possui
-         * um Back-end implementado.
-         *
-         * Futuramente, esta área poderá realizar
-         * uma requisição HTTP para o Controller
-         * responsável pela autenticação.
-         */
+/*
+* Nesta etapa o sistema ainda não possui
+* um Back-end implementado.
+*
+* Futuramente, esta área poderá realizar
+* uma requisição HTTP para o Controller
+* responsável pela autenticação.
+*/

@@ -1,29 +1,93 @@
-require('dotenv').config();
-const express = require('express');
-const path = require('path');
+const express = require("express");
 
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
+const path = require("path");
 
-require('./src/config/database');
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const usuarioRoutes =
+    require("./src/routes/usuarioRoutes");
 
-// Lê JSON do body (necessário para o PUT de editar usuário)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Arquivos estáticos (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'views')));
+const app =
+    express();
 
-// Rotas da API (RF-05)
-app.use('/api', usuarioRoutes);
 
-// Página inicial → login
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
-});
+const PORT = 3001;
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
+
+/*
+ * Permite receber JSON nas requisições.
+ */
+app.use(
+    express.json()
+);
+
+
+/*
+ * Disponibiliza HTML, CSS, JS
+ * e imagens da pasta views.
+ */
+app.use(
+    express.static(
+        path.join(
+            __dirname,
+            "views"
+        )
+    )
+);
+
+
+/*
+ * Rotas de usuários.
+ *
+ * Todas as rotas definidas em
+ * usuarioRoutes.js serão iniciadas por:
+ *
+ * /api/usuarios
+ */
+app.use(
+    "/api/usuarios",
+    usuarioRoutes
+);
+
+
+/*
+ * Página inicial.
+ */
+app.get(
+    "/",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "html",
+                "login.html"
+            )
+        );
+
+    }
+);
+
+
+/*
+ * Inicialização do servidor.
+ */
+app.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `Servidor rodando em http://localhost:${PORT}`
+        );
+
+    }
+);
+
+
+/*
+ * Conexão com o banco de dados.
+ */
+require(
+    "./src/config/database"
+);
