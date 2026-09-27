@@ -8,10 +8,7 @@ const usuarioController =
 
 
 /*
- * RF-05
- *
- * Carrega os dados atuais do usuário
- * para preencher a tela de edição.
+ * Carrega os dados atuais do usuário.
  */
 router.get(
     '/:id',
@@ -20,10 +17,7 @@ router.get(
 
 
 /*
- * RF-05
- *
- * Atualiza os dados cadastrais
- * e o perfil do usuário.
+ * Atualiza os dados do usuário.
  */
 router.put(
     '/:id',
