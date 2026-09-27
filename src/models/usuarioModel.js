@@ -79,9 +79,59 @@ function atualizar(idUsuario, nome, email, login, idNivelAcesso) {
   });
 }
 
+function listar(filtros = {}) {
+  return new Promise((resolve, reject) => {
+    const { busca, perfil, status } = filtros;
+    const params = [];
+
+    let sql = `
+      SELECT
+        u.id_usuario,
+        u.nome,
+        u.email,
+        u.login,
+        u.status,
+        u.id_nivel_acesso,
+        n.descricao AS perfil
+      FROM usuario u
+      INNER JOIN nivel_acesso n
+        ON u.id_nivel_acesso = n.id_nivel_acesso
+      WHERE 1 = 1
+    `;
+
+    if (busca && String(busca).trim() !== '') {
+      sql += ` AND (
+        u.nome LIKE ?
+        OR u.email LIKE ?
+        OR u.login LIKE ?
+      )`;
+      const termo = `%${String(busca).trim()}%`;
+      params.push(termo, termo, termo);
+    }
+
+    if (perfil !== undefined && perfil !== null && String(perfil).trim() !== '') {
+      sql += ` AND u.id_nivel_acesso = ?`;
+      params.push(Number(perfil));
+    }
+
+    if (status !== undefined && status !== null && String(status).trim() !== '') {
+      sql += ` AND u.status = ?`;
+      params.push(Number(status));
+    }
+
+    sql += ` ORDER BY u.nome ASC`;
+
+    db.query(sql, params, (erro, resultados) => {
+      if (erro) return reject(erro);
+      resolve(resultados);
+    });
+  });
+}
+
 module.exports = {
   buscarPorId,
   verificarLogin,
   verificarEmail,
-  atualizar
+  atualizar,
+  listar
 };
