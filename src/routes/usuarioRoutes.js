@@ -1,15 +1,38 @@
-const express = require('express');
+const express =
+    require('express');
 
 const router =
     express.Router();
 
 const usuarioController =
-    require('../controllers/usuarioController');
+    require(
+        '../controllers/usuarioController'
+    );
 
 
 /*
- * Carrega os dados atuais do usuário.
+ * =====================================================
+ * LISTAR USUÁRIOS
+ * =====================================================
+*/
+
+router.get(
+    '/',
+    usuarioController.listarUsuarios
+);
+
+
+/*
+ * =====================================================
+ * BUSCAR USUÁRIO POR ID
+ * =====================================================
+ *
+ * GET /api/usuarios/:id
+ *
+ * Utilizado pela tela de edição.
+ *
  */
+
 router.get(
     '/:id',
     usuarioController.buscarUsuario
@@ -17,12 +40,19 @@ router.get(
 
 
 /*
- * Atualiza os dados do usuário.
+ * =====================================================
+ * ATUALIZAR USUÁRIO
+ * =====================================================
+ *
+ * PUT /api/usuarios/:id
+ *
  */
+
 router.put(
     '/:id',
     usuarioController.atualizarUsuario
 );
 
 
-module.exports = router;
+module.exports =
+    router;

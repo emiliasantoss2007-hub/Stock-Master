@@ -3,20 +3,15 @@ const UsuarioModel =
 
 
 /*
- * Verifica se o usuário que está realizando
- * a operação possui perfil de Administrador.
- *
- * Enquanto o projeto ainda não possui uma
- * autenticação completa no Back-end, o sistema
- * utiliza o header X-Perfil como compatibilidade
- * com o protótipo atual.
+ * =====================================================
+ * VERIFICAR ADMINISTRADOR
+ * =====================================================
  */
-function usuarioEhAdministrador(req) {
 
-    /*
-     * Autorização pelo usuário autenticado
-     * no servidor, quando disponível.
-     */
+function usuarioEhAdministrador(
+    req
+) {
+
     if (
         req.usuario &&
         Number(
@@ -25,31 +20,105 @@ function usuarioEhAdministrador(req) {
     ) {
 
         return true;
+
     }
 
 
-    /*
-     * Compatibilidade com o protótipo atual.
-     */
     const perfilHeader =
-        req.headers['x-perfil'];
+        req.headers[
+            'x-perfil'
+        ];
 
 
     return (
-        typeof perfilHeader === 'string' &&
+        typeof perfilHeader ===
+            'string' &&
         perfilHeader.toLowerCase() ===
             'administrador'
     );
+
 }
 
 
 /*
- * Busca os dados de um usuário.
+ * =====================================================
+ * LISTAR USUÁRIOS
+ * =====================================================
+ *
+ * GET /api/usuarios
+ *
+ */
+
+const listarUsuarios =
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            /*
+             * Consulta os usuários no Model.
+             */
+
+            const usuarios =
+                await UsuarioModel
+                    .listarTodos();
+
+
+            /*
+             * Retorna a lista para a View.
+             */
+
+            return res
+                .status(200)
+                .json({
+
+                    sucesso: true,
+
+                    usuarios
+
+                });
+
+
+        } catch (error) {
+
+            console.error(
+                'Erro ao listar usuários:',
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+
+                    sucesso: false,
+
+                    mensagem:
+                        'Erro interno ao carregar os usuários.'
+
+                });
+
+        }
+
+    };
+
+
+/*
+ * =====================================================
+ * BUSCAR USUÁRIO POR ID
+ * =====================================================
  *
  * GET /api/usuarios/:id
+ *
  */
+
 const buscarUsuario =
-    async (req, res) => {
+    async (
+        req,
+        res
+    ) => {
 
         try {
 
@@ -62,47 +131,64 @@ const buscarUsuario =
             /*
              * Validação do ID.
              */
+
             if (
                 !Number.isInteger(id) ||
                 id <= 0
             ) {
 
-                return res.status(400).json({
-                    sucesso: false,
-                    mensagem:
-                        'Identificação do usuário inválida.'
-                });
+                return res
+                    .status(400)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Identificação do usuário inválida.'
+
+                    });
+
             }
 
 
             /*
-             * Busca o usuário no banco.
+             * Consulta o Model.
              */
+
             const usuario =
-                await UsuarioModel.buscarPorId(
-                    id
-                );
+                await UsuarioModel
+                    .buscarPorId(
+                        id
+                    );
 
 
             /*
-             * Usuário não encontrado.
+             * Usuário inexistente.
              */
-            if (!usuario) {
 
-                return res.status(404).json({
-                    sucesso: false,
-                    mensagem:
-                        'Usuário não encontrado.'
-                });
+            if (
+                !usuario
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Usuário não encontrado.'
+
+                    });
+
             }
 
 
-            /*
-             * Retorna os dados encontrados.
-             */
-            return res.status(200).json(
-                usuario
-            );
+            return res
+                .status(200)
+                .json(
+                    usuario
+                );
 
 
         } catch (error) {
@@ -113,22 +199,36 @@ const buscarUsuario =
             );
 
 
-            return res.status(500).json({
-                sucesso: false,
-                mensagem:
-                    'Erro interno ao buscar usuário.'
-            });
+            return res
+                .status(500)
+                .json({
+
+                    sucesso: false,
+
+                    mensagem:
+                        'Erro interno ao buscar usuário.'
+
+                });
+
         }
+
     };
 
 
 /*
- * Atualiza os dados do usuário.
+ * =====================================================
+ * ATUALIZAR USUÁRIO
+ * =====================================================
  *
  * PUT /api/usuarios/:id
+ *
  */
+
 const atualizarUsuario =
-    async (req, res) => {
+    async (
+        req,
+        res
+    ) => {
 
         try {
 
@@ -137,30 +237,33 @@ const atualizarUsuario =
              * somente Administrador pode editar
              * usuários.
              */
+
             if (
-                !usuarioEhAdministrador(req)
+                !usuarioEhAdministrador(
+                    req
+                )
             ) {
 
-                return res.status(403).json({
-                    sucesso: false,
-                    mensagem:
-                        'Acesso negado. Apenas administradores podem editar usuários.'
-                });
+                return res
+                    .status(403)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Acesso negado. Apenas administradores podem editar usuários.'
+
+                    });
+
             }
 
 
-            /*
-             * Identificação do usuário.
-             */
             const id =
                 Number(
                     req.params.id
                 );
 
 
-            /*
-             * Dados recebidos da View.
-             */
             const {
                 nome,
                 email,
@@ -172,22 +275,30 @@ const atualizarUsuario =
             /*
              * Validação do ID.
              */
+
             if (
                 !Number.isInteger(id) ||
                 id <= 0
             ) {
 
-                return res.status(400).json({
-                    sucesso: false,
-                    mensagem:
-                        'Identificação do usuário inválida.'
-                });
+                return res
+                    .status(400)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Identificação do usuário inválida.'
+
+                    });
+
             }
 
 
             /*
-             * Validação dos campos obrigatórios.
+             * Validação dos campos.
              */
+
             if (
                 !nome?.trim() ||
                 !email?.trim() ||
@@ -196,23 +307,24 @@ const atualizarUsuario =
                     undefined ||
                 id_nivel_acesso ===
                     null ||
-                id_nivel_acesso === ''
+                id_nivel_acesso ===
+                    ''
             ) {
 
-                return res.status(400).json({
-                    sucesso: false,
-                    mensagem:
-                        'Preencha todos os campos obrigatórios.'
-                });
+                return res
+                    .status(400)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Preencha todos os campos obrigatórios.'
+
+                    });
+
             }
 
 
-            /*
-             * Converte o perfil para número.
-             *
-             * 1 = Administrador
-             * 2 = Técnico
-             */
             const nivel =
                 Number(
                     id_nivel_acesso
@@ -222,22 +334,32 @@ const atualizarUsuario =
             /*
              * Validação do perfil.
              */
+
             if (
-                !Number.isInteger(nivel) ||
+                !Number.isInteger(
+                    nivel
+                ) ||
                 nivel <= 0
             ) {
 
-                return res.status(400).json({
-                    sucesso: false,
-                    mensagem:
-                        'Perfil de acesso inválido.'
-                });
+                return res
+                    .status(400)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Perfil de acesso inválido.'
+
+                    });
+
             }
 
 
             /*
              * Validação do e-mail.
              */
+
             const emailValido =
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/
                     .test(
@@ -245,51 +367,51 @@ const atualizarUsuario =
                     );
 
 
-            if (!emailValido) {
+            if (
+                !emailValido
+            ) {
 
-                return res.status(400).json({
-                    sucesso: false,
-                    mensagem:
-                        'Informe um e-mail válido.'
-                });
+                return res
+                    .status(400)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Informe um e-mail válido.'
+
+                    });
+
             }
 
 
             /*
              * Executa a atualização.
-             *
-             * O Model será responsável por:
-             * - iniciar a transação;
-             * - verificar se o usuário existe;
-             * - verificar login duplicado;
-             * - verificar e-mail duplicado;
-             * - executar UPDATE;
-             * - realizar COMMIT;
-             * - confirmar a persistência.
              */
+
             const dadosAtualizados =
-                await UsuarioModel.atualizarComTransacao(
-                    id,
-                    nome.trim(),
-                    email.trim(),
-                    login.trim(),
-                    nivel
-                );
+                await UsuarioModel
+                    .atualizarComTransacao(
+                        id,
+                        nome.trim(),
+                        email.trim(),
+                        login.trim(),
+                        nivel
+                    );
 
 
-            /*
-             * Retorno de sucesso.
-             */
-            return res.status(200).json({
+            return res
+                .status(200)
+                .json({
 
-                sucesso: true,
+                    sucesso: true,
 
-                mensagem:
-                    'Usuário atualizado com sucesso!',
+                    mensagem:
+                        'Usuário atualizado com sucesso!',
 
-                dadosAtualizados
+                    dadosAtualizados
 
-            });
+                });
 
 
         } catch (error) {
@@ -300,11 +422,9 @@ const atualizarUsuario =
             );
 
 
-            /*
-             * Erros específicos tratados
-             * pelo Model.
-             */
-            if (error.statusCode) {
+            if (
+                error.statusCode
+            ) {
 
                 return res
                     .status(
@@ -318,47 +438,54 @@ const atualizarUsuario =
                             error.message
 
                     });
+
             }
 
 
-            /*
-             * Violação de UNIQUE do banco.
-             */
             if (
                 error.code ===
                 'ER_DUP_ENTRY'
             ) {
 
-                return res.status(409).json({
+                return res
+                    .status(409)
+                    .json({
+
+                        sucesso: false,
+
+                        mensagem:
+                            'Login ou e-mail já cadastrado.'
+
+                    });
+
+            }
+
+
+            return res
+                .status(500)
+                .json({
 
                     sucesso: false,
 
                     mensagem:
-                        'Login ou e-mail já cadastrado.'
+                        'Erro interno ao atualizar usuário. A alteração foi desfeita.'
 
                 });
-            }
 
-
-            /*
-             * Erro inesperado.
-             *
-             * Como a operação utiliza transação,
-             * as alterações são desfeitas.
-             */
-            return res.status(500).json({
-
-                sucesso: false,
-
-                mensagem:
-                    'Erro interno ao atualizar usuário. A alteração foi desfeita.'
-
-            });
         }
+
     };
 
 
+/*
+ * =====================================================
+ * EXPORTAÇÕES
+ * =====================================================
+ */
+
 module.exports = {
+
+    listarUsuarios,
 
     buscarUsuario,
 
