@@ -96,19 +96,19 @@ document.addEventListener(
 
         searchInput.addEventListener(
             "input",
-            aplicarFiltros
+            carregarUsuarios
         );
 
 
         profileFilter.addEventListener(
             "change",
-            aplicarFiltros
+            carregarUsuarios
         );
 
 
         statusFilter.addEventListener(
             "change",
-            aplicarFiltros
+            carregarUsuarios
         );
 
 
@@ -122,7 +122,7 @@ document.addEventListener(
 
                 statusFilter.value = "";
 
-                aplicarFiltros();
+                carregarUsuarios();
 
                 searchInput.focus();
 
@@ -167,7 +167,7 @@ document.addEventListener(
 
                         atualizarIndicadoresOrdenacao();
 
-                        aplicarFiltros();
+                        carregarUsuarios();
 
                     }
                 );
@@ -176,60 +176,81 @@ document.addEventListener(
         );
 
 
-        /*
-         * =====================================================
-         * CARREGAR USUÁRIOS
-         * =====================================================
-         *
-         * GET /api/usuarios
-         *
-         * Controller:
-         * listarUsuarios()
-         *
-         */
+        //Carregar Funcionarios
+
 
         async function carregarUsuarios() {
 
             mostrarCarregando();
 
-
             try {
 
-                /*
-                 * Perfil utilizado pelo protótipo
-                 * atual para compatibilidade com
-                 * o Controller.
-                 */
+                const params =
+                    new URLSearchParams();
+
+                const busca =
+                    searchInput.value.trim();
+
                 const perfil =
+                    profileFilter.value;
+
+                const status =
+                    statusFilter.value;
+
+                if (busca) {
+                    params.set(
+                        "busca",
+                        busca
+                    );
+                }
+
+                if (perfil) {
+                    params.set(
+                        "perfil",
+                        perfil
+                    );
+                }
+
+                if (status) {
+                    params.set(
+                        "status",
+                        status
+                    );
+                }
+
+                params.set(
+                    "ordenarPor",
+                    sortColumn
+                );
+
+                params.set(
+                    "direcao",
+                    sortDirection
+                );
+
+                const perfilLogado =
                     localStorage.getItem(
                         "perfil"
                     ) ||
                     "Administrador";
 
-
                 const resposta =
                     await fetch(
-                        "/api/usuarios",
+                        `/api/usuarios?${params.toString()}`,
                         {
-
                             method: "GET",
 
                             headers: {
-
                                 "X-Perfil":
-                                    perfil
-
+                                    perfilLogado
                             }
-
                         }
                     );
-
 
                 const dados =
                     await obterRespostaJson(
                         resposta
                     );
-
 
                 if (
                     !resposta.ok
@@ -239,14 +260,8 @@ document.addEventListener(
                         dados.mensagem ||
                         "Não foi possível carregar os usuários."
                     );
-
                 }
 
-
-                /*
-                 * Garante que a resposta
-                 * possua uma lista.
-                 */
                 if (
                     !Array.isArray(
                         dados.usuarios
@@ -256,22 +271,17 @@ document.addEventListener(
                     throw new Error(
                         "O servidor retornou uma lista de usuários inválida."
                     );
-
                 }
 
-
-                /*
-                 * Normaliza os registros
-                 * vindos do banco.
-                 */
                 users =
                     dados.usuarios.map(
                         normalizarUsuario
                     );
 
+                filteredUsers =
+                    users;
 
-                aplicarFiltros();
-
+                renderizarTabela();
 
             } catch (erro) {
 
@@ -280,37 +290,29 @@ document.addEventListener(
                     erro
                 );
 
-
                 users = [];
 
                 filteredUsers = [];
 
-
                 renderizarTabela();
-
 
                 usersCount.textContent =
                     "0 usuários";
 
-
                 emptyState.hidden =
                     false;
-
 
                 emptyStateTitle.textContent =
                     "Não foi possível carregar os usuários";
 
-
                 emptyStateMessage.textContent =
                     erro.message ||
-                    "Verifique a conexão com o servidor e tente novamente.";
-
+                    "Verifique a conexão com o servidor.";
 
                 usersMessage.textContent =
                     "";
 
             }
-
         }
 
 
@@ -382,7 +384,7 @@ document.addEventListener(
                 String(
                     status
                 ).toLowerCase() ===
-                    "true"
+                "true"
             )
                 ? "Ativo"
                 : "Inativo";
@@ -449,7 +451,7 @@ document.addEventListener(
                         const correspondePerfil =
                             !perfil ||
                             usuario.perfil ===
-                                perfil;
+                            perfil;
 
 
                         /*
@@ -459,7 +461,7 @@ document.addEventListener(
                         const correspondeStatus =
                             !status ||
                             usuario.status ===
-                                status;
+                            status;
 
 
                         return (
@@ -619,10 +621,9 @@ document.addEventListener(
 
 
             usersCount.textContent =
-                `${filteredUsers.length} ${
-                    filteredUsers.length === 1
-                        ? "usuário"
-                        : "usuários"
+                `${filteredUsers.length} ${filteredUsers.length === 1
+                    ? "usuário"
+                    : "usuários"
                 }`;
 
 
@@ -790,7 +791,7 @@ document.addEventListener(
 
             statusBadge.className =
                 usuario.status ===
-                "Ativo"
+                    "Ativo"
                     ? "status status-success"
                     : "status status-danger";
 
@@ -824,10 +825,9 @@ document.addEventListener(
 
 
             editLink.href =
-                `editar_usuario.html?id=${
-                    encodeURIComponent(
-                        usuario.id
-                    )
+                `editar_usuario.html?id=${encodeURIComponent(
+                    usuario.id
+                )
                 }`;
 
 
@@ -942,7 +942,7 @@ document.addEventListener(
             return (
                 partes[0][0] +
                 partes[
-                    partes.length - 1
+                partes.length - 1
                 ][0]
             ).toUpperCase();
 
@@ -975,7 +975,7 @@ document.addEventListener(
                         "aria-sort",
                         isActive
                             ? sortDirection ===
-                              "asc"
+                                "asc"
                                 ? "ascending"
                                 : "descending"
                             : "none"
@@ -989,7 +989,7 @@ document.addEventListener(
                         indicator.textContent =
                             isActive
                                 ? sortDirection ===
-                                  "asc"
+                                    "asc"
                                     ? "↑"
                                     : "↓"
                                 : "↕";

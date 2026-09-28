@@ -1,268 +1,16 @@
 const UsuarioModel =
-    require('../models/usuarioModel');
+    require("../models/usuarioModel");
 
+// EDITAR USUÁRIO
 
-/*
- * =====================================================
- * VERIFICAR ADMINISTRADOR
- * =====================================================
- */
-
-function usuarioEhAdministrador(
-    req
-) {
-
-    if (
-        req.usuario &&
-        Number(
-            req.usuario.id_nivel_acesso
-        ) === 1
-    ) {
-
-        return true;
-
-    }
-
-
-    const perfilHeader =
-        req.headers[
-            'x-perfil'
-        ];
-
-
-    return (
-        typeof perfilHeader ===
-            'string' &&
-        perfilHeader.toLowerCase() ===
-            'administrador'
-    );
-
-}
-
-
-/*
- * =====================================================
- * LISTAR USUÁRIOS
- * =====================================================
- *
- * GET /api/usuarios
- *
- */
-
-const listarUsuarios =
-    async (
-        req,
-        res
-    ) => {
+const editarUsuario =
+    async (req, res) => {
 
         try {
 
-            /*
-             * Consulta os usuários no Model.
-             */
-
-            const usuarios =
-                await UsuarioModel
-                    .listarTodos();
-
-
-            /*
-             * Retorna a lista para a View.
-             */
-
-            return res
-                .status(200)
-                .json({
-
-                    sucesso: true,
-
-                    usuarios
-
-                });
-
-
-        } catch (error) {
-
-            console.error(
-                'Erro ao listar usuários:',
-                error
-            );
-
-
-            return res
-                .status(500)
-                .json({
-
-                    sucesso: false,
-
-                    mensagem:
-                        'Erro interno ao carregar os usuários.'
-
-                });
-
-        }
-
-    };
-
-
-/*
- * =====================================================
- * BUSCAR USUÁRIO POR ID
- * =====================================================
- *
- * GET /api/usuarios/:id
- *
- */
-
-const buscarUsuario =
-    async (
-        req,
-        res
-    ) => {
-
-        try {
-
-            const id =
-                Number(
-                    req.params.id
-                );
-
-
-            /*
-             * Validação do ID.
-             */
-
-            if (
-                !Number.isInteger(id) ||
-                id <= 0
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-
-                        sucesso: false,
-
-                        mensagem:
-                            'Identificação do usuário inválida.'
-
-                    });
-
-            }
-
-
-            /*
-             * Consulta o Model.
-             */
-
-            const usuario =
-                await UsuarioModel
-                    .buscarPorId(
-                        id
-                    );
-
-
-            /*
-             * Usuário inexistente.
-             */
-
-            if (
-                !usuario
-            ) {
-
-                return res
-                    .status(404)
-                    .json({
-
-                        sucesso: false,
-
-                        mensagem:
-                            'Usuário não encontrado.'
-
-                    });
-
-            }
-
-
-            return res
-                .status(200)
-                .json(
-                    usuario
-                );
-
-
-        } catch (error) {
-
-            console.error(
-                'Erro ao buscar usuário:',
-                error
-            );
-
-
-            return res
-                .status(500)
-                .json({
-
-                    sucesso: false,
-
-                    mensagem:
-                        'Erro interno ao buscar usuário.'
-
-                });
-
-        }
-
-    };
-
-
-/*
- * =====================================================
- * ATUALIZAR USUÁRIO
- * =====================================================
- *
- * PUT /api/usuarios/:id
- *
- */
-
-const atualizarUsuario =
-    async (
-        req,
-        res
-    ) => {
-
-        try {
-
-            /*
-             * RN04:
-             * somente Administrador pode editar
-             * usuários.
-             */
-
-            if (
-                !usuarioEhAdministrador(
-                    req
-                )
-            ) {
-
-                return res
-                    .status(403)
-                    .json({
-
-                        sucesso: false,
-
-                        mensagem:
-                            'Acesso negado. Apenas administradores podem editar usuários.'
-
-                    });
-
-            }
-
-
-            const id =
-                Number(
-                    req.params.id
-                );
-
+            const {
+                id
+            } = req.params;
 
             const {
                 nome,
@@ -271,134 +19,122 @@ const atualizarUsuario =
                 id_nivel_acesso
             } = req.body;
 
+            const usuarioLogado =
+                req.usuario;
 
-            /*
-             * Validação do ID.
-             */
-
-            if (
-                !Number.isInteger(id) ||
-                id <= 0
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-
-                        sucesso: false,
-
-                        mensagem:
-                            'Identificação do usuário inválida.'
-
-                    });
-
-            }
-
-
-            /*
-             * Validação dos campos.
-             */
+            // AUTORIZAÇÃO
 
             if (
-                !nome?.trim() ||
-                !email?.trim() ||
-                !login?.trim() ||
-                id_nivel_acesso ===
-                    undefined ||
-                id_nivel_acesso ===
-                    null ||
-                id_nivel_acesso ===
-                    ''
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-
-                        sucesso: false,
-
-                        mensagem:
-                            'Preencha todos os campos obrigatórios.'
-
-                    });
-
-            }
-
-
-            const nivel =
+                !usuarioLogado ||
                 Number(
-                    id_nivel_acesso
-                );
+                    usuarioLogado.id_nivel_acesso
+                ) !== 1
+            ) {
 
+                return res
+                    .status(403)
+                    .json({
+                        sucesso: false,
+                        mensagem:
+                            "Acesso negado. Apenas administradores podem editar usuários."
+                    });
+            }
 
-            /*
-             * Validação do perfil.
-             */
+            // VALIDAÇÃO
 
             if (
-                !Number.isInteger(
-                    nivel
-                ) ||
-                nivel <= 0
+                !id ||
+                !nome ||
+                !email ||
+                !login ||
+                !id_nivel_acesso
             ) {
 
                 return res
                     .status(400)
                     .json({
-
                         sucesso: false,
-
                         mensagem:
-                            'Perfil de acesso inválido.'
-
+                            "Preencha todos os campos obrigatórios."
                     });
-
             }
 
+            // BUSCAR USUÁRIO
 
-            /*
-             * Validação do e-mail.
-             */
+            const usuarioExistente =
+                await UsuarioModel
+                    .buscarPorId(id);
 
-            const emailValido =
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                    .test(
-                        email.trim()
+            if (
+                !usuarioExistente
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        sucesso: false,
+                        mensagem:
+                            "Usuário não encontrado."
+                    });
+            }
+
+            // VERIFICAR LOGIN
+
+            const loginEmUso =
+                await UsuarioModel
+                    .verificarLogin(
+                        login.trim(),
+                        id
                     );
 
-
             if (
-                !emailValido
+                loginEmUso
             ) {
 
                 return res
                     .status(400)
                     .json({
-
                         sucesso: false,
-
                         mensagem:
-                            'Informe um e-mail válido.'
-
+                            "O login informado já está em uso."
                     });
-
             }
 
+            // VERIFICAR E-MAIL
 
-            /*
-             * Executa a atualização.
-             */
+            const emailEmUso =
+                await UsuarioModel
+                    .verificarEmail(
+                        email.trim(),
+                        id
+                    );
 
-            const dadosAtualizados =
+            if (
+                emailEmUso
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        sucesso: false,
+                        mensagem:
+                            "O e-mail informado já está em uso."
+                    });
+            }
+
+            // ATUALIZAR
+
+            const usuarioAtualizado =
                 await UsuarioModel
                     .atualizarComTransacao(
                         id,
                         nome.trim(),
                         email.trim(),
                         login.trim(),
-                        nivel
+                        Number(
+                            id_nivel_acesso
+                        )
                     );
-
 
             return res
                 .status(200)
@@ -407,20 +143,19 @@ const atualizarUsuario =
                     sucesso: true,
 
                     mensagem:
-                        'Usuário atualizado com sucesso!',
+                        "Usuário atualizado com sucesso!",
 
-                    dadosAtualizados
+                    dadosAtualizados:
+                        usuarioAtualizado
 
                 });
-
 
         } catch (error) {
 
             console.error(
-                'Erro no RF-05 (editar usuário):',
+                "Erro ao editar usuário:",
                 error
             );
-
 
             if (
                 error.statusCode
@@ -438,28 +173,7 @@ const atualizarUsuario =
                             error.message
 
                     });
-
             }
-
-
-            if (
-                error.code ===
-                'ER_DUP_ENTRY'
-            ) {
-
-                return res
-                    .status(409)
-                    .json({
-
-                        sucesso: false,
-
-                        mensagem:
-                            'Login ou e-mail já cadastrado.'
-
-                    });
-
-            }
-
 
             return res
                 .status(500)
@@ -468,27 +182,108 @@ const atualizarUsuario =
                     sucesso: false,
 
                     mensagem:
-                        'Erro interno ao atualizar usuário. A alteração foi desfeita.'
+                        "Erro interno no servidor."
+
+                });
+        }
+    };
+
+// CONSULTAR USUÁRIOS
+
+const listarUsuarios =
+    async (req, res) => {
+
+        try {
+
+            const {
+                busca,
+                perfil,
+                status,
+                ordenarPor,
+                direcao
+            } = req.query;
+
+            // FILTROS
+
+            const filtros = {
+
+                busca:
+                    busca
+                        ? busca.trim()
+                        : "",
+
+                perfil:
+                    perfil
+                        ? perfil.trim()
+                        : "",
+
+                status:
+                    status !== undefined
+                        ? status.trim()
+                        : "",
+
+                ordenarPor:
+                    ordenarPor ||
+                    "nome",
+
+                direcao:
+                    direcao ||
+                    "asc"
+
+            };
+
+            // CONSULTA
+
+            const usuarios =
+                await UsuarioModel
+                    .listar(
+                        filtros
+                    );
+
+            // RETORNO
+
+            return res
+                .status(200)
+                .json({
+
+                    sucesso: true,
+
+                    total:
+                        usuarios.length,
+
+                    filtrosAplicados:
+                        filtros,
+
+                    usuarios
 
                 });
 
+        } catch (error) {
+
+            console.error(
+                "Erro ao consultar usuários:",
+                error
+            );
+
+            return res
+                .status(500)
+                .json({
+
+                    sucesso: false,
+
+                    mensagem:
+                        "Erro ao consultar usuários.",
+
+                    usuarios: []
+
+                });
         }
-
     };
-
-
-/*
- * =====================================================
- * EXPORTAÇÕES
- * =====================================================
- */
 
 module.exports = {
 
-    listarUsuarios,
+    editarUsuario,
 
-    buscarUsuario,
-
-    atualizarUsuario
+    listarUsuarios
 
 };

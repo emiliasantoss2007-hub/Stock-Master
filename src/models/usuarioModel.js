@@ -1,14 +1,14 @@
 const db =
     require("../config/database");
 
-// LISTAR USUÁRIOS
+// CONSULTAR USUÁRIOS
 
-function listarTodos() {
+function listar(filtros = {}) {
 
     return new Promise(
         (resolve, reject) => {
 
-            const sql = `
+            let sql = `
                 SELECT
                     u.id_usuario,
                     u.nome,
@@ -21,19 +21,106 @@ function listarTodos() {
                 INNER JOIN nivel_acesso n
                     ON u.id_nivel_acesso =
                        n.id_nivel_acesso
+                WHERE 1 = 1
+            `;
+
+            const parametros = [];
+
+            // PESQUISA
+
+            if (filtros.busca) {
+
+                sql += `
+                    AND (
+                        u.nome LIKE ?
+                        OR u.email LIKE ?
+                        OR u.login LIKE ?
+                    )
+                `;
+
+                const busca =
+                    `%${filtros.busca}%`;
+
+                parametros.push(
+                    busca,
+                    busca,
+                    busca
+                );
+            }
+
+            // FILTRO DE PERFIL
+
+            if (filtros.perfil) {
+
+                sql += `
+                    AND n.descricao = ?
+                `;
+
+                parametros.push(
+                    filtros.perfil
+                );
+            }
+
+            // FILTRO DE STATUS
+
+            if (
+                filtros.status !== undefined &&
+                filtros.status !== ""
+            ) {
+
+                const status =
+                    filtros.status === "Ativo"
+                        ? 1
+                        : 0;
+
+                sql += `
+                    AND u.status = ?
+                `;
+
+                parametros.push(
+                    status
+                );
+            }
+
+            // ORDENAÇÃO
+
+            const colunasPermitidas = {
+                nome: "u.nome",
+                email: "u.email",
+                login: "u.login",
+                perfil: "n.descricao",
+                status: "u.status"
+            };
+
+            const coluna =
+                colunasPermitidas[
+                    filtros.ordenarPor
+                ] || "u.nome";
+
+            const direcao =
+                String(
+                    filtros.direcao
+                ).toLowerCase() === "desc"
+                    ? "DESC"
+                    : "ASC";
+
+            sql += `
                 ORDER BY
-                    u.nome ASC
+                    ${coluna} ${direcao}
             `;
 
             db.query(
                 sql,
+                parametros,
                 (erro, resultados) => {
 
                     if (erro) {
                         return reject(erro);
                     }
 
-                    resolve(resultados);
+                    resolve(
+                        resultados
+                    );
                 }
             );
         }
@@ -54,7 +141,8 @@ function buscarPorId(id) {
                     u.email,
                     u.login,
                     u.id_nivel_acesso,
-                    n.descricao AS perfil
+                    n.descricao AS perfil,
+                    u.status
                 FROM usuario u
                 INNER JOIN nivel_acesso n
                     ON u.id_nivel_acesso =
@@ -71,7 +159,9 @@ function buscarPorId(id) {
                         return reject(erro);
                     }
 
-                    resolve(resultados[0]);
+                    resolve(
+                        resultados[0]
+                    );
                 }
             );
         }
@@ -198,7 +288,9 @@ async function atualizarComTransacao(
                 [idUsuario]
             );
 
-        if (usuario.length === 0) {
+        if (
+            usuario.length === 0
+        ) {
 
             throw Object.assign(
                 new Error(
@@ -226,7 +318,9 @@ async function atualizarComTransacao(
                 ]
             );
 
-        if (loginExistente.length > 0) {
+        if (
+            loginExistente.length > 0
+        ) {
 
             throw Object.assign(
                 new Error(
@@ -254,7 +348,9 @@ async function atualizarComTransacao(
                 ]
             );
 
-        if (emailExistente.length > 0) {
+        if (
+            emailExistente.length > 0
+        ) {
 
             throw Object.assign(
                 new Error(
@@ -286,7 +382,9 @@ async function atualizarComTransacao(
                 ]
             );
 
-        if (resultado.affectedRows !== 1) {
+        if (
+            resultado.affectedRows !== 1
+        ) {
 
             throw Object.assign(
                 new Error(
@@ -352,7 +450,9 @@ function query(
                         return reject(erro);
                     }
 
-                    resolve(resultados);
+                    resolve(
+                        resultados
+                    );
                 }
             );
         }
@@ -361,7 +461,7 @@ function query(
 
 module.exports = {
 
-    listarTodos,
+    listar,
 
     buscarPorId,
 

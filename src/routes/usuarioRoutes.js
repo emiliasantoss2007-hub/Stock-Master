@@ -1,58 +1,30 @@
 const express =
-    require('express');
+    require("express");
 
 const router =
     express.Router();
 
 const usuarioController =
-    require(
-        '../controllers/usuarioController'
-    );
+    require("../controllers/usuarioController");
 
+const auth =
+    require("../middlewares/auth");
 
-/*
- * =====================================================
- * LISTAR USUÁRIOS
- * =====================================================
-*/
+// CONSULTAR USUÁRIOS
 
 router.get(
-    '/',
+    "/",
+    auth,
     usuarioController.listarUsuarios
 );
 
-
-/*
- * =====================================================
- * BUSCAR USUÁRIO POR ID
- * =====================================================
- *
- * GET /api/usuarios/:id
- *
- * Utilizado pela tela de edição.
- *
- */
-
-router.get(
-    '/:id',
-    usuarioController.buscarUsuario
-);
-
-
-/*
- * =====================================================
- * ATUALIZAR USUÁRIO
- * =====================================================
- *
- * PUT /api/usuarios/:id
- *
- */
+// EDITAR USUÁRIO
 
 router.put(
-    '/:id',
-    usuarioController.atualizarUsuario
+    "/:id",
+    auth,
+    usuarioController.editarUsuario
 );
-
 
 module.exports =
     router;
