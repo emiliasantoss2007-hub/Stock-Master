@@ -1,12 +1,7 @@
 const db =
     require("../config/database");
 
-
-/*
- * =====================================================
- * LISTAR TODOS OS USUÁRIOS
- * =====================================================
- */
+// LISTAR USUÁRIOS
 
 function listarTodos() {
 
@@ -30,42 +25,24 @@ function listarTodos() {
                     u.nome ASC
             `;
 
-
             db.query(
                 sql,
                 (erro, resultados) => {
 
                     if (erro) {
-
-                        return reject(
-                            erro
-                        );
-
+                        return reject(erro);
                     }
 
-
-                    resolve(
-                        resultados
-                    );
-
+                    resolve(resultados);
                 }
             );
-
         }
     );
-
 }
 
+// BUSCAR USUÁRIO POR ID
 
-/*
- * =====================================================
- * BUSCAR USUÁRIO POR ID
- * =====================================================
- */
-
-function buscarPorId(
-    id
-) {
+function buscarPorId(id) {
 
     return new Promise(
         (resolve, reject) => {
@@ -85,39 +62,23 @@ function buscarPorId(
                 WHERE u.id_usuario = ?
             `;
 
-
             db.query(
                 sql,
                 [id],
                 (erro, resultados) => {
 
                     if (erro) {
-
-                        return reject(
-                            erro
-                        );
-
+                        return reject(erro);
                     }
 
-
-                    resolve(
-                        resultados[0]
-                    );
-
+                    resolve(resultados[0]);
                 }
             );
-
         }
     );
-
 }
 
-
-/*
- * =====================================================
- * VERIFICAR LOGIN
- * =====================================================
- */
+// VERIFICAR LOGIN
 
 function verificarLogin(
     login,
@@ -136,7 +97,6 @@ function verificarLogin(
                 LIMIT 1
             `;
 
-
             db.query(
                 sql,
                 [
@@ -146,32 +106,19 @@ function verificarLogin(
                 (erro, resultados) => {
 
                     if (erro) {
-
-                        return reject(
-                            erro
-                        );
-
+                        return reject(erro);
                     }
-
 
                     resolve(
                         resultados.length > 0
                     );
-
                 }
             );
-
         }
     );
-
 }
 
-
-/*
- * =====================================================
- * VERIFICAR E-MAIL
- * =====================================================
- */
+// VERIFICAR E-MAIL
 
 function verificarEmail(
     email,
@@ -190,7 +137,6 @@ function verificarEmail(
                 LIMIT 1
             `;
 
-
             db.query(
                 sql,
                 [
@@ -200,32 +146,19 @@ function verificarEmail(
                 (erro, resultados) => {
 
                     if (erro) {
-
-                        return reject(
-                            erro
-                        );
-
+                        return reject(erro);
                     }
-
 
                     resolve(
                         resultados.length > 0
                     );
-
                 }
             );
-
         }
     );
-
 }
 
-
-/*
- * =====================================================
- * ATUALIZAR USUÁRIO
- * =====================================================
-*/
+// ATUALIZAR USUÁRIO
 
 async function atualizarComTransacao(
     idUsuario,
@@ -242,22 +175,14 @@ async function atualizarComTransacao(
                 (erro) => {
 
                     if (erro) {
-
-                        return reject(
-                            erro
-                        );
-
+                        return reject(erro);
                     }
 
-
                     resolve();
-
                 }
             );
-
         }
     );
-
 
     try {
 
@@ -270,15 +195,10 @@ async function atualizarComTransacao(
                     WHERE id_usuario = ?
                     FOR UPDATE
                 `,
-                [
-                    idUsuario
-                ]
+                [idUsuario]
             );
 
-
-        if (
-            usuario.length === 0
-        ) {
+        if (usuario.length === 0) {
 
             throw Object.assign(
                 new Error(
@@ -288,7 +208,6 @@ async function atualizarComTransacao(
                     statusCode: 404
                 }
             );
-
         }
 
         const loginExistente =
@@ -307,10 +226,7 @@ async function atualizarComTransacao(
                 ]
             );
 
-
-        if (
-            loginExistente.length > 0
-        ) {
+        if (loginExistente.length > 0) {
 
             throw Object.assign(
                 new Error(
@@ -320,7 +236,6 @@ async function atualizarComTransacao(
                     statusCode: 409
                 }
             );
-
         }
 
         const emailExistente =
@@ -339,10 +254,7 @@ async function atualizarComTransacao(
                 ]
             );
 
-
-        if (
-            emailExistente.length > 0
-        ) {
+        if (emailExistente.length > 0) {
 
             throw Object.assign(
                 new Error(
@@ -352,7 +264,6 @@ async function atualizarComTransacao(
                     statusCode: 409
                 }
             );
-
         }
 
         const resultado =
@@ -375,10 +286,7 @@ async function atualizarComTransacao(
                 ]
             );
 
-
-        if (
-            resultado.affectedRows !== 1
-        ) {
+        if (resultado.affectedRows !== 1) {
 
             throw Object.assign(
                 new Error(
@@ -388,7 +296,6 @@ async function atualizarComTransacao(
                     statusCode: 409
                 }
             );
-
         }
 
         await new Promise(
@@ -398,26 +305,18 @@ async function atualizarComTransacao(
                     (erro) => {
 
                         if (erro) {
-
-                            return reject(
-                                erro
-                            );
-
+                            return reject(erro);
                         }
 
-
                         resolve();
-
                     }
                 );
-
             }
         );
 
         return await buscarPorId(
             idUsuario
         );
-
 
     } catch (erro) {
 
@@ -427,23 +326,14 @@ async function atualizarComTransacao(
                 db.rollback(
                     () => resolve()
                 );
-
             }
         );
 
-
         throw erro;
-
     }
-
 }
 
-
-/*
- * =====================================================
- * EXECUTAR QUERY
- * =====================================================
- */
+// EXECUTAR QUERY
 
 function query(
     sql,
@@ -459,32 +349,15 @@ function query(
                 (erro, resultados) => {
 
                     if (erro) {
-
-                        return reject(
-                            erro
-                        );
-
+                        return reject(erro);
                     }
 
-
-                    resolve(
-                        resultados
-                    );
-
+                    resolve(resultados);
                 }
             );
-
         }
     );
-
 }
-
-
-/*
- * =====================================================
- * EXPORTAÇÕES
- * =====================================================
- */
 
 module.exports = {
 
