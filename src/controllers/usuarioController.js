@@ -56,7 +56,14 @@ const cadastrarUsuario = async (req, res) => {
 // Chama a função do Model para cadastrar o usuário
 usuarioModel.cadastrarUsuario(dados, (err, resultado) => {
 
-    if (err) {
+  if (err) {
+
+    if (err.code === "ER_DUP_ENTRY" && err.message.includes("usuario.email")) {
+        return res.status(400).json({
+            message: "E-mail já cadastrado."
+        });
+    }
+
     return res.status(500).json({
         message: err.message
     });
