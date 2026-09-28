@@ -1,4 +1,4 @@
-// Model responsável pelo cadastro de usuário (RF-04)
+// Model responsável pelo cadastro e gerenciamento de usuário
 
 const connection = require('../config/database');
 const bcrypt = require('bcrypt');
@@ -69,8 +69,99 @@ const cadastrarUsuario = (dados, callback) => {
     );
 };
 
-// Exporta a função para ser utilizada pelo Controller
-module.exports = {
-    cadastrarUsuario
-};
 
+// RF-05 — Buscar usuário por ID
+function buscarPorId(id) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                u.id_usuario,
+                u.nome,
+                u.email,
+                u.login,
+                u.status,
+                u.id_nivel_acesso,
+                n.descricao AS perfil
+            FROM usuario u
+            INNER JOIN nivel_acesso n
+                ON u.id_nivel_acesso = n.id_nivel_acesso
+            WHERE u.id_usuario = ?
+        `;
+
+        connection.query(sql, [id], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados[0] || null);
+        });
+    });
+}
+
+
+// RF-05 — Verificar se login já está em uso
+function verificarLogin(login, idUsuario) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT id_usuario
+            FROM usuario
+            WHERE login = ?
+                AND id_usuario <> ?
+        `;
+
+        connection.query(sql, [login, idUsuario], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados.length > 0);
+        });
+    });
+}
+
+
+// RF-05 — Verificar se e-mail já está em uso
+function verificarEmail(email, idUsuario) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT id_usuario
+            FROM usuario
+            WHERE email = ?
+                AND id_usuario <> ?
+        `;
+
+        connection.query(sql, [email, idUsuario], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados.length > 0);
+        });
+    });
+}
+
+
+// RF-05 — Atualizar usuário
+function atualizar(idUsuario, nome, email, login, idNivelAcesso) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            UPDATE usuario
+            SET
+                nome = ?,
+                email = ?,
+                login = ?,
+                id_nivel_acesso = ?
+            WHERE id_usuario = ?
+        `;
+
+        connection.query(
+            sql,
+            [nome, email, login, idNivelAcesso, idUsuario],
+            (erro, resultado) => {
+                if (erro) return reject(erro);
+                resolve(resultado);
+            }
+        );
+    });
+}
+
+
+// Exporta as funções utilizadas pelos Controllers
+module.exports = {
+    cadastrarUsuario,
+    buscarPorId,
+    verificarLogin,
+    verificarEmail,
+    atualizar
+};

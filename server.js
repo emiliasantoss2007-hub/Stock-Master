@@ -1,20 +1,27 @@
+require('dotenv').config();
+require('./src/config/database');
+
 const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+const usuarioRoutes = require('./src/routes/usuarioRoutes');
 
 // Permite receber dados em JSON
 app.use(express.json());
 
-// Arquivos do Front-end
+// Permite receber dados de formulários
+app.use(express.urlencoded({ extended: true }));
+
+// Arquivos estáticos do Front-end
 app.use(express.static(path.join(__dirname, 'views')));
 
-// Rota de usuários
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
+// Rotas de usuários
 app.use(usuarioRoutes);
 
-// Rota inicial
+// Rota inicial → login
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
 });

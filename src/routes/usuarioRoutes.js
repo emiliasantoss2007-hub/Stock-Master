@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { cadastrarUsuario } = require('../controllers/usuarioController');
+const usuarioController = require('../controllers/usuarioController');
+const auth = require('../middlewares/auth');
 
-// Rota responsável pelo cadastro de usuário
-router.post('/usuarios', cadastrarUsuario);
+// RF-04 — Cadastro de usuário
+router.post('/usuarios', usuarioController.cadastrarUsuario);
+
+// RF-05 — Edição de usuário
+router.put('/usuarios/:id', auth, usuarioController.editarUsuario);
 
 module.exports = router;
