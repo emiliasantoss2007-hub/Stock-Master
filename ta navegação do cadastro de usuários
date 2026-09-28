@@ -1,0 +1,509 @@
+[1mdiff --git a/views/html/cadastrar_usuarios.html b/views/html/cadastrar_usuarios.html[m
+[1mindex 4cbc7cc..9f4bbf0 100644[m
+[1m--- a/views/html/cadastrar_usuarios.html[m
+[1m+++ b/views/html/cadastrar_usuarios.html[m
+[36m@@ -1,170 +1,370 @@[m
+ <!DOCTYPE html>[m
+[32m+[m
+ <html lang="pt-BR">[m
+[32m+[m
+ <head>[m
+[31m-    <meta charset="UTF-8">[m
+[31m-    <meta name="viewport" content="width=device-width, initial-scale=1.0">[m
+[31m-    <meta name="description" content="Cadastro de usuário StockMaster">[m
+[31m-    <title>StockMaster | Cadastro de usuário</title>[m
+ [m
+[31m-    <!-- CONEXÃO CSS: layout geral -->[m
+[31m-    <link rel="stylesheet" href="../css/dashboard.css">[m
+[32m+[m[32m```[m
+[32m+[m[32m<meta charset="UTF-8">[m
+[32m+[m
+[32m+[m[32m<meta name="viewport" content="width=device-width, initial-scale=1.0">[m
+[32m+[m
+[32m+[m[32m<meta name="description" content="Cadastro de usuário StockMaster">[m
+[32m+[m
+[32m+[m[32m<title>StockMaster | Cadastro de usuário</title>[m
+[32m+[m
+[32m+[m[32m<!-- CONEXÃO CSS: layout geral -->[m
+[32m+[m[32m<link rel="stylesheet" href="../css/dashboard.css">[m
+ [m
+[31m-    <!-- CONEXÃO CSS: regras específicas do módulo -->[m
+[31m-    <link rel="stylesheet" href="../css/usuarios.css">[m
+[32m+[m[32m<!-- CONEXÃO CSS: regras específicas do módulo -->[m
+[32m+[m[32m<link rel="stylesheet" href="../css/usuarios.css">[m
+[32m+[m
+[32m+[m[32m<!-- CONEXÃO JS: validação do cadastro -->[m
+[32m+[m[32m<script src="../js/cadastrar_usuarios.js" defer></script>[m
+[32m+[m[32m```[m
+ [m
+[31m-    <!-- CONEXÃO JS: validação do cadastro -->[m
+[31m-    <script src="../js/cadastrar_usuarios.js" defer></script>[m
+ </head>[m
+[32m+[m
+ <body>[m
+[31m-    <div class="dashboard-layout">[m
+[31m-        <aside class="sidebar">[m
+[31m-            <div class="brand">[m
+[31m-                <div class="brand-mark">SM</div>[m
+[32m+[m
+[32m+[m[32m```[m
+[32m+[m[32m<div class="dashboard-layout">[m
+[32m+[m
+[32m+[m[32m    <aside class="sidebar">[m
+[32m+[m
+[32m+[m[32m        <div class="brand">[m
+[32m+[m
+[32m+[m[32m            <div class="brand-mark">SM</div>[m
+[32m+[m
+[32m+[m[32m            <div>[m
+[32m+[m
+[32m+[m[32m                <strong>StockMaster</strong>[m
+[32m+[m
+[32m+[m[32m                <small>Gestão de estoque</small>[m
+[32m+[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        <p class="nav-title">Menu principal</p>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        <nav class="sidebar-nav" aria-label="Navegação do Administrador">[m
+[32m+[m
+[32m+[m[32m            <!-- HREF: cadastro-usuario.html -> dashboard_adm.html -->[m
+[32m+[m[32m            <a href="dashboard_adm.html">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">⌂</span>[m
+[32m+[m
+[32m+[m[32m                Dashboard[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <!-- HREF: cadastro-usuario.html -> usuarios.html -->[m
+[32m+[m[32m            <a href="usuarios.html" class="active">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">♙</span>[m
+[32m+[m
+[32m+[m[32m                Usuários[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <!-- HREF DESTINO FUTURO -->[m
+[32m+[m[32m            <a href="produtos.html">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">▣</span>[m
+[32m+[m
+[32m+[m[32m                Produtos[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <!-- HREF DESTINO FUTURO -->[m
+[32m+[m[32m            <a href="entrada_estoque.html">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">＋</span>[m
+[32m+[m
+[32m+[m[32m                Entrada de estoque[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <!-- HREF DESTINO FUTURO -->[m
+[32m+[m[32m            <a href="saída_estoque.html">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">−</span>[m
+[32m+[m
+[32m+[m[32m                Saída de estoque[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <a href="expurgo_estoque.html" id="expurgoLink">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">⌫</span>[m
+[32m+[m
+[32m+[m[32m                Expurgo[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <!-- HREF DESTINO FUTURO -->[m
+[32m+[m[32m            <a href="historico_movimentacao.html">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">◷</span>[m
+[32m+[m
+[32m+[m[32m                Histórico[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <!-- HREF DESTINO FUTURO -->[m
+[32m+[m[32m            <a href="relatorios.html">[m
+[32m+[m
+[32m+[m[32m                <span class="nav-icon">▤</span>[m
+[32m+[m
+[32m+[m[32m                Relatórios[m
+[32m+[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m[32m        </nav>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        <div class="sidebar-bottom">[m
+[32m+[m
+[32m+[m[32m            <!-- HREF DESTINO FUTURO -->[m
+[32m+[m[32m            <a href="perfil.html">⚙ Meu perfil</a>[m
+[32m+[m
+[32m+[m[32m            <!-- HREF: cadastro-usuario.html -> login.html -->[m
+[32m+[m[32m            <a href="login.html">↪ Sair</a>[m
+[32m+[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m    </aside>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m    <main class="main-area">[m
+[32m+[m
+[32m+[m[32m        <header class="topbar">[m
+[32m+[m
+[32m+[m[32m            <div class="topbar-context">[m
+[32m+[m
+[32m+[m[32m                <small>Área autenticada</small>[m
+[32m+[m
+[32m+[m[32m                <strong>Novo usuário</strong>[m
+[32m+[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m            <div class="user-area">[m
+[32m+[m
+                 <div>[m
+[31m-                    <strong>StockMaster</strong>[m
+[31m-                    <small>Gestão de estoque</small>[m
+[32m+[m
+[32m+[m[32m                    <strong>Administrador</strong>[m
+[32m+[m
+[32m+[m[32m                    <small>admin.stockmaster</small>[m
+[32m+[m
+                 </div>[m
+[32m+[m
+[32m+[m[32m                <span class="avatar">AD</span>[m
+[32m+[m
+             </div>[m
+ [m
+[31m-            <p class="nav-title">Menu principal</p>[m
+[32m+[m[32m        </header>[m
+ [m
+[31m-            <nav class="sidebar-nav" aria-label="Navegação do Administrador">[m
+[31m-                <!-- HREF: cadastro-usuario.html -> dashboard-admin.html -->[m
+[31m-                <a href="dashboard_adm.html">[m
+[31m-                    <span class="nav-icon">⌂</span>[m
+[31m-                    Dashboard[m
+[31m-                </a>[m
+ [m
+[31m-                <!-- HREF: cadastro-usuario.html -> usuarios.html -->[m
+[31m-                <a href="usuarios.html" class="active">[m
+[31m-                    <span class="nav-icon">♙</span>[m
+[31m-                    Usuários[m
+[31m-                </a>[m
+[32m+[m[32m        <section class="content">[m
+ [m
+[31m-                <!-- HREF DESTINO FUTURO -->[m
+[31m-                <a href="produtos.html">[m
+[31m-                    <span class="nav-icon">▣</span>[m
+[31m-                    Produtos[m
+[31m-                </a>[m
+ [m
+[31m-                <!-- HREF DESTINO FUTURO -->[m
+[31m-                <a href="entrada_estoque.html">[m
+[31m-                    <span class="nav-icon">＋</span>[m
+[31m-                    Entrada de estoque[m
+[31m-                </a>[m
+[32m+[m[32m            <!-- BREADCRUMB CORRIGIDO -->[m
+ [m
+[31m-                <!-- HREF DESTINO FUTURO -->[m
+[31m-                <a href="saída_estoque.html">[m
+[31m-                    <span class="nav-icon">−</span>[m
+[31m-                    Saída de estoque[m
+[31m-                </a>[m
+[32m+[m[32m            <div class="breadcrumb">[m
+ [m
+[31m-                <a href="expurgo_estoque.html" id="expurgoLink">[m
+[31m-                    <span class="nav-icon">⌫</span>Expurgo</a>[m
+[32m+[m[32m                <!-- CORRIGIDO: dashboard-admin.html -> dashboard_adm.html -->[m
+ [m
+[31m-                <!-- HREF DESTINO FUTURO -->[m
+[31m-                <a href="historico_movimentacao.html">[m
+[31m-                    <span class="nav-icon">◷</span>[m
+[31m-                    Histórico[m
+[31m-                </a>[m
+[32m+[m[32m                <a href="dashboard_adm.html">Início</a> /[m
+ [m
+[31m-                <!-- HREF DESTINO FUTURO -->[m
+[31m-                <a href="relatorios.html">[m
+[31m-                    <span class="nav-icon">▤</span>[m
+[31m-                    Relatórios[m
+[31m-                </a>[m
+[31m-            </nav>[m
+[32m+[m[32m                <a href="usuarios.html">Usuários</a> /[m
+ [m
+[31m-            <div class="sidebar-bottom">[m
+[31m-                <!-- HREF DESTINO FUTURO -->[m
+[31m-                <a href="perfil.html">⚙ Meu perfil</a>[m
+[32m+[m[32m                Cadastro[m
+ [m
+[31m-                <!-- HREF: cadastro-usuario.html -> login.html -->[m
+[31m-                <a href="login.html">↪ Sair</a>[m
+             </div>[m
+[31m-        </aside>[m
+ [m
+[31m-        <main class="main-area">[m
+[31m-            <header class="topbar">[m
+[31m-                <div class="topbar-context">[m
+[31m-                    <small>Área autenticada</small>[m
+[31m-                    <strong>Novo usuário</strong>[m
+[31m-                </div>[m
+ [m
+[31m-                <div class="user-area">[m
+[31m-                    <div>[m
+[31m-                        <strong>Administrador</strong>[m
+[31m-                        <small>admin.stockmaster</small>[m
+[31m-                    </div>[m
+[31m-                    <span class="avatar">AD</span>[m
+[32m+[m[32m            <header class="page-header">[m
+[32m+[m
+[32m+[m[32m                <div>[m
+[32m+[m
+[32m+[m[32m                    <h1>Cadastrar usuário</h1>[m
+[32m+[m
+[32m+[m[32m                    <p>[m
+[32m+[m[32m                        Preencha os dados para criar um novo acesso ao StockMaster.[m
+[32m+[m[32m                    </p>[m
+[32m+[m
+                 </div>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                <!-- NOVO: BOTÃO PARA VOLTAR À LISTAGEM DE USUÁRIOS -->[m
+[32m+[m
+[32m+[m[32m                <a href="usuarios.html" class="button-secondary">[m
+[32m+[m[32m                    ← Voltar para usuários[m
+[32m+[m[32m                </a>[m
+[32m+[m
+             </header>[m
+ [m
+[31m-            <section class="content">[m
+[31m-                <div class="breadcrumb">[m
+[31m-                    <!-- HREF: cadastro-usuario.html -> dashboard-admin.html -->[m
+[31m-                    <a href="dashboard-admin.html">Início</a> /[m
+[31m-                    <!-- HREF: cadastro-usuario.html -> usuarios.html -->[m
+[31m-                    <a href="usuarios.html">Usuários</a> /[m
+[31m-                    Cadastro[m
+[31m-                </div>[m
+ [m
+[31m-                <header class="page-header">[m
+[31m-                    <div>[m
+[31m-                        <h1>Cadastrar usuário</h1>[m
+[31m-                        <p>Preencha os dados para criar um novo acesso ao StockMaster.</p>[m
+[31m-                    </div>[m
+[31m-                </header>[m
+[31m-[m
+[31m-                <section class="panel form-panel">[m
+[31m-                    <form id="userForm" novalidate>[m
+[31m-                        <div class="form-grid">[m
+[31m-                            <div class="form-field form-field-full">[m
+[31m-                                <label for="nome">Nome completo</label>[m
+[31m-                                <input type="text" id="nome" name="nome" placeholder="Ex.: João da Silva">[m
+[31m-                                <small id="nomeError"></small>[m
+[31m-                            </div>[m
+[31m-[m
+[31m-                            <div class="form-field">[m
+[31m-                                <label for="email">E-mail</label>[m
+[31m-                                <input type="email" id="email" name="email" placeholder="usuario@exemplo.com">[m
+[31m-                                <small id="emailError"></small>[m
+[31m-                            </div>[m
+[31m-[m
+[31m-                            <div class="form-field">[m
+[31m-                                <label for="login">Login</label>[m
+[31m-                                <input type="text" id="login" name="login" placeholder="nome.usuario">[m
+[31m-                                <small id="loginError"></small>[m
+[31m-                            </div>[m
+[31m-[m
+[31m-                            <div class="form-field">[m
+[31m-                                <label for="senha">Senha</label>[m
+[31m-                                <input type="password" id="senha" name="senha" placeholder="Mínimo de 8 caracteres">[m
+[31m-                                <small id="senhaError"></small>[m
+[31m-                            </div>[m
+[31m-[m
+[31m-                            <div class="form-field">[m
+[31m-                                <label for="perfil">Perfil de acesso</label>[m
+[31m-                                <select id="perfil" name="perfil">[m
+[31m-                                    <option value="">Selecione um perfil</option>[m
+[31m-                                    <option value="Administrador">Administrador</option>[m
+[31m-                                    <option value="Técnico">Técnico</option>[m
+[31m-                                </select>[m
+[31m-                                <small id="perfilError"></small>[m
+[31m-                            </div>[m
+[32m+[m[32m            <section class="panel form-panel">[m
+[32m+[m
+[32m+[m[32m                <form id="userForm" novalidate>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                    <div class="form-grid">[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                        <div class="form-field form-field-full">[m
+[32m+[m
+[32m+[m[32m                            <label for="nome">[m
+[32m+[m[32m                                Nome completo[m
+[32m+[m[32m                            </label>[m
+[32m+[m
+[32m+[m[32m                            <input[m
+[32m+[m[32m                                type="text"[m
+[32m+[m[32m                                id="nome"[m
+[32m+[m[32m                                name="nome"[m
+[32m+[m[32m                                placeholder="Ex.: João da Silva"[m
+[32m+[m[32m                            >[m
+[32m+[m
+[32m+[m[32m                            <small id="nomeError"></small>[m
+[32m+[m
+                         </div>[m
+ [m
+[31m-                        <p class="form-message" id="formMessage" aria-live="polite"></p>[m
+ [m
+[31m-                        <div class="form-actions">[m
+[31m-                            <!-- HREF: cadastro-usuario.html -> usuarios.html -->[m
+[31m-                            <a href="usuarios.html" class="button-secondary">Cancelar</a>[m
+[31m-                            <button type="submit" class="button button-primary">Cadastrar usuário</button>[m
+[32m+[m[32m                        <div class="form-field">[m
+[32m+[m
+[32m+[m[32m                            <label for="email">[m
+[32m+[m[32m                                E-mail[m
+[32m+[m[32m                            </label>[m
+[32m+[m
+[32m+[m[32m                            <input[m
+[32m+[m[32m                                type="email"[m
+[32m+[m[32m                                id="email"[m
+[32m+[m[32m                                name="email"[m
+[32m+[m[32m                                placeholder="usuario@exemplo.com"[m
+[32m+[m[32m                            >[m
+[32m+[m
+[32m+[m[32m                            <small id="emailError"></small>[m
+[32m+[m
+                         </div>[m
+[31m-                    </form>[m
+[31m-                </section>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                        <div class="form-field">[m
+[32m+[m
+[32m+[m[32m                            <label for="login">[m
+[32m+[m[32m                                Login[m
+[32m+[m[32m                            </label>[m
+[32m+[m
+[32m+[m[32m                            <input[m
+[32m+[m[32m                                type="text"[m
+[32m+[m[32m                                id="login"[m
+[32m+[m[32m                                name="login"[m
+[32m+[m[32m                                placeholder="nome.usuario"[m
+[32m+[m[32m                            >[m
+[32m+[m
+[32m+[m[32m                            <small id="loginError"></small>[m
+[32m+[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                        <div class="form-field">[m
+[32m+[m
+[32m+[m[32m                            <label for="senha">[m
+[32m+[m[32m                                Senha[m
+[32m+[m[32m                            </label>[m
+[32m+[m
+[32m+[m[32m                            <input[m
+[32m+[m[32m                                type="password"[m
+[32m+[m[32m                                id="senha"[m
+[32m+[m[32m                                name="senha"[m
+[32m+[m[32m                                placeholder="Mínimo de 8 caracteres"[m
+[32m+[m[32m                            >[m
+[32m+[m
+[32m+[m[32m                            <small id="senhaError"></small>[m
+[32m+[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                        <div class="form-field">[m
+[32m+[m
+[32m+[m[32m                            <label for="perfil">[m
+[32m+[m[32m                                Perfil de acesso[m
+[32m+[m[32m                            </label>[m
+[32m+[m
+[32m+[m[32m                            <select id="perfil" name="perfil">[m
+[32m+[m
+[32m+[m[32m                                <option value="">[m
+[32m+[m[32m                                    Selecione um perfil[m
+[32m+[m[32m                                </option>[m
+[32m+[m
+[32m+[m[32m                                <option value="Administrador">[m
+[32m+[m[32m                                    Administrador[m
+[32m+[m[32m                                </option>[m
+[32m+[m
+[32m+[m[32m                                <option value="Técnico">[m
+[32m+[m[32m                                    Técnico[m
+[32m+[m[32m                                </option>[m
+[32m+[m
+[32m+[m[32m                            </select>[m
+[32m+[m
+[32m+[m[32m                            <small id="perfilError"></small>[m
+[32m+[m
+[32m+[m[32m                        </div>[m
+[32m+[m
+[32m+[m[32m                    </div>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                    <p[m
+[32m+[m[32m                        class="form-message"[m
+[32m+[m[32m                        id="formMessage"[m
+[32m+[m[32m                        aria-live="polite"[m
+[32m+[m[32m                    ></p>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                    <div class="form-actions">[m
+[32m+[m
+[32m+[m[32m                        <!-- HREF: cadastro-usuario.html -> usuarios.html -->[m
+[32m+[m
+[32m+[m[32m                        <a[m
+[32m+[m[32m                            href="usuarios.html"[m
+[32m+[m[32m                            class="button-secondary"[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                            Cancelar[m
+[32m+[m[32m                        </a>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                        <button[m
+[32m+[m[32m                            type="submit"[m
+[32m+[m[32m                            class="button button-primary"[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                            Cadastrar usuário[m
+[32m+[m[32m                        </button>[m
+[32m+[m
+[32m+[m[32m                    </div>[m
+[32m+[m
+[32m+[m[32m                </form>[m
+[32m+[m
+             </section>[m
+[31m-        </main>[m
+[31m-    </div>[m
+[32m+[m
+[32m+[m[32m        </section>[m
+[32m+[m
+[32m+[m[32m    </main>[m
+[32m+[m
+[32m+[m[32m</div>[m
+[32m+[m[32m```[m
+[32m+[m
+ </body>[m
+[32m+[m
+ </html>[m
+[41m+[m
