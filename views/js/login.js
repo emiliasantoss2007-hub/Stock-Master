@@ -1,7 +1,9 @@
 /* =========================================================
-   STOCK MASTER - ESTRUTURA BASE DO FRONT-END
-   script.js
+   STOCK MASTER - LOGIN
+   Integração com API de autenticação
    ========================================================= */
+
+"use strict";
 
 
 /* =========================================================
@@ -37,35 +39,39 @@ const forgotPassword =
    2. MOSTRAR / OCULTAR SENHA
    ========================================================= */
 
-togglePassword.addEventListener(
-    "click",
-    () => {
+togglePassword.addEventListener("click", () => {
 
-        const mostrarSenha =
-            senhaInput.type === "password";
+    if (senhaInput.type === "password") {
 
-
-        senhaInput.type =
-            mostrarSenha
-                ? "text"
-                : "password";
-
+        senhaInput.type = "text";
 
         togglePassword.setAttribute(
             "aria-label",
-            mostrarSenha
-                ? "Ocultar senha"
-                : "Mostrar senha"
+            "Ocultar senha"
         );
-
 
         togglePassword.setAttribute(
             "aria-pressed",
-            String(mostrarSenha)
+            "true"
+        );
+
+    } else {
+
+        senhaInput.type = "password";
+
+        togglePassword.setAttribute(
+            "aria-label",
+            "Mostrar senha"
+        );
+
+        togglePassword.setAttribute(
+            "aria-pressed",
+            "false"
         );
 
     }
-);
+
+});
 
 
 /* =========================================================
@@ -76,46 +82,27 @@ function validarLogin() {
 
     let valido = true;
 
-
-    // Limpa mensagens anteriores
-
     usuarioError.textContent = "";
-
     senhaError.textContent = "";
-
     formMessage.textContent = "";
 
-
-    // Validação do usuário
-
-    if (
-        usuarioInput.value.trim() === ""
-    ) {
+    if (usuarioInput.value.trim() === "") {
 
         usuarioError.textContent =
             "Informe o usuário.";
 
         valido = false;
-
     }
 
-
-    // Validação da senha
-
-    if (
-        senhaInput.value.trim() === ""
-    ) {
+    if (senhaInput.value.trim() === "") {
 
         senhaError.textContent =
             "Informe a senha.";
 
         valido = false;
-
     }
 
-
     return valido;
-
 }
 
 
@@ -125,54 +112,112 @@ function validarLogin() {
 
 loginForm.addEventListener(
     "submit",
-    (event) => {
-
-        // Impede o recarregamento da página
+    async (event) => {
 
         event.preventDefault();
 
-
-        // Executa a validação
-
-        if (
-            !validarLogin()
-        ) {
-
+        if (!validarLogin()) {
             return;
-
         }
 
+        const login =
+            usuarioInput.value.trim();
 
-        /*
-         * Nesta etapa o sistema ainda não possui
-         * um Back-end implementado.
-         *
-         * Futuramente, esta área poderá realizar
-         * uma requisição HTTP para o Controller
-         * responsável pela autenticação.
-         */
+        const senha =
+            senhaInput.value;
 
         formMessage.textContent =
-            "Dados válidos. " +
-            "A autenticação será implementada posteriormente.";
+            "Autenticando...";
 
-    }
-);
+        try {
+
+            const resposta = await fetch(
+                "/api/auth/login",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        login,
+                        senha
+                    })
+                }
+            );
+
+            const resultado =
+                await resposta.json();
+
+            /* ---------- Login realizado ---------- */
+
+            if (resultado.success) {
+
+                const perfil =
+                    resultado.data.perfil;
+
+                if (perfil.id === 1) {
+
+                    window.location.href =
+                        "/html/dashboard_adm.html";
+
+                    return;
+                }
+
+                if (perfil.id === 2) {
+
+                    window.location.href =
+                        "/html/dashboard_tec.html";
+
+                    return;
+                }
+
+                formMessage.textContent =
+                    "Perfil de usuário não reconhecido.";
+
+                return;
+            }
 
 
-/* =========================================================
-   5. RECUPERAÇÃO DE SENHA
-   ========================================================= */
+            /* ---------- Login bloqueado ---------- */
 
-forgotPassword.addEventListener(
-    "click",
-    (event) => {
+            if (resultado.code === "ACCOUNT_LOCKED") {
 
-        event.preventDefault();
+                formMessage.textContent =
+                    resultado.message;
+
+                return;
+            }
 
 
-        formMessage.textContent =
-            "A recuperação de senha será implementada posteriormente.";
+            /* ---------- Usuário inativo ---------- */
+
+            if (resultado.code === "USER_INACTIVE") {
+
+                formMessage.textContent =
+                    resultado.message;
+
+                return;
+            }
+
+
+            /* ---------- Credenciais inválidas ---------- */
+
+            formMessage.textContent =
+                resultado.message ||
+                "Usuário ou senha inválidos.";
+
+        } catch (erro) {
+
+            console.error(
+                "[StockMaster] Erro ao realizar login:",
+                erro
+            );
+
+            formMessage.textContent =
+                "Não foi possível conectar ao servidor. Tente novamente.";
+        }
 
     }
 );
