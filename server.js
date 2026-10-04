@@ -8,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const usuarioRoutes = require('./src/routes/usuarioRoutes');
+const recuperacaoSenhaRoutes = require('./src/routes/recuperacaoSenhaRoutes');
 
 // Permite receber dados em JSON
 app.use(express.json());
@@ -20,6 +21,7 @@ app.use(express.static(path.join(__dirname, 'views')));
 
 // Rotas de usuários
 app.use(usuarioRoutes);
+app.use(recuperacaoSenhaRoutes);
 
 // Rota inicial → login
 app.get('/', (req, res) => {
