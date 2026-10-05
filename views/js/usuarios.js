@@ -2,11 +2,7 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        /*
-         * =====================================================
-         * ELEMENTOS DA INTERFACE
-         * =====================================================
-         */
+        // ELEMENTOS
 
         const searchInput =
             document.querySelector(
@@ -64,53 +60,57 @@ document.addEventListener(
             );
 
 
-        /*
-         * =====================================================
-         * ESTADO DA TELA
-         * =====================================================
-         */
+        // ESTADO
 
         let users = [];
-
-        let filteredUsers = [];
 
         let sortColumn = "nome";
 
         let sortDirection = "asc";
 
 
-        /*
-         * =====================================================
-         * INICIALIZAÇÃO
-         * =====================================================
-         */
+        // INICIALIZAÇÃO
 
         carregarUsuarios();
 
 
-        /*
-         * =====================================================
-         * EVENTOS
-         * =====================================================
-         */
+        // PESQUISA
 
         searchInput.addEventListener(
             "input",
-            carregarUsuarios
+            () => {
+
+                carregarUsuarios();
+
+            }
         );
 
+
+        // FILTRO DE PERFIL
 
         profileFilter.addEventListener(
             "change",
-            carregarUsuarios
+            () => {
+
+                carregarUsuarios();
+
+            }
         );
 
+
+        // FILTRO DE STATUS
 
         statusFilter.addEventListener(
             "change",
-            carregarUsuarios
+            () => {
+
+                carregarUsuarios();
+
+            }
         );
 
+
+        // LIMPAR FILTROS
 
         clearFiltersButton.addEventListener(
             "click",
@@ -130,9 +130,7 @@ document.addEventListener(
         );
 
 
-        /*
-         * Ordenação das colunas.
-         */
+        // ORDENAÇÃO
 
         sortButtons.forEach(
             (button) => {
@@ -144,13 +142,14 @@ document.addEventListener(
                         const column =
                             button.dataset.sort;
 
-
                         if (
-                            sortColumn === column
+                            sortColumn ===
+                            column
                         ) {
 
                             sortDirection =
-                                sortDirection === "asc"
+                                sortDirection ===
+                                "asc"
                                     ? "desc"
                                     : "asc";
 
@@ -164,7 +163,6 @@ document.addEventListener(
 
                         }
 
-
                         atualizarIndicadoresOrdenacao();
 
                         carregarUsuarios();
@@ -176,8 +174,7 @@ document.addEventListener(
         );
 
 
-        //Carregar Funcionarios
-
+        // CONSULTAR USUÁRIOS
 
         async function carregarUsuarios() {
 
@@ -185,7 +182,7 @@ document.addEventListener(
 
             try {
 
-                const params =
+                const parametros =
                     new URLSearchParams();
 
                 const busca =
@@ -197,36 +194,50 @@ document.addEventListener(
                 const status =
                     statusFilter.value;
 
+
                 if (busca) {
-                    params.set(
+
+                    parametros.set(
                         "busca",
                         busca
                     );
+
                 }
 
+
                 if (perfil) {
-                    params.set(
+
+                    parametros.set(
                         "perfil",
                         perfil
                     );
+
                 }
 
+
                 if (status) {
-                    params.set(
+
+                    parametros.set(
                         "status",
                         status
                     );
+
                 }
 
-                params.set(
+
+                parametros.set(
                     "ordenarPor",
                     sortColumn
                 );
 
-                params.set(
+
+                parametros.set(
                     "direcao",
                     sortDirection
                 );
+
+
+                // AUTENTICAÇÃO DE TESTE
 
                 const perfilLogado =
                     localStorage.getItem(
@@ -234,23 +245,41 @@ document.addEventListener(
                     ) ||
                     "Administrador";
 
+
+                const usuarioTeste = {
+
+                    id_nivel_acesso:
+                        perfilLogado ===
+                        "Administrador"
+                            ? 1
+                            : 2
+
+                };
+
+
                 const resposta =
                     await fetch(
-                        `/api/usuarios?${params.toString()}`,
+                        `/api/usuarios?${parametros.toString()}`,
                         {
                             method: "GET",
 
                             headers: {
-                                "X-Perfil":
-                                    perfilLogado
+
+                                "X-User":
+                                    JSON.stringify(
+                                        usuarioTeste
+                                    )
+
                             }
                         }
                     );
+
 
                 const dados =
                     await obterRespostaJson(
                         resposta
                     );
+
 
                 if (
                     !resposta.ok
@@ -258,9 +287,23 @@ document.addEventListener(
 
                     throw new Error(
                         dados.mensagem ||
-                        "Não foi possível carregar os usuários."
+                        "Não foi possível consultar os usuários."
                     );
+
                 }
+
+
+                if (
+                    !dados.sucesso
+                ) {
+
+                    throw new Error(
+                        dados.mensagem ||
+                        "A consulta não foi realizada."
+                    );
+
+                }
+
 
                 if (
                     !Array.isArray(
@@ -269,58 +312,62 @@ document.addEventListener(
                 ) {
 
                     throw new Error(
-                        "O servidor retornou uma lista de usuários inválida."
+                        "O servidor retornou dados inválidos."
                     );
+
                 }
+
 
                 users =
                     dados.usuarios.map(
                         normalizarUsuario
                     );
 
-                filteredUsers =
-                    users;
 
                 renderizarTabela();
+
 
             } catch (erro) {
 
                 console.error(
-                    "Erro ao carregar usuários:",
+                    "Erro na consulta:",
                     erro
                 );
 
+
                 users = [];
 
-                filteredUsers = [];
 
-                renderizarTabela();
+                tableBody.innerHTML =
+                    "";
+
 
                 usersCount.textContent =
                     "0 usuários";
 
+
                 emptyState.hidden =
                     false;
 
+
                 emptyStateTitle.textContent =
                     "Não foi possível carregar os usuários";
+
 
                 emptyStateMessage.textContent =
                     erro.message ||
                     "Verifique a conexão com o servidor.";
 
+
                 usersMessage.textContent =
                     "";
 
             }
+
         }
 
 
-        /*
-         * =====================================================
-         * NORMALIZAÇÃO DO USUÁRIO
-         * =====================================================
-         */
+        // NORMALIZAR USUÁRIO
 
         function normalizarUsuario(
             usuario
@@ -367,11 +414,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * NORMALIZAÇÃO DO STATUS
-         * =====================================================
-         */
+        // NORMALIZAR STATUS
 
         function normalizarStatus(
             status
@@ -392,183 +435,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * PESQUISA E FILTROS
-         * =====================================================
-         */
-
-        function aplicarFiltros() {
-
-            const pesquisa =
-                normalizarTexto(
-                    searchInput.value
-                );
-
-
-            const perfil =
-                profileFilter.value;
-
-
-            const status =
-                statusFilter.value;
-
-
-            filteredUsers =
-                users.filter(
-                    (usuario) => {
-
-                        /*
-                         * Pesquisa por:
-                         * nome
-                         * e-mail
-                         * login
-                         */
-
-                        const correspondePesquisa =
-                            !pesquisa ||
-                            normalizarTexto(
-                                usuario.nome
-                            ).includes(
-                                pesquisa
-                            ) ||
-                            normalizarTexto(
-                                usuario.email
-                            ).includes(
-                                pesquisa
-                            ) ||
-                            normalizarTexto(
-                                usuario.login
-                            ).includes(
-                                pesquisa
-                            );
-
-
-                        /*
-                         * Filtro por perfil.
-                         */
-
-                        const correspondePerfil =
-                            !perfil ||
-                            usuario.perfil ===
-                            perfil;
-
-
-                        /*
-                         * Filtro por status.
-                         */
-
-                        const correspondeStatus =
-                            !status ||
-                            usuario.status ===
-                            status;
-
-
-                        return (
-                            correspondePesquisa &&
-                            correspondePerfil &&
-                            correspondeStatus
-                        );
-
-                    }
-                );
-
-
-            ordenarUsuarios(
-                filteredUsers
-            );
-
-
-            renderizarTabela();
-
-        }
-
-
-        /*
-         * =====================================================
-         * ORDENAÇÃO
-         * =====================================================
-         */
-
-        function ordenarUsuarios(
-            lista
-        ) {
-
-            lista.sort(
-                (a, b) => {
-
-                    const valorA =
-                        obterValorOrdenacao(
-                            a,
-                            sortColumn
-                        );
-
-
-                    const valorB =
-                        obterValorOrdenacao(
-                            b,
-                            sortColumn
-                        );
-
-
-                    const comparacao =
-                        valorA.localeCompare(
-                            valorB,
-                            "pt-BR",
-                            {
-                                numeric: true,
-                                sensitivity:
-                                    "base"
-                            }
-                        );
-
-
-                    return (
-                        sortDirection ===
-                        "asc"
-                    )
-                        ? comparacao
-                        : -comparacao;
-
-                }
-            );
-
-        }
-
-
-        /*
-         * Obtém o valor utilizado
-         * na ordenação.
-         */
-
-        function obterValorOrdenacao(
-            usuario,
-            coluna
-        ) {
-
-            if (
-                coluna ===
-                "status"
-            ) {
-
-                return usuario.status;
-
-            }
-
-
-            return (
-                usuario[coluna] ||
-                ""
-            );
-
-        }
-
-
-        /*
-         * =====================================================
-         * RENDERIZAR TABELA
-         * =====================================================
-         */
+        // RENDERIZAR TABELA
 
         function renderizarTabela() {
 
@@ -576,13 +443,8 @@ document.addEventListener(
                 "";
 
 
-            /*
-             * Nenhum resultado.
-             */
-
             if (
-                filteredUsers.length ===
-                0
+                users.length === 0
             ) {
 
                 usersCount.textContent =
@@ -593,22 +455,16 @@ document.addEventListener(
                     false;
 
 
-                const possuiFiltros =
-                    searchInput.value.trim() ||
-                    profileFilter.value ||
-                    statusFilter.value;
-
-
                 emptyStateTitle.textContent =
-                    possuiFiltros
-                        ? "Nenhum usuário encontrado"
-                        : "Nenhum usuário cadastrado";
+                    "Nenhum usuário encontrado";
 
 
                 emptyStateMessage.textContent =
-                    possuiFiltros
-                        ? "Não há usuários que correspondam aos critérios informados."
-                        : "Os usuários cadastrados aparecerão nesta tabela.";
+                    "Não há usuários que correspondam aos critérios informados.";
+
+
+                usersMessage.textContent =
+                    "";
 
 
                 return;
@@ -621,9 +477,10 @@ document.addEventListener(
 
 
             usersCount.textContent =
-                `${filteredUsers.length} ${filteredUsers.length === 1
-                    ? "usuário"
-                    : "usuários"
+                `${users.length} ${
+                    users.length === 1
+                        ? "usuário"
+                        : "usuários"
                 }`;
 
 
@@ -631,7 +488,7 @@ document.addEventListener(
                 document.createDocumentFragment();
 
 
-            filteredUsers.forEach(
+            users.forEach(
                 (usuario) => {
 
                     fragment.appendChild(
@@ -655,11 +512,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * CRIAR LINHA DA TABELA
-         * =====================================================
-         */
+        // CRIAR LINHA
 
         function criarLinha(
             usuario
@@ -671,9 +524,7 @@ document.addEventListener(
                 );
 
 
-            /*
-             * NOME
-             */
+            // NOME
 
             const nomeCell =
                 document.createElement(
@@ -698,10 +549,12 @@ document.addEventListener(
             avatar.className =
                 "user-cell-avatar";
 
+
             avatar.textContent =
                 obterIniciais(
                     usuario.nome
                 );
+
 
             avatar.setAttribute(
                 "aria-hidden",
@@ -719,6 +572,7 @@ document.addEventListener(
                 document.createElement(
                     "strong"
                 );
+
 
             name.textContent =
                 usuario.nome ||
@@ -738,14 +592,13 @@ document.addEventListener(
                 userInfo
             );
 
+
             nomeCell.appendChild(
                 userCell
             );
 
 
-            /*
-             * E-MAIL
-             */
+            // E-MAIL
 
             const emailCell =
                 criarCelulaTexto(
@@ -753,9 +606,7 @@ document.addEventListener(
                 );
 
 
-            /*
-             * LOGIN
-             */
+            // LOGIN
 
             const loginCell =
                 criarCelulaTexto(
@@ -763,9 +614,7 @@ document.addEventListener(
                 );
 
 
-            /*
-             * PERFIL
-             */
+            // PERFIL
 
             const perfilCell =
                 criarCelulaTexto(
@@ -773,9 +622,7 @@ document.addEventListener(
                 );
 
 
-            /*
-             * STATUS
-             */
+            // STATUS
 
             const statusCell =
                 document.createElement(
@@ -791,7 +638,7 @@ document.addEventListener(
 
             statusBadge.className =
                 usuario.status ===
-                    "Ativo"
+                "Ativo"
                     ? "status status-success"
                     : "status status-danger";
 
@@ -805,14 +652,13 @@ document.addEventListener(
             );
 
 
-            /*
-             * AÇÕES
-             */
+            // AÇÕES
 
             const actionsCell =
                 document.createElement(
                     "td"
                 );
+
 
             actionsCell.className =
                 "actions-cell";
@@ -827,8 +673,7 @@ document.addEventListener(
             editLink.href =
                 `editar_usuario.html?id=${encodeURIComponent(
                     usuario.id
-                )
-                }`;
+                )}`;
 
 
             editLink.className =
@@ -850,10 +695,6 @@ document.addEventListener(
             );
 
 
-            /*
-             * Adiciona todas as células.
-             */
-
             row.append(
                 nomeCell,
                 emailCell,
@@ -869,11 +710,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * CRIAR CÉLULA
-         * =====================================================
-         */
+        // CRIAR CÉLULA
 
         function criarCelulaTexto(
             valor
@@ -895,11 +732,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * INICIAIS DO USUÁRIO
-         * =====================================================
-         */
+        // INICIAIS
 
         function obterIniciais(
             nome
@@ -942,18 +775,14 @@ document.addEventListener(
             return (
                 partes[0][0] +
                 partes[
-                partes.length - 1
+                    partes.length - 1
                 ][0]
             ).toUpperCase();
 
         }
 
 
-        /*
-         * =====================================================
-         * INDICADORES DE ORDENAÇÃO
-         * =====================================================
-         */
+        // ORDENAÇÃO
 
         function atualizarIndicadoresOrdenacao() {
 
@@ -966,14 +795,14 @@ document.addEventListener(
                         );
 
 
-                    const isActive =
+                    const ativo =
                         button.dataset.sort ===
                         sortColumn;
 
 
                     button.setAttribute(
                         "aria-sort",
-                        isActive
+                        ativo
                             ? sortDirection ===
                                 "asc"
                                 ? "ascending"
@@ -987,7 +816,7 @@ document.addEventListener(
                     ) {
 
                         indicator.textContent =
-                            isActive
+                            ativo
                                 ? sortDirection ===
                                     "asc"
                                     ? "↑"
@@ -1002,38 +831,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * NORMALIZAÇÃO DA PESQUISA
-         * ===================================================== */
-
-        function normalizarTexto(
-            valor
-        ) {
-
-            return String(
-                valor ||
-                ""
-            )
-                .toLocaleLowerCase(
-                    "pt-BR"
-                )
-                .normalize(
-                    "NFD"
-                )
-                .replace(
-                    /[\u0300-\u036f]/g,
-                    ""
-                );
-
-        }
-
-
-        /*
-         * =====================================================
-         * ESTADO DE CARREGAMENTO
-         * =====================================================
-         */
+        // CARREGANDO
 
         function mostrarCarregando() {
 
@@ -1059,11 +857,7 @@ document.addEventListener(
         }
 
 
-        /*
-         * =====================================================
-         * LEITURA DA RESPOSTA DA API
-         * =====================================================
-         */
+        // LER JSON
 
         async function obterRespostaJson(
             resposta
@@ -1088,7 +882,9 @@ document.addEventListener(
                     texto
                 );
 
-            } catch (erro) {
+            } catch (
+                erro
+            ) {
 
                 throw new Error(
                     "O servidor retornou uma resposta inválida."
@@ -1098,10 +894,6 @@ document.addEventListener(
 
         }
 
-
-        /*
-         * Inicializa os indicadores.
-         */
 
         atualizarIndicadoresOrdenacao();
 
