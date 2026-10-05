@@ -18,11 +18,13 @@ document.addEventListener("DOMContentLoaded", () => {
         perfil: document.querySelector("#perfilError")
     };
 
-    userForm.addEventListener("submit", (event) => {
+    userForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         let formValid = true;
-        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim());
+
+        const emailValid =
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim());
 
         Object.values(errors).forEach((error) => {
             error.textContent = "";
@@ -39,19 +41,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!emailValid) {
-            errors.email.textContent = "Informe um e-mail válido.";
+            errors.email.textContent = "Informe um e-mail valido.";
             fields.email.classList.add("field-invalid");
             formValid = false;
         }
 
         if (!fields.login.value.trim()) {
-            errors.login.textContent = "Informe o login do usuário.";
+            errors.login.textContent = "Informe o login do usuario.";
             fields.login.classList.add("field-invalid");
             formValid = false;
         }
 
         if (fields.senha.value.length < 8) {
-            errors.senha.textContent = "A senha deve possuir pelo menos 8 caracteres.";
+            errors.senha.textContent =
+                "A senha deve possuir pelo menos 8 caracteres.";
             fields.senha.classList.add("field-invalid");
             formValid = false;
         }
@@ -63,17 +66,60 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!formValid) {
-            formMessage.textContent = "Corrija os campos destacados antes de continuar.";
-            formMessage.className = "form-message form-message-error";
+            formMessage.textContent =
+                "Corrija os campos destacados antes de continuar.";
+            formMessage.className =
+                "form-message form-message-error";
             return;
         }
 
-        formMessage.textContent = "Usuário cadastrado com sucesso. Retornando à listagem...";
-        formMessage.className = "form-message form-message-success";
+        // Dados que serao enviados para o backend
+        const dadosUsuario = {
+            nome: fields.nome.value.trim(),
+            email: fields.email.value.trim(),
+            login: fields.login.value.trim(),
+            senha: fields.senha.value,
+            perfil: fields.perfil.value
+        };
 
-        /* CONEXÃO JS: cadastro-usuario.html -> usuarios.html */
-        window.setTimeout(() => {
-            window.location.href = "usuarios.html?cadastro=sucesso";
-        }, 900);
+        try {
+            formMessage.textContent = "Cadastrando usuario...";
+            formMessage.className = "form-message";
+
+            // Envia os dados para a rota POST /usuarios
+            const resposta = await fetch("/usuarios", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(dadosUsuario)
+            });
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(
+                    resultado.message || "Nao foi possivel cadastrar o usuario."
+                );
+            }
+
+            formMessage.textContent =
+                "Usuario cadastrado com sucesso. Retornando a listagem...";
+            formMessage.className =
+                "form-message form-message-success";
+
+            // Retorna para a tela de usuarios apos o cadastro
+            setTimeout(() => {
+                window.location.href = "usuarios.html?cadastro=sucesso";
+            }, 900);
+
+        } catch (erro) {
+            console.error("Erro ao cadastrar usuario:", erro);
+
+            formMessage.textContent =
+                erro.message || "Erro ao cadastrar usuario.";
+            formMessage.className =
+                "form-message form-message-error";
+        }
     });
 });
