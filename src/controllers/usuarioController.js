@@ -1,120 +1,85 @@
-const UsuarioModel = require('../models/usuarioModel');
+// Model responsável pelo cadastro e gerenciamento de usuário
+const usuarioModel = require('../models/usuarioModel');
+const UsuarioModel = usuarioModel;
 
-const editarUsuario = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { nome, email, login, id_nivel_acesso } = req.body;
-    const usuarioLogado = req.usuario; // middleware de autenticação
+// Controller responsável pelo cadastro de usuário
+const cadastrarUsuario = async (req, res) => {
 
-    // 1. Autorização (RN04) — apenas Administrador
-    if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
-      return res.status(403).json({
-        sucesso: false,
-        mensagem: 'Acesso negado. Apenas administradores podem editar usuários.'
-      });
+    // Recebe os dados enviados pelo Front-end
+    const { nome, email, login, senha, perfil } = req.body;
+
+    // Validação dos campos obrigatórios
+    if (!nome) {
+        return res.status(400).json({
+            message: "Nome é obrigatório"
+        });
     }
 
-    // 2. Validação dos dados recebidos
-    if (!id || !nome || !email || !login || !id_nivel_acesso) {
-      return res.status(400).json({
-        sucesso: false,
-        mensagem: 'Preencha todos os campos obrigatórios.'
-      });
+    if (!email) {
+        return res.status(400).json({
+            message: "Email é obrigatório"
+        });
     }
 
-    // 3. Usuário identificado (Model)
-    const usuarioExistente = await UsuarioModel.buscarPorId(id);
-
-    if (!usuarioExistente) {
-      return res.status(404).json({
-        sucesso: false,
-        mensagem: 'Usuário não encontrado.'
-      });
+    if (!login) {
+        return res.status(400).json({
+            message: "Login é obrigatório"
+        });
     }
 
-    // 4. Unicidade de login e e-mail (Model)
-    const loginEmUso = await UsuarioModel.verificarLogin(login.trim(), id);
-    if (loginEmUso) {
-      return res.status(400).json({
-        sucesso: false,
-        mensagem: 'O login informado já está em uso.'
-      });
+    if (!senha) {
+        return res.status(400).json({
+            message: "Senha é obrigatória"
+        });
     }
 
-    const emailEmUso = await UsuarioModel.verificarEmail(email.trim(), id);
-    if (emailEmUso) {
-      return res.status(400).json({
-        sucesso: false,
-        mensagem: 'O e-mail informado já está em uso.'
-      });
+    if (!perfil) {
+        return res.status(400).json({
+            message: "Perfil é obrigatório"
+        });
     }
 
-    // 5. Model acionado — atualização
-    await UsuarioModel.atualizar(
-      id,
-      nome.trim(),
-      email.trim(),
-      login.trim(),
-      id_nivel_acesso
-    );
+    // Validação do perfil
+    if (perfil !== "Administrador" && perfil !== "Técnico") {
+        return res.status(400).json({
+            message: "Perfil inválido"
+        });
+    }
 
-    // 6. Retorno de sucesso
-    return res.status(200).json({
-      sucesso: true,
-      mensagem: 'Usuário atualizado com sucesso!',
-      dadosAtualizados: {
-        id_usuario: Number(id),
-        nome: nome.trim(),
-        email: email.trim(),
-        login: login.trim(),
-        id_nivel_acesso: Number(id_nivel_acesso)
-      }
-    });
-  } catch (error) {
-    console.error('Erro no RF-05 (editar usuário):', error);
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: 'Erro interno no servidor.'
-    });
-  }
-};
-
-const listarUsuarios = async (req, res) => {
-  try {
-    // 1. Filtros recebidos (query string)
-    const { busca, perfil, status } = req.query;
-
-    const filtros = {
-      busca,
-      perfil,
-      status
+    const dados = {
+        nome,
+        email,
+        login,
+        senha,
+        perfil
     };
 
-    // 2. Consulta acionada (Model)
-    const usuarios = await UsuarioModel.listar(filtros);
+    // Chama a função do Model para cadastrar o usuário
+    usuarioModel.cadastrarUsuario(dados, (err, resultado) => {
 
-    // 3. Retorno tratado
-    return res.status(200).json({
-      sucesso: true,
-      total: usuarios.length,
-      filtrosAplicados: {
-        busca: busca || null,
-        perfil: perfil || null,
-        status: status || null
-      },
-      dados: usuarios
+        if (err) {
+
+            if (err.code === "ER_DUP_ENTRY" && err.message.includes("usuario.email")) {
+                return res.status(400).json({
+                    message: "E-mail já cadastrado."
+                });
+            }
+
+            return res.status(500).json({
+                message: err.message
+            });
+        }
+
+        return res.status(201).json({
+            message: "Usuário cadastrado com sucesso.",
+            id_usuario: resultado.insertId
+        });
     });
-  } catch (error) {
-    // 4. Erros tratados
-    console.error('Erro no RF-07 (consultar usuário):', error);
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: 'Erro ao consultar usuários.'
-    });
-  }
 };
 
 module.exports = {
+  cadastrarUsuario,
   editarUsuario,
   listarUsuarios
+};
 };
