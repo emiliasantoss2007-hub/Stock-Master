@@ -10,6 +10,14 @@ const usuarioController =
 const auth =
     require("../middlewares/auth");
 
+// CADASTRAR USUÁRIO
+
+router.post(
+    "/",
+    auth,
+    usuarioController.cadastrarUsuario
+);
+
 // CONSULTAR USUÁRIOS
 
 router.get(
@@ -24,6 +32,22 @@ router.put(
     "/:id",
     auth,
     usuarioController.editarUsuario
+);
+
+// EXCLUIR USUÁRIO
+
+router.delete(
+    "/:id",
+    auth,
+    usuarioController.excluirUsuario
+);
+
+// SUSPENDER USUÁRIO
+
+router.patch(
+    "/:id/suspender",
+    auth,
+    usuarioController.suspenderUsuario
 );
 
 module.exports =
