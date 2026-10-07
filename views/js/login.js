@@ -40,7 +40,11 @@ const forgotPassword =
    ========================================================= */
 
 togglePassword.addEventListener("click", () => {
+togglePassword.addEventListener("click", () => {
 
+    if (senhaInput.type === "password") {
+
+        senhaInput.type = "text";
     if (senhaInput.type === "password") {
 
         senhaInput.type = "text";
@@ -62,14 +66,32 @@ togglePassword.addEventListener("click", () => {
         togglePassword.setAttribute(
             "aria-label",
             "Mostrar senha"
+            "Ocultar senha"
+        );
+
+        togglePassword.setAttribute(
+            "aria-pressed",
+            "true"
+        );
+
+    } else {
+
+        senhaInput.type = "password";
+
+        togglePassword.setAttribute(
+            "aria-label",
+            "Mostrar senha"
         );
 
         togglePassword.setAttribute(
             "aria-pressed",
             "false"
+            "false"
         );
 
     }
+
+});
 
 });
 
@@ -116,6 +138,98 @@ loginForm.addEventListener(
 
         event.preventDefault();
 
+        if (!validarLogin()) {
+            return;
+        }
+
+        const login =
+            usuarioInput.value.trim();
+
+        const senha =
+            senhaInput.value;
+
+        formMessage.textContent =
+            "Autenticando...";
+
+        try {
+
+            const resposta = await fetch(
+                "/api/auth/login",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        login,
+                        senha
+                    })
+                }
+            );
+
+            const resultado =
+                await resposta.json();
+
+            /* ---------- Login realizado ---------- */
+
+            if (resultado.success) {
+
+                const perfil =
+                    resultado.data.perfil;
+
+                if (perfil.id === 1) {
+
+                    window.location.href =
+                        "/html/dashboard_adm.html";
+
+                    return;
+                }
+
+                if (perfil.id === 2) {
+
+                    window.location.href =
+                        "/html/dashboard_tec.html";
+
+                    return;
+                }
+
+                formMessage.textContent =
+                    "Perfil de usuário não reconhecido.";
+
+                return;
+            }
+
+
+            /* ---------- Login bloqueado ---------- */
+
+            if (resultado.code === "ACCOUNT_LOCKED") {
+
+                formMessage.textContent =
+                    resultado.message;
+
+                return;
+            }
+
+
+            /* ---------- Usuário inativo ---------- */
+
+            if (resultado.code === "USER_INACTIVE") {
+
+                formMessage.textContent =
+                    resultado.message;
+
+                return;
+            }
+
+
+            /* ---------- Credenciais inválidas ---------- */
+
+            formMessage.textContent =
+                resultado.message ||
+                "Usuário ou senha inválidos.";
+        // Executa a validação dos campos
         if (!validarLogin()) {
             return;
         }
