@@ -1,5 +1,106 @@
-const db =
+const connection =
     require("../config/database");
+
+const bcrypt =
+    require("bcrypt");
+
+// CADASTRAR USUÁRIO
+
+const cadastrarUsuario =
+    (dados, callback) => {
+
+        const {
+            nome,
+            email,
+            login,
+            senha,
+            perfil
+        } = dados;
+
+        // Buscar nível de acesso
+
+        connection.query(
+            `
+                SELECT
+                    id_nivel_acesso
+                FROM nivel_acesso
+                WHERE descricao = ?
+            `,
+            [perfil],
+            (err, resultado) => {
+
+                if (err) {
+                    return callback(err);
+                }
+
+                if (
+                    resultado.length === 0
+                ) {
+                    return callback(
+                        new Error(
+                            "Nível de acesso não encontrado"
+                        )
+                    );
+                }
+
+                const id_nivel_acesso =
+                    resultado[0]
+                        .id_nivel_acesso;
+
+                // Gerar senha
+
+                bcrypt.hash(
+                    senha,
+                    10,
+                    (err, senha_hash) => {
+
+                        if (err) {
+                            return callback(err);
+                        }
+
+                        const sql = `
+                            INSERT INTO usuario
+                            (
+                                nome,
+                                email,
+                                login,
+                                senha_hash,
+                                status,
+                                id_nivel_acesso
+                            )
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        `;
+
+                        const valores = [
+                            nome,
+                            email,
+                            login,
+                            senha_hash,
+                            true,
+                            id_nivel_acesso
+                        ];
+
+                        connection.query(
+                            sql,
+                            valores,
+                            (err, resultado) => {
+
+                                if (err) {
+                                    return callback(err);
+                                }
+
+                                callback(
+                                    null,
+                                    resultado
+                                );
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    };
+
 
 // CONSULTAR USUÁRIOS
 
@@ -26,7 +127,7 @@ function listar(filtros = {}) {
 
             const parametros = [];
 
-            // PESQUISA
+            // Pesquisa
 
             if (filtros.busca) {
 
@@ -48,7 +149,7 @@ function listar(filtros = {}) {
                 );
             }
 
-            // FILTRO DE PERFIL
+            // Filtro de perfil
 
             if (filtros.perfil) {
 
@@ -61,7 +162,7 @@ function listar(filtros = {}) {
                 );
             }
 
-            // FILTRO DE STATUS
+            // Filtro de status
 
             if (
                 filtros.status !== undefined &&
@@ -82,7 +183,7 @@ function listar(filtros = {}) {
                 );
             }
 
-            // ORDENAÇÃO
+            // Ordenação
 
             const colunasPermitidas = {
                 nome: "u.nome",
@@ -109,7 +210,7 @@ function listar(filtros = {}) {
                     ${coluna} ${direcao}
             `;
 
-            db.query(
+            connection.query(
                 sql,
                 parametros,
                 (erro, resultados) => {
@@ -127,6 +228,7 @@ function listar(filtros = {}) {
     );
 }
 
+
 // BUSCAR USUÁRIO POR ID
 
 function buscarPorId(id) {
@@ -140,9 +242,9 @@ function buscarPorId(id) {
                     u.nome,
                     u.email,
                     u.login,
+                    u.status,
                     u.id_nivel_acesso,
-                    n.descricao AS perfil,
-                    u.status
+                    n.descricao AS perfil
                 FROM usuario u
                 INNER JOIN nivel_acesso n
                     ON u.id_nivel_acesso =
@@ -150,7 +252,7 @@ function buscarPorId(id) {
                 WHERE u.id_usuario = ?
             `;
 
-            db.query(
+            connection.query(
                 sql,
                 [id],
                 (erro, resultados) => {
@@ -160,13 +262,14 @@ function buscarPorId(id) {
                     }
 
                     resolve(
-                        resultados[0]
+                        resultados[0] || null
                     );
                 }
             );
         }
     );
 }
+
 
 // VERIFICAR LOGIN
 
@@ -183,11 +286,11 @@ function verificarLogin(
                     id_usuario
                 FROM usuario
                 WHERE login = ?
-                  AND id_usuario <> ?
+                    AND id_usuario <> ?
                 LIMIT 1
             `;
 
-            db.query(
+            connection.query(
                 sql,
                 [
                     login,
@@ -208,6 +311,7 @@ function verificarLogin(
     );
 }
 
+
 // VERIFICAR E-MAIL
 
 function verificarEmail(
@@ -223,11 +327,11 @@ function verificarEmail(
                     id_usuario
                 FROM usuario
                 WHERE email = ?
-                  AND id_usuario <> ?
+                    AND id_usuario <> ?
                 LIMIT 1
             `;
 
-            db.query(
+            connection.query(
                 sql,
                 [
                     email,
@@ -248,6 +352,7 @@ function verificarEmail(
     );
 }
 
+
 // ATUALIZAR USUÁRIO
 
 async function atualizarComTransacao(
@@ -261,7 +366,7 @@ async function atualizarComTransacao(
     await new Promise(
         (resolve, reject) => {
 
-            db.beginTransaction(
+            connection.beginTransaction(
                 (erro) => {
 
                     if (erro) {
@@ -275,6 +380,8 @@ async function atualizarComTransacao(
     );
 
     try {
+
+        // Verificar usuário
 
         const usuario =
             await query(
@@ -302,6 +409,8 @@ async function atualizarComTransacao(
             );
         }
 
+        // Verificar login
+
         const loginExistente =
             await query(
                 `
@@ -309,7 +418,7 @@ async function atualizarComTransacao(
                         id_usuario
                     FROM usuario
                     WHERE login = ?
-                      AND id_usuario <> ?
+                        AND id_usuario <> ?
                     LIMIT 1
                 `,
                 [
@@ -332,6 +441,8 @@ async function atualizarComTransacao(
             );
         }
 
+        // Verificar e-mail
+
         const emailExistente =
             await query(
                 `
@@ -339,7 +450,7 @@ async function atualizarComTransacao(
                         id_usuario
                     FROM usuario
                     WHERE email = ?
-                      AND id_usuario <> ?
+                        AND id_usuario <> ?
                     LIMIT 1
                 `,
                 [
@@ -361,6 +472,8 @@ async function atualizarComTransacao(
                 }
             );
         }
+
+        // Atualizar usuário
 
         const resultado =
             await query(
@@ -396,10 +509,12 @@ async function atualizarComTransacao(
             );
         }
 
+        // Confirmar transação
+
         await new Promise(
             (resolve, reject) => {
 
-                db.commit(
+                connection.commit(
                     (erro) => {
 
                         if (erro) {
@@ -418,10 +533,12 @@ async function atualizarComTransacao(
 
     } catch (erro) {
 
+        // Desfazer transação
+
         await new Promise(
             (resolve) => {
 
-                db.rollback(
+                connection.rollback(
                     () => resolve()
                 );
             }
@@ -430,6 +547,70 @@ async function atualizarComTransacao(
         throw erro;
     }
 }
+
+
+// EXCLUIR USUÁRIO
+
+function excluir(idUsuario) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                DELETE FROM usuario
+                WHERE id_usuario = ?
+            `;
+
+            connection.query(
+                sql,
+                [idUsuario],
+                (erro, resultado) => {
+
+                    if (erro) {
+                        return reject(erro);
+                    }
+
+                    resolve(
+                        resultado.affectedRows === 1
+                    );
+                }
+            );
+        }
+    );
+}
+
+
+// SUSPENDER USUÁRIO
+
+function suspender(idUsuario) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                UPDATE usuario
+                SET status = FALSE
+                WHERE id_usuario = ?
+            `;
+
+            connection.query(
+                sql,
+                [idUsuario],
+                (erro, resultado) => {
+
+                    if (erro) {
+                        return reject(erro);
+                    }
+
+                    resolve(
+                        resultado.affectedRows === 1
+                    );
+                }
+            );
+        }
+    );
+}
+
 
 // EXECUTAR QUERY
 
@@ -441,7 +622,7 @@ function query(
     return new Promise(
         (resolve, reject) => {
 
-            db.query(
+            connection.query(
                 sql,
                 params,
                 (erro, resultados) => {
@@ -459,7 +640,12 @@ function query(
     );
 }
 
+
+// EXPORTAR FUNÇÕES
+
 module.exports = {
+
+    cadastrarUsuario,
 
     listar,
 
@@ -469,6 +655,10 @@ module.exports = {
 
     verificarEmail,
 
-    atualizarComTransacao
+    atualizarComTransacao,
+
+    excluir,
+
+    suspender
 
 };
