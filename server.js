@@ -1,93 +1,50 @@
-const express = require("express");
+require('dotenv').config();
+require('./src/config/database');
 
-const path = require("path");
+const express = require('express');
+const path = require('path');
 
+const authRoutes = require('./src/routes/authRoutes');
+const passRoutes = require('./src/routes/passRoutes');
+const usuarioRoutes = require('./src/routes/usuarioRoutes');
 
-const usuarioRoutes =
-    require("./src/routes/usuarioRoutes");
-
-
-const app =
-    express();
-
-
-const PORT = 3001;
-
+const app = express();
+const PORT = process.env.PORT || 3001;
 
 /*
- * Permite receber JSON nas requisições.
+ * Middlewares para interpretação de dados
  */
-app.use(
-    express.json()
-);
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /*
- * Disponibiliza HTML, CSS, JS
- * e imagens da pasta views.
+ * Disponibiliza arquivos estáticos (HTML, CSS, JS e imagens)
  */
-app.use(
-    express.static(
-        path.join(
-            __dirname,
-            "views"
-        )
-    )
-);
-
+app.use(express.static(path.join(__dirname, 'views')));
+app.use('/src', express.static(path.join(__dirname, 'src')));
 
 /*
- * Rotas de usuários.
- *
- * Todas as rotas definidas em
- * usuarioRoutes.js serão iniciadas por:
- *
- * /api/usuarios
+ * Rotas da API
  */
-app.use(
-    "/api/usuarios",
-    usuarioRoutes
-);
-
+app.use('/api/auth', authRoutes);
+app.use('/api/auth', passRoutes);
 
 /*
- * Página inicial.
+ * Rotas de usuários
+ * (Com o prefixo /api/usuarios para manter a padronização REST)
  */
-app.get(
-    "/",
-    (req, res) => {
-
-        res.sendFile(
-            path.join(
-                __dirname,
-                "views",
-                "html",
-                "login.html"
-            )
-        );
-
-    }
-);
-
+app.use('/api/usuarios', usuarioRoutes);
 
 /*
- * Inicialização do servidor.
+ * Página inicial (Login)
  */
-app.listen(
-    PORT,
-    () => {
-
-        console.log(
-            `Servidor rodando em http://localhost:${PORT}`
-        );
-
-    }
-);
-
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
+});
 
 /*
- * Conexão com o banco de dados.
+ * Inicialização do servidor
  */
-require(
-    "./src/config/database"
-);
+app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+});

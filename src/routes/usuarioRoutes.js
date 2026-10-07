@@ -1,54 +1,22 @@
-const express =
-    require("express");
+const express = require("express");
+const router = express.Router();
 
-const router =
-    express.Router();
-
-const usuarioController =
-    require("../controllers/usuarioController");
-
-const auth =
-    require("../middlewares/auth");
+const usuarioController = require("../controllers/usuarioController");
+const auth = require("../middlewares/auth");
 
 // CADASTRAR USUÁRIO
-
-router.post(
-    "/",
-    auth,
-    usuarioController.cadastrarUsuario
-);
+router.post("/", auth, usuarioController.cadastrarUsuario);
 
 // CONSULTAR USUÁRIOS
-
-router.get(
-    "/",
-    auth,
-    usuarioController.listarUsuarios
-);
+router.get("/", auth, usuarioController.listarUsuarios);
 
 // EDITAR USUÁRIO
-
-router.put(
-    "/:id",
-    auth,
-    usuarioController.editarUsuario
-);
+router.put("/:id", auth, usuarioController.editarUsuario);
 
 // EXCLUIR USUÁRIO
-
-router.delete(
-    "/:id",
-    auth,
-    usuarioController.excluirUsuario
-);
+router.delete("/:id", auth, usuarioController.excluirUsuario);
 
 // SUSPENDER USUÁRIO
+router.patch("/:id/suspender", auth, usuarioController.suspenderUsuario);
 
-router.patch(
-    "/:id/suspender",
-    auth,
-    usuarioController.suspenderUsuario
-);
-
-module.exports =
-    router;
+module.exports = router;

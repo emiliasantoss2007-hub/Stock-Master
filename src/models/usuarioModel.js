@@ -1,8 +1,11 @@
+// Model responsável pelo cadastro e gerenciamento de usuário
+
 const connection =
     require("../config/database");
 
 const bcrypt =
     require("bcrypt");
+
 
 // CADASTRAR USUÁRIO
 
@@ -36,6 +39,7 @@ const cadastrarUsuario =
                 if (
                     resultado.length === 0
                 ) {
+
                     return callback(
                         new Error(
                             "Nível de acesso não encontrado"
@@ -104,7 +108,9 @@ const cadastrarUsuario =
 
 // CONSULTAR USUÁRIOS
 
-function listar(filtros = {}) {
+function listar(
+    filtros = {}
+) {
 
     return new Promise(
         (resolve, reject) => {
@@ -129,7 +135,9 @@ function listar(filtros = {}) {
 
             // Pesquisa
 
-            if (filtros.busca) {
+            if (
+                filtros.busca
+            ) {
 
                 sql += `
                     AND (
@@ -151,7 +159,9 @@ function listar(filtros = {}) {
 
             // Filtro de perfil
 
-            if (filtros.perfil) {
+            if (
+                filtros.perfil
+            ) {
 
                 sql += `
                     AND n.descricao = ?
@@ -186,11 +196,17 @@ function listar(filtros = {}) {
             // Ordenação
 
             const colunasPermitidas = {
+
                 nome: "u.nome",
+
                 email: "u.email",
+
                 login: "u.login",
+
                 perfil: "n.descricao",
+
                 status: "u.status"
+
             };
 
             const coluna =
@@ -231,7 +247,9 @@ function listar(filtros = {}) {
 
 // BUSCAR USUÁRIO POR ID
 
-function buscarPorId(id) {
+function buscarPorId(
+    id
+) {
 
     return new Promise(
         (resolve, reject) => {
@@ -551,7 +569,9 @@ async function atualizarComTransacao(
 
 // EXCLUIR USUÁRIO
 
-function excluir(idUsuario) {
+function excluir(
+    idUsuario
+) {
 
     return new Promise(
         (resolve, reject) => {
@@ -582,7 +602,9 @@ function excluir(idUsuario) {
 
 // SUSPENDER USUÁRIO
 
-function suspender(idUsuario) {
+function suspender(
+    idUsuario
+) {
 
     return new Promise(
         (resolve, reject) => {
