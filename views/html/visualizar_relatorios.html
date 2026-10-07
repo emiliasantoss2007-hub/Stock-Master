@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Visualização e exportação de relatórios do StockMaster">
+
+    <title>StockMaster | Visualização de Relatório</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/relatorios.css">
+
+    <script src="../js/visualizar_relatorio.js" defer></script>
+
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação">
+                <a href="dashboard_adm.html" id="dashboardLink"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="usuarios.html" id="usuariosLink"><span class="nav-icon">♙</span>Usuários</a>
+                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
+                <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
+                <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
+                <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
+                <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
+                <a href="login.html">↪ Sair</a>
+            </div>
+
+        </aside>
+
+        <main class="main-area">
+
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Visualização de Relatório</strong>
+                </div>
+                <div class="user-area">
+                    <div>
+                        <strong id="userRole">Administrador</strong>
+                        <small id="username">admin.stockmaster</small>
+                    </div>
+                    <span class="avatar" id="userAvatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
+                    <a href="relatorios.html?origem=adm">Relatórios</a> /
+                    <span>Visualização</span>
+                </div>
+
+                <header class="page-header">
+    <div>
+        <h1>Visualização de Relatório</h1>
+        <p>Confira os dados do relatório gerado.</p>
+    </div>
+
+    <a href="relatorios.html?origem=adm" class="btn btn-secondary">
+        ← Nova consulta
+    </a>
+</header>
+
+<section class="panel">
+
+    <div class="cabecalho-relatorio">
+        <h2 id="relatorioTitulo">Relatório</h2>
+        <p id="relatorioMeta">Gerado agora</p>
+    </div>
+
+    <div id="mensagemArea"></div>
+
+    <div class="acoes-relatorio">
+        <button id="btnExportarPdf" class="btn btn-secondary">
+            Exportar PDF
+        </button>
+
+        <button id="btnExportarExcel" class="btn btn-secondary">
+            Exportar Excel
+        </button>
+    </div>
+
+    <table class="tabela-padrao">
+        <thead id="relatorioCabecalho"></thead>
+        <tbody id="relatorioCorpo"></tbody>
+    </table>
+
+</section>
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

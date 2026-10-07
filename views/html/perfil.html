@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Configurações e dados de perfil do usuário no StockMaster">
+
+    <title>StockMaster | Meu Perfil</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/perfil.css">
+
+    <script src="../js/perfil.js" defer></script>
+
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação">
+                <a href="dashboard_adm.html" id="dashboardLink"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="usuarios.html" id="usuariosLink"><span class="nav-icon">♙</span>Usuários</a>
+                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
+                <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
+                <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
+                <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
+                <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
+                <a href="login.html">↪ Sair</a>
+            </div>
+
+        </aside>
+
+        <main class="main-area">
+
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Meu Perfil</strong>
+                </div>
+                <div class="user-area">
+                    <div>
+                        <strong id="userRole">Administrador</strong>
+                        <small id="username">admin.stockmaster</small>
+                    </div>
+                    <span class="avatar" id="userAvatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
+                    <span>Meu Perfil</span>
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Meu Perfil</h1>
+                        <p>Consulte e atualize seus dados de acesso.</p>
+                    </div>
+                </header>
+
+                <section class="panel">
+                    <h2>Dados pessoais</h2>
+
+                    <div id="mensagemDados"></div>
+
+                    <form id="formDados">
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="perfilNome">Nome *</label>
+                                <input type="text" id="perfilNome" required>
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="perfilLoginCampo">Login</label>
+                                <input type="text" id="perfilLoginCampo" disabled>
+                            </div>
+                        </div>
+
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="perfilEmail">E-mail *</label>
+                                <input type="email" id="perfilEmail" required>
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="perfilTipo">Perfil de acesso</label>
+                                <input type="text" id="perfilTipo" disabled>
+                            </div>
+                        </div>
+
+                        <div class="acoes-pagina">
+                            <button type="submit" class="btn btn-primary">Salvar dados</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <h2>Alterar senha</h2>
+
+                    <div id="mensagemSenha"></div>
+
+                    <form id="formSenha">
+                        <div class="campo-especifico" style="max-width:320px; margin-bottom:16px;">
+                            <label for="senhaAtual">Senha atual *</label>
+                            <input type="password" id="senhaAtual" required>
+                        </div>
+
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="senhaNova">Nova senha *</label>
+                                <input type="password" id="senhaNova" minlength="6" required>
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="senhaConfirmar">Confirmar nova senha *</label>
+                                <input type="password" id="senhaConfirmar" required>
+                            </div>
+                        </div>
+
+                        <div class="acoes-pagina">
+                            <button type="submit" class="btn btn-primary">Alterar senha</button>
+                        </div>
+                    </form>
+                </section>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

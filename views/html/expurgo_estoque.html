@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Registro de perdas, danos e descartes de produtos no StockMaster">
+
+    <title>StockMaster | Expurgo de Estoque</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/expurgo_estoque.css">
+
+    <script src="../js/expurgo_estoque.js" defer></script>
+
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+
+            <nav class="sidebar-nav" aria-label="Navegação">
+                <a href="dashboard_adm.html" id="dashboardLink"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="usuarios.html" id="usuariosLink"><span class="nav-icon">♙</span>Usuários</a>
+                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
+                <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
+                <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
+                <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
+                <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
+                <a href="login.html">↪ Sair</a>
+            </div>
+
+        </aside>
+
+        <main class="main-area">
+
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Expurgo de Estoque</strong>
+                </div>
+                <div class="user-area">
+                    <div>
+                        <strong id="userRole">Administrador</strong>
+                        <small id="username">admin.stockmaster</small>
+                    </div>
+                    <span class="avatar" id="userAvatar">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
+                    <span>Expurgo de Estoque</span>
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Expurgo de Estoque</h1>
+                        <p>Registre perdas, danos ou descartes de produtos armazenados.</p>
+                    </div>
+                </header>
+
+                <section class="panel">
+
+                    <div id="mensagemArea"></div>
+
+                    <form id="formExpurgo">
+
+                        <div class="nome-da-secao">
+                            <div class="campo-especifico">
+                                <label for="produtoSelect">Produto *</label>
+                                <select id="produtoSelect" required>
+                                    <option value="">Selecione um produto...</option>
+                                </select>
+                            </div>
+                            <div class="campo-especifico">
+                                <label for="quantidade">Quantidade a expurgar *</label>
+                                <input type="number" id="quantidade" min="1" required>
+                            </div>
+                        </div>
+
+                        <p class="info-estoque" id="infoEstoque"></p>
+
+                        <div class="campo-especifico" style="margin-bottom:20px;">
+                            <label for="justificativa">Justificativa *</label>
+                            <textarea id="justificativa" rows="3" placeholder="Descreva o motivo do expurgo (dano, perda, extravio, etc.)" required></textarea>
+                        </div>
+
+                        <div class="acoes-pagina">
+                            <button type="reset" class="btn btn-secondary">Limpar</button>
+                            <button type="submit" class="btn btn-danger">Confirmar expurgo</button>
+                        </div>
+
+                    </form>
+
+                </section>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h3 id="modalTitulo">Confirmar expurgo</h3>
+            <p id="modalMensagem"></p>
+            <div class="modal-acoes">
+                <button class="btn btn-secondary" id="modalCancelar">Cancelar</button>
+                <button class="btn btn-danger" id="modalConfirmar">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
