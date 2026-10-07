@@ -114,7 +114,135 @@ const listarUsuarios = async (req, res) => {
   }
 };
 
+// Excluir usuário
+const excluirUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const usuarioLogado = req.usuario;
+
+    // Autorização
+    if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+      return res.status(403).json({
+        sucesso: false,
+        mensagem: 'Acesso negado. Apenas administradores podem excluir usuários.'
+      });
+    }
+
+    // Validar ID
+    if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+      return res.status(400).json({
+        sucesso: false,
+        mensagem: 'Identificador de usuário inválido.'
+      });
+    }
+
+    // Verificar usuário
+    const usuarioExistente = await UsuarioModel.buscarPorId(id);
+
+    if (!usuarioExistente) {
+      return res.status(404).json({
+        sucesso: false,
+        mensagem: 'Usuário não encontrado.'
+      });
+    }
+
+    // Excluir
+    const excluido = await UsuarioModel.excluir(id);
+
+    if (!excluido) {
+      return res.status(409).json({
+        sucesso: false,
+        mensagem: 'Não foi possível excluir o usuário.'
+      });
+    }
+
+    return res.status(200).json({
+      sucesso: true,
+      mensagem: 'Usuário excluído com sucesso.',
+      idUsuario: Number(id)
+    });
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error);
+
+    // Usuário possui registros relacionados
+    if (
+      error.code === 'ER_ROW_IS_REFERENCED_2' ||
+      error.code === 'ER_ROW_IS_REFERENCED'
+    ) {
+      return res.status(409).json({
+        sucesso: false,
+        mensagem:
+          'O usuário possui registros relacionados e não pode ser excluído. Considere suspender o acesso.'
+      });
+    }
+
+    return res.status(500).json({
+      sucesso: false,
+      mensagem: 'Erro interno ao excluir usuário.'
+    });
+  }
+};
+
+// Suspender usuário
+const suspenderUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const usuarioLogado = req.usuario;
+
+    // Autorização
+    if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+      return res.status(403).json({
+        sucesso: false,
+        mensagem: 'Acesso negado. Apenas administradores podem suspender usuários.'
+      });
+    }
+
+    // Validar ID
+    if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+      return res.status(400).json({
+        sucesso: false,
+        mensagem: 'Identificador de usuário inválido.'
+      });
+    }
+
+    // Verificar usuário
+    const usuarioExistente = await UsuarioModel.buscarPorId(id);
+
+    if (!usuarioExistente) {
+      return res.status(404).json({
+        sucesso: false,
+        mensagem: 'Usuário não encontrado.'
+      });
+    }
+
+    // Suspender
+    const suspenso = await UsuarioModel.suspender(id);
+
+    if (!suspenso) {
+      return res.status(409).json({
+        sucesso: false,
+        mensagem: 'Não foi possível suspender o usuário.'
+      });
+    }
+
+    return res.status(200).json({
+      sucesso: true,
+      mensagem: 'Usuário suspenso com sucesso.',
+      idUsuario: Number(id)
+    });
+  } catch (error) {
+    console.error('Erro ao suspender usuário:', error);
+
+    return res.status(500).json({
+      sucesso: false,
+      mensagem: 'Erro interno ao suspender usuário.'
+    });
+  }
+};
+
 module.exports = {
   editarUsuario,
-  listarUsuarios
+  listarUsuarios,
+  excluirUsuario,
+  suspenderUsuario
 };

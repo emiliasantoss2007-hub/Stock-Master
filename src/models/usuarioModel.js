@@ -128,10 +128,42 @@ function listar(filtros = {}) {
   });
 }
 
+function excluir(idUsuario) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      DELETE FROM usuario
+      WHERE id_usuario = ?
+    `;
+
+    db.query(sql, [idUsuario], (erro, resultado) => {
+      if (erro) return reject(erro);
+      resolve(resultado.affectedRows > 0);
+    });
+  });
+}
+
+function suspender(idUsuario) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE usuario
+      SET status = 0
+      WHERE id_usuario = ?
+        AND status <> 0
+    `;
+
+    db.query(sql, [idUsuario], (erro, resultado) => {
+      if (erro) return reject(erro);
+      resolve(resultado.affectedRows > 0);
+    });
+  });
+}
+
 module.exports = {
   buscarPorId,
   verificarLogin,
   verificarEmail,
   atualizar,
-  listar
+  listar,
+  excluir,
+  suspender
 };
