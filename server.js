@@ -1,32 +1,29 @@
 require('dotenv').config();
-require('./src/config/database');
-
 const express = require('express');
 const path = require('path');
+
+const usuarioRoutes = require('./src/routes/usuarioRoutes');
+
+require('./src/config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
-
-// Permite receber dados em JSON
+// Lê JSON do body (necessário para o PUT de editar usuário)
 app.use(express.json());
-
-// Permite receber dados de formulários
 app.use(express.urlencoded({ extended: true }));
 
-// Arquivos estáticos do Front-end
+// Arquivos estáticos (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'views')));
 
-// Rotas de usuários
-app.use(usuarioRoutes);
+// Rotas da API (RF-05)
+app.use('/api', usuarioRoutes);
 
-// Rota inicial → login
+// Página inicial → login
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
+  res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
 });
 
-// Inicia o servidor
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

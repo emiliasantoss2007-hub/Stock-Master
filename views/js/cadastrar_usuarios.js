@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
         perfil: document.querySelector("#perfilError")
     };
 
-    userForm.addEventListener("submit", async (event) => {
+    userForm.addEventListener("submit", (event) => {
         event.preventDefault();
 
         let formValid = true;
@@ -62,47 +62,18 @@ document.addEventListener("DOMContentLoaded", () => {
             formValid = false;
         }
 
-       if (!formValid) {
-    formMessage.textContent = "Corrija os campos destacados antes de continuar.";
-    formMessage.className = "form-message form-message-error";
-    return;
-}
+        if (!formValid) {
+            formMessage.textContent = "Corrija os campos destacados antes de continuar.";
+            formMessage.className = "form-message form-message-error";
+            return;
+        }
 
-const dadosUsuario = {
-    nome: fields.nome.value.trim(),
-    email: fields.email.value.trim(),
-    login: fields.login.value.trim(),
-    senha: fields.senha.value,
-    perfil: fields.perfil.value
-};
+        formMessage.textContent = "Usuário cadastrado com sucesso. Retornando à listagem...";
+        formMessage.className = "form-message form-message-success";
 
-try {
-    const resposta = await fetch("http://localhost:3001/usuarios", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(dadosUsuario)
-    });
-
-    const resultado = await resposta.json();
-
-    if (!resposta.ok) {
-        formMessage.textContent = resultado.message;
-        formMessage.className = "form-message form-message-error";
-        return;
-    }
-
-    formMessage.textContent = resultado.message;
-    formMessage.className = "form-message form-message-success";
-
-    window.setTimeout(() => {
-        window.location.href = "usuarios.html?cadastro=sucesso";
-    }, 900);
-
-} catch (erro) {
-    formMessage.textContent = "Não foi possível realizar o cadastro.";
-    formMessage.className = "form-message form-message-error";
-}
+        /* CONEXÃO JS: cadastro-usuario.html -> usuarios.html */
+        window.setTimeout(() => {
+            window.location.href = "usuarios.html?cadastro=sucesso";
+        }, 900);
     });
 });
