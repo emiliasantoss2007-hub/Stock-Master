@@ -97,17 +97,14 @@ const editarUsuario = async (req, res) => {
         }
 
         // ATUALIZAR (Utiliza transação se o método existir na model, ou fallback)
-        const atualizarMetodo = UsuarioModel.atualizarComTransacao
-            ? UsuarioModel.atualizarComTransacao.bind(UsuarioModel)
-            : UsuarioModel.atualizar.bind(UsuarioModel);
-
-        const usuarioAtualizado = await atualizarMetodo(
-            id,
-            nome.trim(),
-            email.trim(),
-            login.trim(),
-            Number(id_nivel_acesso)
-        );
+        const usuarioAtualizado =
+            await UsuarioModel.atualizarComTransacao(
+                id,
+                nome.trim(),
+                email.trim(),
+                login.trim(),
+                Number(id_nivel_acesso)
+            );
 
         return res.status(200).json({
             sucesso: true,
