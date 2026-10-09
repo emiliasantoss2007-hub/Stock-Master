@@ -6,35 +6,45 @@ const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
+const usuarioRoutes = require('./src/routes/usuarioRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
-
-// Permite receber dados em JSON
+/*
+ * Middlewares para interpretação de dados
+ */
 app.use(express.json());
-
-// Permite receber dados de formulários
 app.use(express.urlencoded({ extended: true }));
 
-// Arquivos estáticos do Front-end
+/*
+ * Disponibiliza arquivos estáticos (HTML, CSS, JS e imagens)
+ */
 app.use(express.static(path.join(__dirname, 'views')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
-// Rotas da API
+/*
+ * Rotas da API
+ */
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
 
-// Rotas de usuários
-app.use(usuarioRoutes);
+/*
+ * Rotas de usuários
+ * (Com o prefixo /api/usuarios para manter a padronização REST)
+ */
+app.use('/api/usuarios', usuarioRoutes);
 
-// Rota inicial → login
+/*
+ * Página inicial (Login)
+ */
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
 });
 
-// Inicia o servidor
+/*
+ * Inicialização do servidor
+ */
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
