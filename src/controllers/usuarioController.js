@@ -96,7 +96,7 @@ const editarUsuario = async (req, res) => {
             });
         }
 
-        // ATUALIZAR (Utiliza transação se o método existir na model, ou fallback)
+        //ATUALIZAR USUÁRIO COM TRANSAÇÃO
         const usuarioAtualizado =
             await UsuarioModel.atualizarComTransacao(
                 id,
@@ -133,5 +133,106 @@ const editarUsuario = async (req, res) => {
     }
 };
 
-// CONSULTAR USUÁRIOS
-const listarUsuarios = async
+ // CONSULTAR USUÁRIOS 
+const listarUsuarios = async (req, res) => {
+    try {
+        const { busca, perfil, status, ordenarPor, direcao } = req.query;
+
+        const filtros = {
+            busca: busca ? busca.trim() : "",
+            perfil: perfil ? perfil.trim() : "",
+            status: status !== undefined ? status.trim() : "",
+            ordenarPor: ordenarPor || "nome",
+            direcao: direcao || "asc"
+        };
+
+        const usuarios = await UsuarioModel.listar(filtros);
+
+        return res.status(200).json({
+            sucesso: true,
+            total: usuarios.length,
+            filtrosAplicados: filtros,
+            usuarios
+        });
+
+    } catch (error) {
+        console.error("Erro ao consultar usuários:", error);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: "Erro ao consultar usuários.",
+            usuarios: []
+        });
+    }
+};
+
+// EXCLUIR USUÁRIO
+const excluirUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuarioLogado = req.usuario;
+
+        if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+            return res.status(403).json({
+                sucesso: false,
+                mensagem: "Acesso negado. Apenas administradores podem excluir usuários."
+            });
+        }
+
+        if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: "Identificador de usuário inválido."
+            });
+        }
+
+        const usuarioExistente = await UsuarioModel.buscarPorId(id);
+
+        if (!usuarioExistente) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: "Usuário não encontrado."
+            });
+        }
+
+        const excluido = await UsuarioModel.excluir(id);
+
+        if (!excluido) {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: "Não foi possível excluir o usuário."
+            });
+        }
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: "Usuário excluído com sucesso.",
+            idUsuario: Number(id)
+        });
+
+    } catch (error) {
+        console.error("Erro ao excluir usuário:", error);
+
+        if (
+            error.code === "ER_ROW_IS_REFERENCED_2" ||
+            error.code === "ER_ROW_IS_REFERENCED"
+        ) {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: "O usuário possui registros relacionados e não pode ser excluído. Considere suspender o acesso."
+            });
+        }
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: "Erro interno ao excluir usuário."
+        });
+    }
+};
+
+// EXPORTAR FUNÇÕES PARA AS ROTAS
+module.exports = {
+    cadastrarUsuario,
+    listarUsuarios,
+    editarUsuario,
+    excluirUsuario,
+};
