@@ -85,7 +85,19 @@ document.addEventListener("DOMContentLoaded", () => {
         estoqueMinimo: document.querySelector("#estoqueMinimoError"),
         descricao: document.querySelector("#descricaoError")
     };
+ // Remove o erro assim que o campo for corrigido
+Object.entries(fields).forEach(([nomeCampo, campo]) => {
 
+    campo.addEventListener("input", () => {
+
+        if (campo.value.trim()) {
+
+            errors[nomeCampo].textContent = "";
+
+            campo.classList.remove("field-invalid");
+        }
+    });
+});
 
     // ========================================
     // VALIDAÇÃO DO FORMULÁRIO
