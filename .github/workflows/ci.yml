@@ -1,4 +1,3 @@
-
 name: CI - Stock Master
 
 on:
@@ -7,6 +6,7 @@ on:
       - develop
       - main
       - chore/configura-ci
+
   pull_request:
     branches:
       - develop
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o código
+      - name: Baixar o codigo
         uses: actions/checkout@v7
 
       - name: Configurar Node.js
@@ -30,7 +30,20 @@ jobs:
           node-version: '24.x'
           cache: npm
 
-      - name: Instalar dependências
+      - name: Conferir arquivos do projeto
+        run: |
+          pwd
+          ls -la
+          node --version
+          npm --version
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json encontrado"
+          else
+            echo "package-lock.json NAO encontrado"
+            exit 1
+          fi
+
+      - name: Instalar dependencias
         run: npm ci
 
       - name: Executar testes automatizados
