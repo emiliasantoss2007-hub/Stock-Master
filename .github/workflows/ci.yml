@@ -18,7 +18,7 @@ permissions:
 jobs:
   testes:
     name: Testes automatizados
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Baixar o codigo
@@ -29,19 +29,6 @@ jobs:
         with:
           node-version: '24.x'
           cache: npm
-
-      - name: Conferir arquivos do projeto
-        run: |
-          pwd
-          ls -la
-          node --version
-          npm --version
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json encontrado"
-          else
-            echo "package-lock.json NAO encontrado"
-            exit 1
-          fi
 
       - name: Instalar dependencias
         run: npm ci
