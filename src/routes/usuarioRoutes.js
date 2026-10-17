@@ -16,7 +16,4 @@ router.put("/:id", auth, usuarioController.editarUsuario);
 // EXCLUIR USUÁRIO
 router.delete("/:id", auth, usuarioController.excluirUsuario);
 
-// SUSPENDER USUÁRIO
-router.patch("/:id/suspender", auth, usuarioController.suspenderUsuario);
-
 module.exports = router;
