@@ -7,9 +7,10 @@
     "doc": "docs",
     "test": "tests"
   },
-  "scripts": {
-    "start": "node server.js"
-  },
+ "scripts": {
+    "start": "node server.js",
+    "test": "jest --passWithNoTests"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emiliasantoss2007-hub/Stock-Master.git"
@@ -28,5 +29,8 @@
     "express": "^5.2.1",
     "mysql2": "^3.24.5",
     "nodemailer": "^10.0.15"
-  }
+  },
+  "devDependencies": {
+    "jest": "^30.5.2"
+}
 }
