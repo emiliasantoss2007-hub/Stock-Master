@@ -27,6 +27,7 @@ nome varchar(100) not null,
 categoria varchar(100) not null,
 descricao text,
 quantidade_estoque int not null default 0,
+estoque_minimo int not null default 0,
 valor decimal(10,2)
 );
 

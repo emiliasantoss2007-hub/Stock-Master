@@ -1,26 +1,13 @@
-// Exemplo mínimo: lê usuário do header ou de uma sessão em memória
-// Ajuste conforme o login que a equipe já implementou
+const sessaoService = require('../services/sessaoService');
 
 function auth(req, res, next) {
-  // Se já existir token/sessão no projeto, adapte aqui.
-  // Exemplo com header Authorization Bearer + mapa de sessões:
-  const token = req.headers.authorization?.replace('Bearer ', '');
+  const authorization = req.headers.authorization || '';
+  const match = authorization.match(/^Bearer\s+(\S+)$/i);
+  const usuario = match && sessaoService.obterUsuario(match[1]);
 
-  // Placeholder: se a equipe já grava req.usuario em outro middleware, só chame next()
-  if (req.usuario) {
+  if (usuario) {
+    req.usuario = usuario;
     return next();
-  }
-
-  // Fallback de desenvolvimento: permite testar com header X-User-Json
-  // Remova em produção
-  const userHeader = req.headers['x-user'];
-  if (userHeader) {
-    try {
-      req.usuario = JSON.parse(userHeader);
-      return next();
-    } catch (e) {
-      // ignora
-    }
   }
 
   return res.status(401).json({

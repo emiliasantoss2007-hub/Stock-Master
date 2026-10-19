@@ -91,9 +91,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // VALIDAÇÃO DO FORMULÁRIO
     // ========================================
 
-    productForm.addEventListener("submit", (event) => {
+    productForm.addEventListener("submit", async (event) => {
 
         event.preventDefault();
+
+        const submitButton = productForm.querySelector('button[type="submit"]');
 
         let formValid = true;
 
@@ -207,27 +209,59 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        // Cadastro realizado
-        formMessage.textContent =
-            "Produto cadastrado com sucesso. Retornando à consulta...";
+        const accessToken = sessionStorage.getItem("stockmaster.accessToken");
+        const inicioCadastro = performance.now();
+        submitButton.disabled = true;
+        formMessage.textContent = "Salvando produto...";
+        formMessage.className = "product-form-message";
 
-        formMessage.className =
-            "product-form-message product-form-message-success";
+        try {
+            const resposta = await fetch("/api/produtos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                },
+                body: JSON.stringify({
+                    nome: fields.nomeProduto.value.trim(),
+                    sku: fields.sku.value.trim(),
+                    codigo_barras: document.querySelector("#codigoBarras").value.trim(),
+                    categoria: fields.categoria.value,
+                    valor: valor,
+                    quantidade_estoque: quantidade,
+                    estoque_minimo: minimo,
+                    descricao: fields.descricao.value.trim()
+                })
+            });
+            const resultado = await resposta.json();
+            const tempoRespostaMs = performance.now() - inicioCadastro;
 
+            if (!resposta.ok) {
+                formMessage.textContent = resultado.message || "Não foi possível cadastrar o produto.";
+                formMessage.className = "product-form-message product-form-message-error";
+                return;
+            }
 
-        // ========================================
-        // RETORNO PARA PRODUTOS
-        // ========================================
+            console.info("[StockMaster] Cadastro de produto: resposta do clique ao sucesso", {
+                tempoRespostaMs,
+                escopo: "cliente, incluindo rede e resposta HTTP"
+            });
+            formMessage.textContent = "Produto cadastrado com sucesso. Retornando à consulta...";
+            formMessage.className = "product-form-message product-form-message-success";
 
-        window.setTimeout(() => {
+            window.setTimeout(() => {
+                const destino = origem === "tecnico"
+                    ? "produtos.html?origem=tecnico&cadastro=sucesso"
+                    : "produtos.html?origem=adm&cadastro=sucesso";
 
-            const destino = origem === "tecnico"
-                ? "produtos.html?origem=tecnico&cadastro=sucesso"
-                : "produtos.html?origem=adm&cadastro=sucesso";
-
-            window.location.href = destino;
-
-        }, 900);
+                window.location.href = destino;
+            }, 900);
+        } catch (erro) {
+            formMessage.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+            formMessage.className = "product-form-message product-form-message-error";
+        } finally {
+            submitButton.disabled = false;
+        }
 
     });
 
