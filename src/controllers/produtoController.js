@@ -103,7 +103,7 @@ const cadastrarProduto = (req, res) => {
         if (err) {
 
             // SKU duplicado
-            if (err.code === 'ER_DUP_ENTRY') {
+            if (['SKU_DUPLICADO', 'ER_DUP_ENTRY'].includes(err.code)) {
                 return res.status(400).json({
                     message: 'SKU já cadastrado.'
                 });
