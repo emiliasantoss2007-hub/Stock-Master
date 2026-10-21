@@ -86,6 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
         descricao: document.querySelector("#descricaoError")
     };
 
+    Object.entries(fields).forEach(([nomeCampo, campo]) => {
+        campo.addEventListener("input", () => {
+            if (campo.value.trim()) {
+                errors[nomeCampo].textContent = "";
+                campo.classList.remove("field-invalid");
+            }
+        });
+    });
+
 
     // ========================================
     // VALIDAÇÃO DO FORMULÁRIO
@@ -167,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Quantidade
         if (
             !fields.quantidadeInicial.value ||
-            quantidade < 0 ||
+            quantidade <= 0 ||
             !Number.isInteger(quantidade)
         ) {
 
@@ -223,13 +232,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                 },
                 body: JSON.stringify({
-                    nome: fields.nomeProduto.value.trim(),
+                    nomeProduto: fields.nomeProduto.value.trim(),
                     sku: fields.sku.value.trim(),
-                    codigo_barras: document.querySelector("#codigoBarras").value.trim(),
+                    codigoBarras: document.querySelector("#codigoBarras").value.trim(),
                     categoria: fields.categoria.value,
-                    valor: valor,
-                    quantidade_estoque: quantidade,
-                    estoque_minimo: minimo,
+                    valorUnitario: valor,
+                    quantidadeInicial: quantidade,
+                    estoqueMinimo: minimo,
                     descricao: fields.descricao.value.trim()
                 })
             });
@@ -257,6 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.location.href = destino;
             }, 900);
         } catch (erro) {
+            console.error("Erro ao cadastrar produto:", erro);
             formMessage.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
             formMessage.className = "product-form-message product-form-message-error";
         } finally {
