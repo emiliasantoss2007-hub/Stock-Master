@@ -41,7 +41,13 @@
     </a>
 
     <a href="produtos.html" id="produtosLink" class="active">
-        <span class="nav-icon">▣</span>
+        <span class="nav-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3 21 8 12 13 3 8 12 3Z"/>
+                <path d="M3 8v9l9 5 9-5V8"/>
+                <path d="M12 13v9"/>
+            </svg>
+        </span>
         <span id="produtosMenuText">Produtos</span>
     </a>
 
@@ -84,7 +90,7 @@
         <main class="main-area">
             <header class="topbar">
                 <div class="topbar-context">
-                    <small>Área autenticada</small>
+                    <small>Cadastro de produtos</small>
                     <strong>Novo produto</strong>
                 </div>
 
@@ -98,9 +104,14 @@
             </header>
 
             <section class="content">
+                <div class="product-back-container">
+                    <a href="produtos.html" id="voltarProdutosLink" class="product-back-link">
+                        <span aria-hidden="true">←</span>
+                        Voltar
+                    </a>
+                </div>
                 <div class="breadcrumb">
-                    <!-- HREF: cadastro-produto.html -> dashboard-admin.html -->
-                    <a href="dashboard-admin.html">Início</a> /
+                    <a href="dashboard_adm.html">Início</a> /
                     <!-- HREF: cadastro-produto.html -> produtos.html -->
                     <a href="produtos.html">Produtos</a> /
                     Cadastro
