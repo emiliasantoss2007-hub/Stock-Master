@@ -306,3 +306,27 @@
     }
 
 }
+
+/* Link de retorno da tela de cadastro de produto */
+.product-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #1F4E79;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.product-back-link:hover {
+    color: #163A5A;
+    text-decoration: underline;
+}
+
+.product-back-link:focus-visible {
+    outline: 2px solid #1F4E79;
+    outline-offset: 4px;
+    border-radius: 2px;
+}

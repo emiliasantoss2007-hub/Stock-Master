@@ -85,13 +85,25 @@ document.addEventListener("DOMContentLoaded", () => {
         estoqueMinimo: document.querySelector("#estoqueMinimoError"),
         descricao: document.querySelector("#descricaoError")
     };
+ // Remove o erro assim que o campo for corrigido
+Object.entries(fields).forEach(([nomeCampo, campo]) => {
 
+    campo.addEventListener("input", () => {
+
+        if (campo.value.trim()) {
+
+            errors[nomeCampo].textContent = "";
+
+            campo.classList.remove("field-invalid");
+        }
+    });
+});
 
     // ========================================
     // VALIDAÇÃO DO FORMULÁRIO
     // ========================================
 
-    productForm.addEventListener("submit", (event) => {
+    productForm.addEventListener("submit", async (event) => {
 
         event.preventDefault();
 
@@ -207,27 +219,66 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        // Cadastro realizado
-        formMessage.textContent =
-            "Produto cadastrado com sucesso. Retornando à consulta...";
+                // Envia os dados para a API
+        try {
+            const resposta = await fetch("/api/produtos", {
+                method: "POST",
 
-        formMessage.className =
-            "product-form-message product-form-message-success";
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
+                body: JSON.stringify({
+                    nomeProduto: fields.nomeProduto.value.trim(),
+                    sku: fields.sku.value.trim(),
+                    categoria: fields.categoria.value,
+                    valorUnitario: valor,
+                    quantidadeInicial: quantidade,
+                    estoqueMinimo: minimo,
+                    descricao: fields.descricao.value.trim()
+                })
+            });
 
-        // ========================================
-        // RETORNO PARA PRODUTOS
-        // ========================================
+            const resultado = await resposta.json();
 
-        window.setTimeout(() => {
+            // Verifica se o servidor retornou um erro
+            if (!resposta.ok) {
+                formMessage.textContent =
+                    resultado.message ||
+                    "Não foi possível cadastrar o produto.";
 
-            const destino = origem === "tecnico"
-                ? "produtos.html?origem=tecnico&cadastro=sucesso"
-                : "produtos.html?origem=adm&cadastro=sucesso";
+                formMessage.className =
+                    "product-form-message product-form-message-error";
 
-            window.location.href = destino;
+                return;
+            }
 
-        }, 900);
+            // Exibe o sucesso somente após a resposta da API
+            formMessage.textContent =
+                resultado.message ||
+                "Produto cadastrado com sucesso. Retornando à consulta...";
+
+            formMessage.className =
+                "product-form-message product-form-message-success";
+
+            // Retorna para a consulta de produtos
+            window.setTimeout(() => {
+                const destino = origem === "tecnico"
+                    ? "produtos.html?origem=tecnico&cadastro=sucesso"
+                    : "produtos.html?origem=adm&cadastro=sucesso";
+
+                window.location.href = destino;
+            }, 900);
+
+        } catch (error) {
+            console.error("Erro ao cadastrar produto:", error);
+
+            formMessage.textContent =
+                "Não foi possível conectar ao servidor. Tente novamente.";
+
+            formMessage.className =
+                "product-form-message product-form-message-error";
+        }
 
     });
 
