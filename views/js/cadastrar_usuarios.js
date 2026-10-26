@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formValid = false;
         }
 
+<<<<<<< HEAD
         if (!formValid) {
             formMessage.textContent =
                 "Corrija os campos destacados antes de continuar.";
@@ -121,5 +122,49 @@ document.addEventListener("DOMContentLoaded", () => {
             formMessage.className =
                 "form-message form-message-error";
         }
+=======
+       if (!formValid) {
+    formMessage.textContent = "Corrija os campos destacados antes de continuar.";
+    formMessage.className = "form-message form-message-error";
+    return;
+}
+
+const dadosUsuario = {
+    nome: fields.nome.value.trim(),
+    email: fields.email.value.trim(),
+    login: fields.login.value.trim(),
+    senha: fields.senha.value,
+    perfil: fields.perfil.value
+};
+
+try {
+    const resposta = await fetch("http://localhost:3001/usuarios", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dadosUsuario)
+    });
+
+    const resultado = await resposta.json();
+
+    if (!resposta.ok) {
+        formMessage.textContent = resultado.message;
+        formMessage.className = "form-message form-message-error";
+        return;
+    }
+
+    formMessage.textContent = resultado.message;
+    formMessage.className = "form-message form-message-success";
+
+    window.setTimeout(() => {
+        window.location.href = "usuarios.html?cadastro=sucesso";
+    }, 900);
+
+} catch (erro) {
+    formMessage.textContent = "Não foi possível realizar o cadastro.";
+    formMessage.className = "form-message form-message-error";
+}
+>>>>>>> ca5f574c90fce6ba91f9f7c338acf33d3007cebf
     });
 });

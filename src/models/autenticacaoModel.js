@@ -6,7 +6,7 @@
 
 "use strict";
 
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const connection = require("../config/database");
 
 // Namespace da equipe: window no navegador, globalThis no Node.

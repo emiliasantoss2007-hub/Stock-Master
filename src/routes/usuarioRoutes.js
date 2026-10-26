@@ -1,9 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const { cadastrarUsuario } = require('../controllers/usuarioController');
+const usuarioController = require("../controllers/usuarioController");
+const auth = require("../middlewares/auth");
 
-// Rota responsável pelo cadastro de usuário
-router.post('/usuarios', cadastrarUsuario);
+// CADASTRAR USUÁRIO
+router.post("/", auth, usuarioController.cadastrarUsuario);
+
+// CONSULTAR USUÁRIOS
+router.get("/", auth, usuarioController.listarUsuarios);
+
+// EDITAR USUÁRIO
+router.put("/:id", auth, usuarioController.editarUsuario);
+
+// EXCLUIR USUÁRIO
+router.delete("/:id", auth, usuarioController.excluirUsuario);
 
 module.exports = router;

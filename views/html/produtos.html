@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
     <!-- CONEXÃO JS: busca e filtros -->
     <script src="../js/produtos.js" defer></script>
 </head>
+
 <body>
     <div class="dashboard-layout">
         <aside class="sidebar">
@@ -28,32 +30,32 @@
 
             <p class="nav-title">Menu principal</p>
             <nav class="sidebar-nav" aria-label="Navegação">
-                
+
                 <a href="dashboard_adm.html" id="dashboardLink">
                     <span class="nav-icon">⌂</span>Dashboard</a>
-                    
+
                 <a href="usuarios.html" id="usuariosLink">
                     <span class="nav-icon">♙</span>Usuários</a>
-                    
+
                 <a href="produtos.html" class="active">
                     <span class="nav-icon">▣</span>
                     <span id="produtosMenuText">Produtos</span></a>
-                    
+
                 <a href="entrada_estoque.html" id="entradaLink">
                     <span class="nav-icon">＋</span>Entrada de estoque</a>
-                    
+
                 <a href="saída_estoque.html" id="saidaLink">
                     <span class="nav-icon">−</span>Saída de estoque</a>
-                    
+
                 <a href="expurgo_estoque.html" id="expurgoLink">
                     <span class="nav-icon">⌫</span>Expurgo</a>
-                    
+
                 <a href="historico_movimentacao.html" id="historicoLink">
                     <span class="nav-icon">◷</span>Histórico</a>
-                    
+
                 <a href="relatorios.html" id="relatoriosLink">
                     <span class="nav-icon">▤</span>Relatórios</a>
-                
+
             </nav>
 
             <div class="sidebar-bottom">
@@ -82,151 +84,232 @@
             </header>
 
             <section class="content">
-                <div class="breadcrumb">    
+                <div class="breadcrumb">
                     <!-- HREF: produtos.html -> dashboard-admin.html -->
                     <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
                     <span id="breadcrumbPage">Produtos</span>
 
-                <header class="page-header">
-                    <div>
-                        <h1>Consultar produtos</h1>
-                        <p>Consulte os produtos cadastrados e sua situação atual no estoque.</p>
-                    </div>
+                    <header class="page-header">
+                        <div>
+                            <h1>Consultar produtos</h1>
+                            <p>Consulte os produtos cadastrados e sua situação atual no estoque.</p>
+                        </div>
 
-                    <!-- HREF: produtos.html -> cadastro-produto.html -->
-                    <a href="cadastrar_produto.html?origem=adm" id="cadastrarProdutoLink" class="button button-primary">
-                        + Cadastrar produto </a>
-                </header>
+                        <!-- HREF: produtos.html -> cadastro-produto.html -->
+                        <a href="cadastrar_produto.html?origem=adm" id="cadastrarProdutoLink"
+                            class="button button-primary">
+                            + Cadastrar produto </a>
+                    </header>
 
-                <section class="product-toolbar" aria-label="Filtros de produtos">
-                    <div class="product-toolbar-field">
-                        <label for="searchProduct">Buscar produto</label>
-                        <input
-                            type="search"
-                            id="searchProduct"
-                            placeholder="Nome, SKU ou categoria"
-                        >
-                    </div>
+                    <section class="product-toolbar" aria-label="Filtros de produtos">
+                        <div class="product-toolbar-field">
+                            <label for="searchProduct">Buscar produto</label>
+                            <input type="search" id="searchProduct" placeholder="Nome, SKU ou categoria">
+                        </div>
 
-                    <div class="product-toolbar-field">
-                        <label for="filterCategory">Categoria</label>
-                        <select id="filterCategory">
-                            <option value="">Todas as categorias</option>
-                            <option value="Telas">Telas</option>
-                            <option value="Baterias">Baterias</option>
-                            <option value="Conectores">Conectores</option>
-                        </select>
-                    </div>
+                        <div class="product-toolbar-field">
+                            <label for="filterCategory">Categoria</label>
+                            <select id="filterCategory">
+                                <option value="">Todas as categorias</option>
+                                <option value="Telas">Telas</option>
+                                <option value="Baterias">Baterias</option>
+                                <option value="Conectores">Conectores</option>
+                            </select>
+                        </div>
 
-                    <div class="product-toolbar-field">
-                        <label for="filterSituation">Situação</label>
-                        <select id="filterSituation">
-                            <option value="">Todas</option>
-                            <option value="Normal">Normal</option>
-                            <option value="Crítico">Estoque crítico</option>
-                        </select>
-                    </div>
-                </section>
+                        <div class="product-toolbar-field">
+                            <label for="filterSituation">Situação</label>
+                            <select id="filterSituation">
+                                <option value="">Todas</option>
+                                <option value="Normal">Normal</option>
+                                <option value="Crítico">Estoque crítico</option>
+                            </select>
+                        </div>
+                    </section>
 
-                <section class="panel">
-                    <div class="panel-header">
-                        <h2>Produtos cadastrados</h2>
-                        <span id="productsCount">3 produtos</span>
-                    </div>
+                    <section class="panel">
+                        <div class="panel-header">
+                            <h2>Produtos cadastrados</h2>
+                            <span id="productsCount">3 produtos</span>
+                        </div>
 
-                    <div class="table-wrapper">
-                        <table class="product-table">
-                            <thead>
-                                <tr>
-                                    <th>Produto</th>
-                                    <th>SKU</th>
-                                    <th>Categoria</th>
-                                    <th>Saldo</th>
-                                    <th>Situação</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
+                        <div class="table-wrapper">
+                            <table class="product-table">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>SKU</th>
+                                        <th>Categoria</th>
+                                        <th>Saldo</th>
+                                        <th>Situação</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
 
-                            <tbody id="productsTableBody">
-                                <tr data-search="display lcd 6.1 sku-001 telas" data-category="Telas" data-situation="Normal">
-                                    <td>
-                                        <div class="product-cell">
-                                            <span class="product-thumb">▣</span>
-                                            <div>
-                                                <strong>Display LCD 6.1</strong>
-                                                <small>Peça para manutenção</small>
+                                <tbody id="productsTableBody">
+                                    <tr data-product-id="1" data-search="display lcd 6.1 sku-001 telas"
+                                        data-category="Telas" data-situation="Normal">
+                                        <td>
+                                            <div class="product-cell">
+                                                <span class="product-thumb">▣</span>
+                                                <div>
+                                                    <strong>Display LCD 6.1</strong>
+                                                    <small>Peça para manutenção</small>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>SKU-001</td>
-                                    <td>Telas</td>
-                                    <td><span class="stock-value">32 un.</span></td>
-                                    <td><span class="status status-success">Normal</span></td>
-                                    <td>
-                                        <div class="product-table-actions">
-                                            <!-- HREF FUTURO: produtos.html -> editar-produto.html -->
-                                            <a href="editar_produto.html?id=1" class="product-action product-action-edit">Editar</a>
-                                            <!-- HREF FUTURO: produtos.html -> produto-detalhes.html -->
-                                            <a href="produto_detalhes.html" class="product-action product-action-view">Detalhes</a>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr data-search="bateria modelo a20 sku-002 baterias" data-category="Baterias" data-situation="Normal">
-                                    <td>
-                                        <div class="product-cell">
-                                            <span class="product-thumb">▣</span>
-                                            <div>
-                                                <strong>Bateria modelo A20</strong>
-                                                <small>Componente interno</small>
+                                        </td>
+                                        <td>SKU-001</td>
+                                        <td>Telas</td>
+                                        <td><span class="stock-value">32 un.</span></td>
+                                        <td><span class="status status-success">Normal</span></td>
+                                        <td>
+                                            <div class="product-table-actions">
+                                                <!-- HREF FUTURO: produtos.html -> editar-produto.html -->
+                                                <a href="editar_produto.html?id=1"
+                                                    class="product-action product-action-edit">Editar</a>
+                                                <!-- HREF FUTURO: produtos.html -> produto-detalhes.html -->
+                                                <a href="produto_detalhes.html"
+                                                    class="product-action product-action-view">Detalhes</a>
+                                                <button type="button" class="product-action product-action-delete"
+                                                    data-product-id="1"
+                                                    aria-label="Solicitar exclusão de Display LCD 6.1">
+                                                    Excluir
+                                                </button>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>SKU-002</td>
-                                    <td>Baterias</td>
-                                    <td><span class="stock-value">45 un.</span></td>
-                                    <td><span class="status status-success">Normal</span></td>
-                                    <td>
-                                        <div class="product-table-actions">
-                                            <!-- HREF FUTURO -->
-                                            <a href="editar_produto.html?id=2" class="product-action product-action-edit">Editar</a>
-                                            <!-- HREF FUTURO -->
-                                            <a href="produto_detalhes.html?id=2" class="product-action product-action-view">Detalhes</a>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
 
-                                <tr data-search="conector usb-c sku-003 conectores" data-category="Conectores" data-situation="Crítico">
-                                    <td>
-                                        <div class="product-cell">
-                                            <span class="product-thumb">▣</span>
-                                            <div>
-                                                <strong>Conector USB-C</strong>
-                                                <small>Peça para manutenção</small>
+                                    <tr data-product-id="2" data-search="bateria modelo a20 sku-002 baterias"
+                                        data-category="Baterias" data-situation="Normal">
+                                        <td>
+                                            <div class="product-cell">
+                                                <span class="product-thumb">▣</span>
+                                                <div>
+                                                    <strong>Bateria modelo A20</strong>
+                                                    <small>Componente interno</small>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>SKU-003</td>
-                                    <td>Conectores</td>
-                                    <td><span class="stock-value">03 un.</span></td>
-                                    <td><span class="status status-warning">Estoque crítico</span></td>
-                                    <td>
-                                        <div class="product-table-actions">
-                                            <!-- HREF FUTURO -->
-                                            <a href="editar_produto.html?id=3" class="product-action product-action-edit">Editar</a>
-                                            <!-- HREF FUTURO -->
-                                            <a href="produto_detalhes.html?id=3" class="product-action product-action-view">Detalhes</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                        </td>
+                                        <td>SKU-002</td>
+                                        <td>Baterias</td>
+                                        <td><span class="stock-value">45 un.</span></td>
+                                        <td><span class="status status-success">Normal</span></td>
+                                        <td>
+                                            <div class="product-table-actions">
+                                                <!-- HREF FUTURO -->
+                                                <a href="editar_produto.html?id=2"
+                                                    class="product-action product-action-edit">Editar</a>
+                                                <!-- HREF FUTURO -->
+                                                <a href="produto_detalhes.html?id=2"
+                                                    class="product-action product-action-view">Detalhes</a>
+                                                <button type="button" class="product-action product-action-delete"
+                                                    data-product-id="2"
+                                                    aria-label="Solicitar exclusão de Bateria modelo A20">
+                                                    Excluir
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                    <p id="productsMessage" class="product-form-message" aria-live="polite"></p>
-                </section>
+                                    <tr data-product-id="3" data-search="conector usb-c sku-003 conectores"
+                                        data-category="Conectores" data-situation="Crítico">
+                                        <td>
+                                            <div class="product-cell">
+                                                <span class="product-thumb">▣</span>
+                                                <div>
+                                                    <strong>Conector USB-C</strong>
+                                                    <small>Peça para manutenção</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>SKU-003</td>
+                                        <td>Conectores</td>
+                                        <td><span class="stock-value">03 un.</span></td>
+                                        <td><span class="status status-warning">Estoque crítico</span></td>
+                                        <td>
+                                            <div class="product-table-actions">
+                                                <!-- HREF FUTURO -->
+                                                <a href="editar_produto.html?id=3"
+                                                    class="product-action product-action-edit">Editar</a>
+                                                <!-- HREF FUTURO -->
+                                                <a href="produto_detalhes.html?id=3"
+                                                    class="product-action product-action-view">Detalhes</a>
+                                                <button type="button" class="product-action product-action-delete"
+                                                    data-product-id="3"
+                                                    aria-label="Solicitar exclusão de Conector USB-C">
+                                                    Excluir
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p id="productsMessage" class="product-form-message" aria-live="polite"></p>
+                    </section>
             </section>
         </main>
     </div>
+    
+<!-- Modal de confirmação de exclusão de produto -->
+<div class="product-modal-backdrop" id="deleteProductModal" hidden>
+    <section
+        class="product-confirm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteProductTitle"
+        aria-describedby="deleteProductDescription"
+        tabindex="-1">
+
+        <div class="product-confirm-icon" aria-hidden="true">!</div>
+
+        <h2 id="deleteProductTitle">
+            Confirmar exclusão do produto
+        </h2>
+
+        <p id="deleteProductDescription">
+            Você está prestes a solicitar a exclusão deste produto.
+            Esta ação pode ser permanente.
+        </p>
+
+        <div class="product-confirm-identity" id="deleteProductIdentity">
+            <strong id="deleteProductName">Produto</strong>
+            <span id="deleteProductSku">SKU</span>
+            <small id="deleteProductId"></small>
+        </div>
+
+        <p class="product-confirm-warning">
+            Confira a identificação antes de continuar.
+            Se houver movimentações vinculadas, o servidor poderá
+            impedir a exclusão.
+        </p>
+
+        <p
+            id="deleteProductFeedback"
+            class="product-feedback"
+            role="status"
+            aria-live="polite">
+        </p>
+
+        <div class="product-confirm-actions">
+            <button
+                type="button"
+                class="product-button-secondary"
+                id="cancelDeleteProduct">
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="product-button-danger"
+                id="confirmDeleteProduct">
+                Confirmar exclusão
+            </button>
+        </div>
+    </section>
+</div>
+
 </body>
+
 </html>
