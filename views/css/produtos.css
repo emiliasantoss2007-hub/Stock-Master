@@ -306,3 +306,269 @@
     }
 
 }
+
+/* ========================================
+   EXCLUSÃO DE PRODUTOS
+   ======================================== */
+
+/* Botão de exclusão na tabela */
+.product-table-actions {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.product-action-delete {
+    border: 1px solid #f3c4c0;
+    background: var(--danger-bg);
+    color: var(--danger);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.product-action-delete:hover,
+.product-action-delete:focus-visible {
+    border-color: var(--danger);
+    background: #ffe3e0;
+    outline: 2px solid rgba(180, 35, 24, .18);
+    outline-offset: 2px;
+}
+
+.product-action-delete[hidden] {
+    display: none !important;
+}
+
+/* Bloqueia a rolagem da página com o modal aberto */
+.product-modal-open {
+    overflow: hidden;
+}
+
+.product-modal-backdrop[hidden] {
+    display: none !important;
+}
+
+/* Fundo escurecido */
+.product-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    background: rgba(7, 20, 45, .58);
+    backdrop-filter: blur(3px);
+}
+
+/* Caixa de confirmação */
+.product-confirm-modal {
+    width: min(100%, 480px);
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: 0 24px 70px rgba(7, 20, 45, .25);
+    animation: product-modal-enter .18s ease-out;
+}
+
+.product-confirm-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 16px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--danger-bg);
+    color: var(--danger);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.product-confirm-modal h2 {
+    margin: 0 0 9px;
+    color: var(--text);
+    font-size: 20px;
+    line-height: 1.3;
+}
+
+.product-confirm-modal > p {
+    margin: 0 0 14px;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* Identificação do produto */
+.product-confirm-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 18px 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--danger);
+    border-radius: 10px;
+    background: #fafbfe;
+    overflow-wrap: anywhere;
+}
+
+.product-confirm-identity strong {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.product-confirm-identity span,
+.product-confirm-identity small {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Aviso de possíveis vínculos */
+.product-confirm-modal .product-confirm-warning {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--warning-bg);
+    color: var(--warning);
+    font-size: 12px;
+}
+
+/* Mensagens de processamento, sucesso e erro */
+.product-feedback {
+    min-height: 0;
+    margin: 12px 0 0 !important;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 12px !important;
+}
+
+.product-feedback:not(:empty) {
+    padding: 10px 12px;
+}
+
+.product-feedback-error {
+    border: 1px solid #f3c4c0;
+    background: var(--danger-bg);
+    color: var(--danger) !important;
+}
+
+.product-feedback-success {
+    border: 1px solid #b9e5cc;
+    background: var(--success-bg);
+    color: var(--success) !important;
+}
+
+.product-feedback-pending {
+    background: var(--primary-soft);
+    color: var(--primary) !important;
+}
+
+/* Botões do modal */
+.product-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.product-button-danger {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border: 1px solid var(--danger);
+    border-radius: 9px;
+    background: var(--danger);
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    transition: background .18s ease;
+}
+
+.product-button-danger:hover:not(:disabled),
+.product-button-danger:focus-visible {
+    background: #8f1d14;
+    outline: 3px solid rgba(180, 35, 24, .18);
+    outline-offset: 2px;
+}
+
+.product-button-danger:disabled,
+.product-button-secondary:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+/* Animação de entrada */
+@keyframes product-modal-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(.99);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Tablets e celulares */
+@media (max-width: 760px) {
+    .product-table-actions {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .product-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+    }
+
+    .product-confirm-modal {
+        padding: 22px 18px;
+    }
+
+    .product-confirm-actions {
+        flex-direction: column-reverse;
+    }
+
+    .product-confirm-actions button {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* Celulares pequenos */
+@media (max-width: 420px) {
+    .product-modal-backdrop {
+        align-items: end;
+        padding: 10px;
+    }
+
+    .product-confirm-modal {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+
+    .product-confirm-modal h2 {
+        font-size: 18px;
+    }
+}
+
+/* Respeita a preferência por movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+    .product-confirm-modal,
+    .product-action-delete,
+    .product-button-danger {
+        animation: none;
+        transition: none;
+    }
+}
