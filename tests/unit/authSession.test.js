@@ -17,13 +17,30 @@ describe('Sessão de autenticação para autorização de produtos', () => {
                 perfil: { id: 2, descricao: 'Técnico' }
             }
         });
-        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+            cookie: jest.fn()
+        };
 
-        await AuthController.autenticar({ body: { login: 'tecnico', senha: 'senha' } }, res);
+        await AuthController.autenticar({
+            body: { login: 'tecnico', senha: 'senha' },
+            secure: true
+        }, res);
 
         const resposta = res.json.mock.calls[0][0];
         expect(res.status).toHaveBeenCalledWith(200);
         expect(resposta.accessToken).toMatch(/^[a-f0-9]{64}$/);
+        expect(res.cookie).toHaveBeenCalledWith(
+            'stockmaster_session',
+            resposta.accessToken,
+            expect.objectContaining({
+                httpOnly: true,
+                secure: true,
+                sameSite: 'lax',
+                path: '/'
+            })
+        );
         expect(sessaoService.obterUsuario(resposta.accessToken)).toEqual({
             id_usuario: 5,
             id_nivel_acesso: 2,

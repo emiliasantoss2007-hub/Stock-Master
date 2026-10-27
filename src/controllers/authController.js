@@ -27,6 +27,13 @@ const AuthController = {
                     perfil
                 });
 
+                res.cookie("stockmaster_session", accessToken, {
+                    httpOnly: true,
+                    secure: Boolean(req.secure) || process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    path: "/"
+                });
+
                 return res.status(resultado.status).json({ ...resultado, accessToken });
             }
 

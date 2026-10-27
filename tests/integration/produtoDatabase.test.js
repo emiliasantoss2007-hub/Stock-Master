@@ -115,7 +115,8 @@ describe('RF-08 - integração real com MySQL', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    Cookie: `stockmaster_session=${token}`,
+                    Origin: `http://127.0.0.1:${server.address().port}`
                 },
                 body: JSON.stringify(dadosProduto)
             });
@@ -129,7 +130,8 @@ describe('RF-08 - integração real com MySQL', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    Cookie: `stockmaster_session=${token}`,
+                    Origin: `http://127.0.0.1:${server.address().port}`
                 },
                 body: JSON.stringify(dadosProduto)
             });

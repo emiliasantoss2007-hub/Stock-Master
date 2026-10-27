@@ -218,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        const accessToken = sessionStorage.getItem("stockmaster.accessToken");
         const inicioCadastro = performance.now();
         submitButton.disabled = true;
         formMessage.textContent = "Salvando produto...";
@@ -227,9 +226,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resposta = await fetch("/api/produtos", {
                 method: "POST",
+                credentials: "same-origin",
                 headers: {
-                    "Content-Type": "application/json",
-                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     nomeProduto: fields.nomeProduto.value.trim(),
