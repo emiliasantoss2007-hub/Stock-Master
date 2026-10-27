@@ -6,6 +6,7 @@
 "use strict";
 
 const Autenticacao = require("../models/autenticacaoModel");
+const sessaoService = require("../services/sessaoService");
 
 const AuthController = {
 
@@ -17,6 +18,24 @@ const AuthController = {
                 login,
                 senha
             });
+
+            if (resultado.success) {
+                const perfil = resultado.data.perfil;
+                const accessToken = sessaoService.criar({
+                    id_usuario: resultado.data.id_usuario,
+                    id_nivel_acesso: perfil.id,
+                    perfil
+                });
+
+                res.cookie("stockmaster_session", accessToken, {
+                    httpOnly: true,
+                    secure: Boolean(req.secure) || process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    path: "/"
+                });
+
+                return res.status(resultado.status).json({ ...resultado, accessToken });
+            }
 
             return res.status(resultado.status).json(resultado);
 

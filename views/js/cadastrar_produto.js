@@ -86,14 +86,25 @@ document.addEventListener("DOMContentLoaded", () => {
         descricao: document.querySelector("#descricaoError")
     };
 
+    Object.entries(fields).forEach(([nomeCampo, campo]) => {
+        campo.addEventListener("input", () => {
+            if (campo.value.trim()) {
+                errors[nomeCampo].textContent = "";
+                campo.classList.remove("field-invalid");
+            }
+        });
+    });
+
 
     // ========================================
     // VALIDAÇÃO DO FORMULÁRIO
     // ========================================
 
-    productForm.addEventListener("submit", (event) => {
+    productForm.addEventListener("submit", async (event) => {
 
         event.preventDefault();
+
+        const submitButton = productForm.querySelector('button[type="submit"]');
 
         let formValid = true;
 
@@ -165,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Quantidade
         if (
             !fields.quantidadeInicial.value ||
-            quantidade < 0 ||
+            quantidade <= 0 ||
             !Number.isInteger(quantidade)
         ) {
 
@@ -207,27 +218,59 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        // Cadastro realizado
-        formMessage.textContent =
-            "Produto cadastrado com sucesso. Retornando à consulta...";
+        const inicioCadastro = performance.now();
+        submitButton.disabled = true;
+        formMessage.textContent = "Salvando produto...";
+        formMessage.className = "product-form-message";
 
-        formMessage.className =
-            "product-form-message product-form-message-success";
+        try {
+            const resposta = await fetch("/api/produtos", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    nomeProduto: fields.nomeProduto.value.trim(),
+                    sku: fields.sku.value.trim(),
+                    codigoBarras: document.querySelector("#codigoBarras").value.trim(),
+                    categoria: fields.categoria.value,
+                    valorUnitario: valor,
+                    quantidadeInicial: quantidade,
+                    estoqueMinimo: minimo,
+                    descricao: fields.descricao.value.trim()
+                })
+            });
+            const resultado = await resposta.json();
+            const tempoRespostaMs = performance.now() - inicioCadastro;
 
+            if (!resposta.ok) {
+                formMessage.textContent = resultado.message || "Não foi possível cadastrar o produto.";
+                formMessage.className = "product-form-message product-form-message-error";
+                return;
+            }
 
-        // ========================================
-        // RETORNO PARA PRODUTOS
-        // ========================================
+            console.info("[StockMaster] Cadastro de produto: resposta do clique ao sucesso", {
+                tempoRespostaMs,
+                escopo: "cliente, incluindo rede e resposta HTTP"
+            });
+            formMessage.textContent = "Produto cadastrado com sucesso. Retornando à consulta...";
+            formMessage.className = "product-form-message product-form-message-success";
 
-        window.setTimeout(() => {
+            window.setTimeout(() => {
+                const destino = origem === "tecnico"
+                    ? "produtos.html?origem=tecnico&cadastro=sucesso"
+                    : "produtos.html?origem=adm&cadastro=sucesso";
 
-            const destino = origem === "tecnico"
-                ? "produtos.html?origem=tecnico&cadastro=sucesso"
-                : "produtos.html?origem=adm&cadastro=sucesso";
-
-            window.location.href = destino;
-
-        }, 900);
+                window.location.href = destino;
+            }, 900);
+        } catch (erro) {
+            console.error("Erro ao cadastrar produto:", erro);
+            formMessage.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+            formMessage.className = "product-form-message product-form-message-error";
+        } finally {
+            submitButton.disabled = false;
+        }
 
     });
 
