@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Confirma e envia a solicitação de exclusão.
-    confirmDeleteProduct.addEventListener("click", async () => {
+        confirmDeleteProduct.addEventListener("click", async () => {
         if (!selectedProductId || !selectedProductRow) {
             showDeleteFeedback(
                 "Não foi possível identificar o produto selecionado.",
@@ -273,14 +273,22 @@ document.addEventListener("DOMContentLoaded", () => {
             "pending"
         );
 
+        // Usuário logado (admin) — mesmo padrão dos testes do RF-10
+        const usuarioLogado = {
+            id_usuario: 2,
+            id_nivel_acesso: 1,
+            nome: "Administrador"
+        };
+
         try {
-            // Endpoint previsto para a futura integração com o backend.
             const response = await fetch(
                 `/api/produtos/${encodeURIComponent(selectedProductId)}`,
                 {
                     method: "DELETE",
                     headers: {
-                        "Accept": "application/json"
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                        "X-User": JSON.stringify(usuarioLogado)
                     }
                 }
             );
@@ -301,17 +309,24 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (!response.ok || data.sucesso === false) {
+                if (response.status === 403) {
+                    throw new Error(
+                        data.mensagem ||
+                        "Acesso negado. Apenas administradores podem excluir produtos."
+                    );
+                }
+
                 if (response.status === 404) {
                     throw new Error(
                         data.mensagem ||
-                        "A rota de exclusão não está disponível no servidor."
+                        "Produto não encontrado."
                     );
                 }
 
                 if (response.status === 409) {
                     throw new Error(
                         data.mensagem ||
-                        "Este produto possui vínculos e não pode ser excluído."
+                        "Não é possível excluir o produto (estoque ou movimentações)."
                     );
                 }
 
@@ -324,13 +339,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const productName = deleteProductName.textContent;
             const rowToRemove = selectedProductRow;
 
-            // Só remove a linha após o servidor confirmar o sucesso.
             rowToRemove.remove();
             rows = rows.filter((row) => row !== rowToRemove);
-
             filterProducts();
 
             showDeleteFeedback(
+                data.mensagem ||
                 `Produto "${productName}" excluído com sucesso.`,
                 "success"
             );
