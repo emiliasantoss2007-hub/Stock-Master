@@ -96,6 +96,79 @@ const excluirProduto = async (req, res) => {
     }
 };
 
+ // RF-12 — LISTAR PRODUTOS PARA ENTRADA
+const listarParaEntrada = async (req, res) => {
+    try {
+        const produtos = await ProdutoModel.listarParaEntrada();
+
+        return res.status(200).json({
+            sucesso: true,
+            produtos
+        });
+    } catch (erro) {
+        console.error("Erro ao listar produtos para entrada:", erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: "Erro ao consultar os produtos."
+        });
+    }
+};
+
+// RF-12 — REGISTRAR ENTRADA
+const registrarEntrada = async (req, res) => {
+    try {
+        const usuario = req.usuario;
+
+        if (!usuario || !usuario.id_usuario) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: "Usuário não autenticado."
+            });
+        }
+
+        const { id_produto, quantidade } = req.body;
+
+        const resultado = await ProdutoModel.registrarEntrada(
+            id_produto,
+            quantidade,
+            usuario.id_usuario
+        );
+
+        return res.status(201).json({
+            sucesso: true,
+            mensagem: "Entrada registrada com sucesso.",
+            dados: resultado
+        });
+    } catch (erro) {
+        const errosConhecidos = {
+            PRODUCT_ID_INVALID: [400, "Identificador de produto inválido."],
+            QUANTITY_INVALID: [400, "Informe uma quantidade inteira maior que zero."],
+            USER_ID_INVALID: [401, "Usuário inválido."],
+            PRODUCT_NOT_FOUND: [404, "Produto não encontrado."]
+        };
+
+        if (errosConhecidos[erro.code]) {
+            const [status, mensagem] = errosConhecidos[erro.code];
+
+            return res.status(status).json({
+                sucesso: false,
+                mensagem,
+                codigo: erro.code
+            });
+        }
+
+        console.error("Erro ao registrar entrada:", erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: "Erro interno ao registrar entrada."
+        });
+    }
+};
+
 module.exports = {
-    excluirProduto
+    excluirProduto,
+    listarParaEntrada,
+    registrarEntrada
 };

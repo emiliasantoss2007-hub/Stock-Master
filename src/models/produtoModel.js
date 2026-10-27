@@ -95,6 +95,79 @@ async function excluirComVerificacao(idProduto) {
     }
 }
 
+ // RF-12 — LISTAR PRODUTOS PARA ENTRADA
+async function listarParaEntrada() {
+    return await query(
+        `SELECT
+            id_produto,
+            nome,
+            sku,
+            quantidade_estoque
+         FROM produto
+         ORDER BY nome ASC`,
+        []
+    );
+}
+
+// RF-12 — REGISTRAR ENTRADA DE ESTOQUE
+async function registrarEntrada(idProduto, quantidade, idUsuario) {
+    const id = Number(idProduto);
+    const qtd = Number(quantidade);
+    const usuario = Number(idUsuario);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        throw criarErro("Produto inválido.", 400, "PRODUCT_ID_INVALID");
+    }
+
+    if (!Number.isInteger(qtd) || qtd <= 0) {
+        throw criarErro("Quantidade inválida.", 400, "QUANTITY_INVALID");
+    }
+
+    if (!Number.isInteger(usuario) || usuario <= 0) {
+        throw criarErro("Usuário inválido.", 401, "USER_ID_INVALID");
+    }
+
+    await iniciarTransacao();
+
+    try {
+        const produtos = await query(
+            `SELECT id_produto
+             FROM produto
+             WHERE id_produto = ?
+             FOR UPDATE`,
+            [id]
+        );
+
+        if (produtos.length === 0) {
+            throw criarErro("Produto não encontrado.", 404, "PRODUCT_NOT_FOUND");
+        }
+
+        await query(
+            `INSERT INTO movimentacao
+                (tipo_movimentacao, quantidade, justificativa, id_produto, id_usuario)
+             VALUES (?, ?, ?, ?, ?)`,
+            ["entrada", qtd, "Entrada de produtos no estoque", id, usuario]
+        );
+
+        await query(
+            `UPDATE produto
+             SET quantidade_estoque = quantidade_estoque + ?
+             WHERE id_produto = ?`,
+            [qtd, id]
+        );
+
+        await confirmarTransacao();
+
+        return {
+            id_produto: id,
+            quantidade: qtd
+        };
+    } catch (erro) {
+        await desfazerTransacao();
+        throw erro;
+    }
+}
+
 
 // EXECUTAR CONSULTAS
 function query(sql, parametros = []) {
@@ -157,5 +230,7 @@ function criarErro(mensagem, statusCode, code) {
 
 // EXPORTAR MÉTODOS DO MODEL
 module.exports = {
-    excluirComVerificacao
+    excluirComVerificacao,
+    listarParaEntrada,
+    registrarEntrada
 };

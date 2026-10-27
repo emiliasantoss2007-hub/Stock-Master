@@ -7,6 +7,7 @@ const path = require('path');
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
 const usuarioRoutes = require('./src/routes/usuarioRoutes');
+const produtoRoutes = require('./src/routes/produtoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,6 +29,7 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
  */
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
+app.use('/api', produtoRoutes);
 
 /*
  * Rotas de usuários
