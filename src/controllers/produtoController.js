@@ -96,7 +96,8 @@ const excluirProduto = async (req, res) => {
     }
 };
 
- // RF-12 — LISTAR PRODUTOS PARA ENTRADA
+
+// RF-12 — LISTAR PRODUTOS PARA ENTRADA
 const listarParaEntrada = async (req, res) => {
     try {
         const produtos = await ProdutoModel.listarParaEntrada();
@@ -105,6 +106,7 @@ const listarParaEntrada = async (req, res) => {
             sucesso: true,
             produtos
         });
+
     } catch (erro) {
         console.error("Erro ao listar produtos para entrada:", erro);
 
@@ -115,9 +117,10 @@ const listarParaEntrada = async (req, res) => {
     }
 };
 
-// RF-12 — REGISTRAR ENTRADA
+// RF-12 — VALIDAR E REGISTRAR ENTRADA
 const registrarEntrada = async (req, res) => {
     try {
+        // VALIDAR USUÁRIO
         const usuario = req.usuario;
 
         if (!usuario || !usuario.id_usuario) {
@@ -127,37 +130,105 @@ const registrarEntrada = async (req, res) => {
             });
         }
 
+        const idUsuario = Number(usuario.id_usuario);
+
+        if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: "Identificação do usuário inválida."
+            });
+        }
+
+        // VALIDAR DADOS RECEBIDOS
+        if (!req.body || typeof req.body !== "object") {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: "Dados da entrada não foram informados."
+            });
+        }
+
         const { id_produto, quantidade } = req.body;
 
+        // VALIDAR PRODUTO
+        const produtoValido =
+            id_produto !== undefined &&
+            id_produto !== null &&
+            String(id_produto).trim() !== "" &&
+            /^\d+$/.test(String(id_produto)) &&
+            Number.isInteger(Number(id_produto)) &&
+            Number(id_produto) > 0;
+
+        if (!produtoValido) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: "Selecione um produto válido.",
+                codigo: "PRODUCT_ID_INVALID"
+            });
+        }
+
+        // VALIDAR QUANTIDADE
+        const quantidadeValida =
+            quantidade !== undefined &&
+            quantidade !== null &&
+            String(quantidade).trim() !== "" &&
+            /^\d+$/.test(String(quantidade)) &&
+            Number.isInteger(Number(quantidade)) &&
+            Number(quantidade) > 0;
+
+        if (!quantidadeValida) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: "Informe uma quantidade inteira maior que zero.",
+                codigo: "QUANTITY_INVALID"
+            });
+        }
+
+        // ACIONAR MODEL
         const resultado = await ProdutoModel.registrarEntrada(
-            id_produto,
-            quantidade,
-            usuario.id_usuario
+            Number(id_produto),
+            Number(quantidade),
+            idUsuario
         );
 
+        // RETORNAR SUCESSO
         return res.status(201).json({
             sucesso: true,
             mensagem: "Entrada registrada com sucesso.",
             dados: resultado
         });
+
     } catch (erro) {
+        // TRATAR ERROS DO MODEL
         const errosConhecidos = {
-            PRODUCT_ID_INVALID: [400, "Identificador de produto inválido."],
-            QUANTITY_INVALID: [400, "Informe uma quantidade inteira maior que zero."],
-            USER_ID_INVALID: [401, "Usuário inválido."],
-            PRODUCT_NOT_FOUND: [404, "Produto não encontrado."]
+            PRODUCT_ID_INVALID: {
+                status: 400,
+                mensagem: "Identificador de produto inválido."
+            },
+            QUANTITY_INVALID: {
+                status: 400,
+                mensagem: "Informe uma quantidade inteira maior que zero."
+            },
+            USER_ID_INVALID: {
+                status: 401,
+                mensagem: "Usuário inválido."
+            },
+            PRODUCT_NOT_FOUND: {
+                status: 404,
+                mensagem: "O produto informado não está cadastrado."
+            }
         };
 
-        if (errosConhecidos[erro.code]) {
-            const [status, mensagem] = errosConhecidos[erro.code];
+        const erroConhecido = errosConhecidos[erro.code];
 
-            return res.status(status).json({
+        if (erroConhecido) {
+            return res.status(erroConhecido.status).json({
                 sucesso: false,
-                mensagem,
+                mensagem: erroConhecido.mensagem,
                 codigo: erro.code
             });
         }
 
+        // TRATAR ERRO INESPERADO
         console.error("Erro ao registrar entrada:", erro);
 
         return res.status(500).json({
