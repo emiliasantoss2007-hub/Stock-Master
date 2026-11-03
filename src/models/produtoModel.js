@@ -72,9 +72,135 @@ function excluir(idProduto) {
   });
 }
 
+// RF-12 — produtos para o select de entrada
+function listarParaEntrada() {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT
+        id_produto,
+        sku,
+        nome,
+        quantidade_estoque
+      FROM produto
+      ORDER BY nome ASC
+    `;
+
+    db.query(sql, (erro, resultados) => {
+      if (erro) return reject(erro);
+      resolve(resultados);
+    });
+  });
+}
+
+/**
+ * RF-12 — Registrar entrada
+ * registrarEntrada(id_produto, quantidade, id_usuario)
+ */
+function registrarEntrada(idProduto, quantidade, idUsuario) {
+  const idProd = Number(idProduto);
+  const qtd = Number(quantidade);
+  const idUser = Number(idUsuario);
+
+  return new Promise((resolve, reject) => {
+    if (!idProd || !Number.isInteger(idProd) || idProd <= 0) {
+      const e = new Error('Identificador de produto inválido.');
+      e.code = 'PRODUCT_ID_INVALID';
+      return reject(e);
+    }
+
+    if (!Number.isFinite(qtd) || !Number.isInteger(qtd) || qtd <= 0) {
+      const e = new Error('Informe uma quantidade inteira maior que zero.');
+      e.code = 'QUANTITY_INVALID';
+      return reject(e);
+    }
+
+    if (!idUser || !Number.isInteger(idUser) || idUser <= 0) {
+      const e = new Error('Usuário inválido.');
+      e.code = 'USER_ID_INVALID';
+      return reject(e);
+    }
+
+    db.beginTransaction((errBegin) => {
+      if (errBegin) return reject(errBegin);
+
+      db.query(
+        `SELECT id_produto, sku, nome, quantidade_estoque
+         FROM produto
+         WHERE id_produto = ?
+         FOR UPDATE`,
+        [idProd],
+        (errProd, rows) => {
+          if (errProd) {
+            return db.rollback(() => reject(errProd));
+          }
+
+          if (!rows.length) {
+            return db.rollback(() => {
+              const e = new Error('Produto não encontrado.');
+              e.code = 'PRODUCT_NOT_FOUND';
+              reject(e);
+            });
+          }
+
+          const produto = rows[0];
+          const saldoAnterior = Number(produto.quantidade_estoque);
+          const saldoNovo = saldoAnterior + qtd;
+
+          db.query(
+            `UPDATE produto
+             SET quantidade_estoque = ?
+             WHERE id_produto = ?`,
+            [saldoNovo, idProd],
+            (errUpd) => {
+              if (errUpd) {
+                return db.rollback(() => reject(errUpd));
+              }
+
+              db.query(
+                `INSERT INTO movimentacao (
+                   tipo_movimentacao,
+                   quantidade,
+                   justificativa,
+                   id_produto,
+                   id_usuario
+                 ) VALUES (?, ?, ?, ?, ?)`,
+                ['ENTRADA', qtd, null, idProd, idUser],
+                (errMov, resultMov) => {
+                  if (errMov) {
+                    return db.rollback(() => reject(errMov));
+                  }
+
+                  db.commit((errCommit) => {
+                    if (errCommit) {
+                      return db.rollback(() => reject(errCommit));
+                    }
+
+                    resolve({
+                      idMovimentacao: resultMov.insertId,
+                      idProduto: idProd,
+                      sku: produto.sku,
+                      nome: produto.nome,
+                      quantidade: qtd,
+                      saldoAnterior,
+                      saldoNovo,
+                      idUsuario: idUser
+                    });
+                  });
+                }
+              );
+            }
+          );
+        }
+      );
+    });
+  });
+}
+
 module.exports = {
   buscarPorId,
   verificarSaldo,
   verificarMovimentacoes,
-  excluir
+  excluir,
+  listarParaEntrada,
+  registrarEntrada
 };

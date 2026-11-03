@@ -169,6 +169,7 @@ const registrarEntrada = async (req, res) => {
 };
 
 module.exports = {
-  excluirProduto
-  // + outras funções que já existirem neste arquivo
+  excluirProduto,
+  listarParaEntrada,
+  registrarEntrada
 };
