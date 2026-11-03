@@ -98,13 +98,16 @@ describe('RF-08 - integração real com MySQL', () => {
             perfil: { id: 2, descricao: 'Técnico' }
         });
         const url = `http://127.0.0.1:${server.address().port}/api/produtos`;
-        const dadosProduto = {
-            sku,
-            nome: 'Produto HTTP RF-08',
-            categoria: 'Teste',
-            estoque_minimo: 6
-        };
 
+        const dadosProduto = {
+    sku,
+    nomeProduto: 'Produto HTTP RF-08',
+    categoria: 'Teste',
+    valorUnitario: 10,
+    quantidadeInicial: 1,
+    estoqueMinimo: 6,
+    descricao: 'Teste de integração RF-08'
+};
         try {
             await new Promise((resolve, reject) => {
                 connection.beginTransaction((erro) => erro ? reject(erro) : resolve());
@@ -121,6 +124,7 @@ describe('RF-08 - integração real com MySQL', () => {
                 body: JSON.stringify(dadosProduto)
             });
             const resultado = await resposta.json();
+            console.log('[RF-08] resposta HTTP:', resposta.status, resultado);
             const tempoClienteMs = Number(process.hrtime.bigint() - inicioCliente) / 1e6;
 
             expect(resposta.status).toBe(201);
