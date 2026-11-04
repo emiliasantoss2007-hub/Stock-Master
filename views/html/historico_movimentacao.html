@@ -68,64 +68,86 @@
 
             <section class="content">
 
+                <a class="history-back-link" id="historyBackLink" href="dashboard_adm.html">
+                    <span aria-hidden="true">←</span>
+                    Voltar
+                </a>
+
                 <div class="breadcrumb">
                     <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
-                    <span>Histórico de Movimentação</span>
+                    <span>Estoque</span> /
+                    <span aria-current="page">Histórico</span>
                 </div>
 
                 <header class="page-header">
                     <div>
-                        <h1>Histórico de Movimentação</h1>
-                        <p>Consulte todas as entradas, saídas e expurgos registrados.</p>
+                        <h1>Histórico de estoque</h1>
+                        <p>Consulte as movimentações de entrada e saída registradas no sistema.</p>
                     </div>
                 </header>
 
                 <section class="panel">
-                    <h2>Filtros</h2>
+                    <div class="panel-header">
+                        <div>
+                            <h2>Filtros</h2>
+                            <p class="history-panel-description">Refine a consulta por produto, tipo ou período.</p>
+                        </div>
+                    </div>
 
-                    <div class="filtros-historico">
+                    <form id="filtrosHistorico" class="filtros-historico">
                         <div class="campo-especifico">
                             <label for="filtroProduto">Produto</label>
-                            <select id="filtroProduto"><option value="">Todos</option></select>
+                            <select id="filtroProduto" name="id_produto">
+                                <option value="">Todos os produtos</option>
+                            </select>
                         </div>
                         <div class="campo-especifico">
-                            <label for="filtroTipo">Tipo</label>
-                            <select id="filtroTipo">
-                                <option value="">Todos</option>
-                                <option value="Entrada">Entrada</option>
-                                <option value="Saída">Saída</option>
-                                <option value="Expurgo">Expurgo</option>
+                            <label for="filtroTipo">Tipo de movimentação</label>
+                            <select id="filtroTipo" name="tipo_movimentacao">
+                                <option value="">Todos os tipos</option>
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="SAIDA">Saída</option>
                             </select>
                         </div>
                         <div class="campo-especifico">
                             <label for="filtroDataInicio">Data inicial</label>
-                            <input type="date" id="filtroDataInicio">
+                            <input type="date" id="filtroDataInicio" name="data_inicio">
                         </div>
                         <div class="campo-especifico">
                             <label for="filtroDataFim">Data final</label>
-                            <input type="date" id="filtroDataFim">
+                            <input type="date" id="filtroDataFim" name="data_fim">
                         </div>
-                        <button id="btnFiltrar" class="btn btn-primary">Filtrar</button>
-                        <button id="btnLimparFiltros" class="btn btn-secondary">Limpar</button>
-                    </div>
+                        <div class="history-filter-actions">
+                            <button id="btnFiltrar" class="btn btn-primary" type="submit">Filtrar</button>
+                            <button id="btnLimparFiltros" class="btn btn-secondary" type="reset">Limpar filtros</button>
+                        </div>
+                    </form>
+                    <p id="historyFeedback" class="history-feedback" aria-live="polite"></p>
                 </section>
 
-                <section class="panel">
-                    <h2>Movimentações</h2>
+                <section class="panel history-results-panel" aria-labelledby="historyResultsTitle">
+                    <div class="panel-header">
+                        <div>
+                            <h2 id="historyResultsTitle">Movimentações</h2>
+                            <p class="history-panel-description">Exibidas da mais recente para a mais antiga.</p>
+                        </div>
+                    </div>
 
-                    <table class="tabela-padrao">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Produto</th>
-                                <th>Tipo</th>
-                                <th>Quantidade</th>
-                                <th>Responsável</th>
-                                <th>Justificativa</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaHistorico"></tbody>
-                    </table>
+                    <div class="history-table-wrapper">
+                        <table class="tabela-padrao">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Data</th>
+                                    <th scope="col">Produto</th>
+                                    <th scope="col">Tipo</th>
+                                    <th scope="col">Quantidade</th>
+                                    <th scope="col">Responsável</th>
+                                    <th scope="col">Justificativa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaHistorico" aria-live="polite"></tbody>
+                        </table>
+                    </div>
                 </section>
 
             </section>
