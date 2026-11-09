@@ -58,9 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function obterCabecalhos() {
         return {
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "X-User": JSON.stringify({
-                id_usuario: usuario?.id_usuario,
-                id_nivel_acesso: usuario?.id_nivel_acesso
+                id_usuario: usuario.id_usuario,
+                id_nivel_acesso: usuario.id_nivel_acesso
             })
         };
     }
@@ -119,9 +120,14 @@ document.addEventListener("DOMContentLoaded", () => {
             select.innerHTML = '<option value="">Carregando produtos...</option>';
 
             const resposta = await fetch("/api/produtos/entrada/listar", {
+                method: "GET",
                 headers: obterCabecalhos()
             });
-            const resultado = await resposta.json();
+
+            const resultado = await lerResposta(resposta);
+            produtos = Array.isArray(resultado.produtos)
+                ? resultado.produtos
+                : [];
 
             if (!resposta.ok || !resultado.sucesso) {
                 throw new Error(resultado.mensagem || "Não foi possível carregar os produtos.");
@@ -225,20 +231,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modalCancelar.addEventListener("click", fecharModal);
 
-    modalConfirmar.addEventListener("click", () => {
-        if (!produtoPendente) return;
+    solicitacaoPendente = {
+        id_produto: Number(produto.id_produto),
+        quantidade: qtd,
+        justificativa: motivo
+    };
+    modalConfirmar.addEventListener("click", async () => {
+        if (!solicitacaoPendente) return;
 
-        // PONTO DE INTEGRAÇÃO: enviar produtoPendente ao Controller do RF-15.
-        // A quantidade representa todo o saldo atual do produto.
-        window.dispatchEvent(new CustomEvent("expurgo:confirmado", {
-            detail: { ...produtoPendente }
-        }));
+        modalConfirmar.disabled = true;
+        modalCancelar.disabled = true;
+        modalConfirmar.textContent = "Enviando...";
 
-        fecharModal();
-        mostrarMensagem(
-            "Confirmação registrada na interface. O envio e a efetivação do expurgo dependem da integração com o Controller.",
-            "info"
-        );
+        try {
+            const resposta = await fetch("/api/produtos/expurgo", {
+                method: "POST",
+                headers: obterCabecalhos(),
+                body: JSON.stringify(solicitacaoPendente)
+            });
+
+            const resultado = await lerResposta(resposta);
+            const dados = resultado.dados;
+
+            fecharModal();
+
+            mostrarMensagem(
+                `${resultado.mensagem} Produto: ${dados.nome}. Quantidade expurgada: ${dados.quantidade}. Saldo restante: ${dados.saldoNovo}.`,
+                "sucesso"
+            );
+
+            formulario.reset();
+            await carregarProdutos();
+
+        } catch (erro) {
+            fecharModal();
+            mostrarMensagem(erro.message);
+
+        } finally {
+            modalConfirmar.disabled = false;
+            modalCancelar.disabled = false;
+            modalConfirmar.textContent = "Confirmar expurgo";
+        }
     });
 
     modalOverlay.addEventListener("click", (evento) => {

@@ -103,7 +103,7 @@ const listarParaEntrada = async (req, res) => {
 
         return res.status(200).json({
             sucesso: true,
-        produtos
+            produtos
         });
 
     } catch (erro) {
@@ -237,8 +237,127 @@ const registrarEntrada = async (req, res) => {
     }
 };
 
+// RF-15 — LISTAR PRODUTOS PARA EXPURGO
+const listarParaExpurgo = async (req, res) => {
+    try {
+        const produtos = await ProdutoModel.listarParaEntrada();
+        // reutiliza a mesma listagem (id, sku, nome, quantidade_estoque)
+
+        return res.status(200).json({
+            sucesso: true,
+            produtos
+        });
+    } catch (erro) {
+        console.error('Erro ao listar produtos para expurgo:', erro);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao consultar os produtos.'
+        });
+    }
+};
+
+// RF-15 — REGISTRAR EXPURGO
+const registrarExpurgo = async (req, res) => {
+    try {
+        const usuarioLogado = req.usuario;
+
+        // 1. Administrador validado (expurgo exclusivo do Admin)
+        if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+            return res.status(403).json({
+                sucesso: false,
+                mensagem: 'Acesso negado. Apenas administradores podem registrar expurgo.'
+            });
+        }
+
+        if (!usuarioLogado.id_usuario) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: 'Usuário não autenticado.'
+            });
+        }
+
+        const { id_produto, quantidade, justificativa } = req.body;
+
+        // 2. Produto validado (id)
+        const idProduto = Number(id_produto);
+        if (!id_produto || !Number.isInteger(idProduto) || idProduto <= 0) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Identificador de produto inválido.',
+                codigo: 'PRODUCT_ID_INVALID'
+            });
+        }
+
+        // 3. Quantidade
+        const qtd = Number(quantidade);
+        if (!Number.isFinite(qtd) || !Number.isInteger(qtd) || qtd <= 0) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Informe uma quantidade inteira maior que zero.',
+                codigo: 'QUANTITY_INVALID'
+            });
+        }
+
+        // 4. Motivo obrigatório (RN12)
+        const motivo =
+            justificativa != null ? String(justificativa).trim() : '';
+
+        if (!motivo) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'A justificativa é obrigatória para o expurgo.',
+                codigo: 'JUSTIFICATIVA_REQUIRED'
+            });
+        }
+
+        // 5. Model acionado (valida produto, saldo e grava histórico)
+        const resultado = await ProdutoModel.registrarExpurgo(
+            idProduto,
+            qtd,
+            Number(usuarioLogado.id_usuario),
+            motivo
+        );
+
+        // 6. Retorno implementado
+        return res.status(201).json({
+            sucesso: true,
+            mensagem: 'Expurgo registrado com sucesso.',
+            dados: resultado
+        });
+    } catch (erro) {
+        const errosConhecidos = {
+            PRODUCT_ID_INVALID: [400, 'Identificador de produto inválido.'],
+            QUANTITY_INVALID: [400, 'Informe uma quantidade inteira maior que zero.'],
+            USER_ID_INVALID: [401, 'Usuário inválido.'],
+            PRODUCT_NOT_FOUND: [404, 'Produto não encontrado.'],
+            JUSTIFICATIVA_REQUIRED: [400, 'A justificativa é obrigatória para o expurgo.'],
+            INSUFFICIENT_STOCK: [
+                409,
+                'Quantidade de expurgo maior que o saldo disponível em estoque.'
+            ]
+        };
+
+        if (errosConhecidos[erro.code]) {
+            const [status, mensagem] = errosConhecidos[erro.code];
+            return res.status(status).json({
+                sucesso: false,
+                mensagem,
+                codigo: erro.code
+            });
+        }
+
+        console.error('Erro ao registrar expurgo:', erro);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao registrar expurgo.'
+        });
+    }
+};
+
 module.exports = {
     excluirProduto,
     listarParaEntrada,
-    registrarEntrada
+    registrarEntrada,
+    listarParaExpurgo,
+    registrarExpurgo
 };

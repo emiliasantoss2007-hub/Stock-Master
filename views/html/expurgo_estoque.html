@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -30,10 +29,12 @@
             <nav class="sidebar-nav" aria-label="Navegação">
                 <a href="dashboard_adm.html" id="dashboardLink"><span class="nav-icon">⌂</span>Dashboard</a>
                 <a href="usuarios.html" id="usuariosLink"><span class="nav-icon">♙</span>Usuários</a>
-                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
+                <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span
+                        id="produtosMenuText">Produtos</span></a>
                 <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
                 <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
-                <a href="expurgo_estoque.html" id="expurgoLink" class="active"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="expurgo_estoque.html" id="expurgoLink" class="active"><span
+                        class="nav-icon">⌫</span>Expurgo</a>
                 <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
                 <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
             </nav>
@@ -75,18 +76,24 @@
                 <section class="panel expurgo-panel">
                     <div class="expurgo-aviso" role="note">
                         <strong>Atenção: operação irreversível</strong>
-                        <p>O expurgo considera todo o saldo disponível do produto selecionado. Confira as informações e registre o motivo antes de confirmar.</p>
+                        <p>O expurgo considera todo o saldo disponível do produto selecionado. Confira as informações e
+                            registre o motivo antes de confirmar.</p>
                     </div>
 
                     <div id="mensagemArea" aria-live="polite" aria-atomic="true"></div>
 
-                    <form id="formExpurgo" novalidate>
+                    <form id="formExpurgo">
                         <div class="campo-especifico">
                             <label for="produtoSelect">Produto *</label>
                             <select id="produtoSelect" name="id_produto" required>
                                 <option value="">Carregando produtos...</option>
                             </select>
                             <small class="campo-ajuda">Selecione o produto que deverá ser expurgado.</small>
+                            <label for="quantidade">Quantidade *</label>
+                            <input type="number" id="quantidade" name="quantidade" min="1" step="1" required>
+                            <small class="campo-ajuda">
+                                Informe a quantidade que deseja expurgar.
+                            </small>
                         </div>
 
                         <section class="produto-resumo" id="produtoResumo" hidden aria-live="polite">
@@ -104,7 +111,9 @@
 
                         <div class="campo-especifico campo-motivo">
                             <label for="justificativa">Motivo do expurgo *</label>
-                            <textarea id="justificativa" name="justificativa" rows="4" maxlength="255" placeholder="Descreva o motivo da remoção (produto danificado, vencido, extraviado etc.)." required></textarea>
+                            <textarea id="justificativa" name="justificativa" rows="4" maxlength="255"
+                                placeholder="Descreva o motivo da remoção (produto danificado, vencido, extraviado etc.)."
+                                required></textarea>
                             <div class="texto-apoio">
                                 <small>O motivo será associado ao registro da movimentação.</small>
                                 <small id="contadorCaracteres">0/255</small>
@@ -113,12 +122,14 @@
 
                         <label class="confirmacao-check" for="confirmacao">
                             <input type="checkbox" id="confirmacao" required>
-                            <span>Confirmo que revisei o produto e estou ciente de que o expurgo é uma operação definitiva.</span>
+                            <span>Confirmo que revisei o produto e estou ciente de que o expurgo é uma operação
+                                definitiva.</span>
                         </label>
 
                         <div class="acoes-pagina">
                             <button type="reset" class="btn btn-secondary" id="limparFormulario">Limpar</button>
-                            <button type="submit" class="btn btn-danger" id="btnExpurgar" disabled>Expurgar produto</button>
+                            <button type="submit" class="btn btn-danger" id="btnExpurgar" disabled>Expurgar
+                                produto</button>
                         </div>
                     </form>
                 </section>
@@ -127,7 +138,8 @@
     </div>
 
     <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
-        <section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" aria-describedby="modalMensagem">
+        <section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitulo"
+            aria-describedby="modalMensagem">
             <span class="modal-icone" aria-hidden="true">!</span>
             <h2 id="modalTitulo">Confirmar expurgo definitivo</h2>
             <p id="modalMensagem"></p>
