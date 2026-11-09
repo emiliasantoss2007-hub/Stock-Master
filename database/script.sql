@@ -27,7 +27,8 @@ nome varchar(100) not null,
 categoria varchar(100) not null,
 descricao text,
 quantidade_estoque int not null default 0,
-valor decimal(10,2)
+valor decimal(10,2),
+marca varchar(100) NULL
 );
 
 insert into produto (sku, codigo_barras, nome, categoria, descricao, quantidade_estoque, valor) values ('sku001', '789000000001','Fonte de Alimentação','Componentes', 'Produto em teste', 10, 150.00);
