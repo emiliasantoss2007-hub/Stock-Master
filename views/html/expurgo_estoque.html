@@ -1,27 +1,22 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Registro de perdas, danos e descartes de produtos no StockMaster">
+    <meta name="description" content="Solicitação de expurgo definitivo de produtos no StockMaster">
 
     <title>StockMaster | Expurgo de Estoque</title>
 
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/expurgo_estoque.css">
-
     <script src="../js/expurgo_estoque.js" defer></script>
-
 </head>
 
 <body>
-
     <div class="dashboard-layout">
-
         <aside class="sidebar">
-
             <div class="brand">
                 <div class="brand-mark">SM</div>
                 <div>
@@ -38,7 +33,7 @@
                 <a href="produtos.html" id="produtosLink"><span class="nav-icon">▣</span><span id="produtosMenuText">Produtos</span></a>
                 <a href="entrada_estoque.html" id="entradaLink"><span class="nav-icon">＋</span>Entrada de estoque</a>
                 <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
-                <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="expurgo_estoque.html" id="expurgoLink" class="active"><span class="nav-icon">⌫</span>Expurgo</a>
                 <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
                 <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
             </nav>
@@ -47,11 +42,9 @@
                 <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
                 <a href="login.html">↪ Sair</a>
             </div>
-
         </aside>
 
         <main class="main-area">
-
             <header class="topbar">
                 <div class="topbar-context">
                     <small>Área autenticada</small>
@@ -67,7 +60,6 @@
             </header>
 
             <section class="content">
-
                 <div class="breadcrumb">
                     <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
                     <span>Expurgo de Estoque</span>
@@ -76,62 +68,75 @@
                 <header class="page-header">
                     <div>
                         <h1>Expurgo de Estoque</h1>
-                        <p>Registre perdas, danos ou descartes de produtos armazenados.</p>
+                        <p>Solicite a remoção definitiva de um produto do estoque.</p>
                     </div>
                 </header>
 
-                <section class="panel">
+                <section class="panel expurgo-panel">
+                    <div class="expurgo-aviso" role="note">
+                        <strong>Atenção: operação irreversível</strong>
+                        <p>O expurgo considera todo o saldo disponível do produto selecionado. Confira as informações e registre o motivo antes de confirmar.</p>
+                    </div>
 
-                    <div id="mensagemArea"></div>
+                    <div id="mensagemArea" aria-live="polite" aria-atomic="true"></div>
 
-                    <form id="formExpurgo">
+                    <form id="formExpurgo" novalidate>
+                        <div class="campo-especifico">
+                            <label for="produtoSelect">Produto *</label>
+                            <select id="produtoSelect" name="id_produto" required>
+                                <option value="">Carregando produtos...</option>
+                            </select>
+                            <small class="campo-ajuda">Selecione o produto que deverá ser expurgado.</small>
+                        </div>
 
-                        <div class="nome-da-secao">
-                            <div class="campo-especifico">
-                                <label for="produtoSelect">Produto *</label>
-                                <select id="produtoSelect" required>
-                                    <option value="">Selecione um produto...</option>
-                                </select>
+                        <section class="produto-resumo" id="produtoResumo" hidden aria-live="polite">
+                            <div>
+                                <span class="resumo-label">Produto selecionado</span>
+                                <strong id="produtoNome">—</strong>
+                                <small id="produtoSku">SKU: —</small>
                             </div>
-                            <div class="campo-especifico">
-                                <label for="quantidade">Quantidade a expurgar *</label>
-                                <input type="number" id="quantidade" min="1" required>
+                            <div class="saldo-resumo">
+                                <span class="resumo-label">Saldo a expurgar</span>
+                                <strong id="produtoSaldo">0</strong>
+                                <small>unidade(s)</small>
+                            </div>
+                        </section>
+
+                        <div class="campo-especifico campo-motivo">
+                            <label for="justificativa">Motivo do expurgo *</label>
+                            <textarea id="justificativa" name="justificativa" rows="4" maxlength="255" placeholder="Descreva o motivo da remoção (produto danificado, vencido, extraviado etc.)." required></textarea>
+                            <div class="texto-apoio">
+                                <small>O motivo será associado ao registro da movimentação.</small>
+                                <small id="contadorCaracteres">0/255</small>
                             </div>
                         </div>
 
-                        <p class="info-estoque" id="infoEstoque"></p>
-
-                        <div class="campo-especifico" style="margin-bottom:20px;">
-                            <label for="justificativa">Justificativa *</label>
-                            <textarea id="justificativa" rows="3" placeholder="Descreva o motivo do expurgo (dano, perda, extravio, etc.)" required></textarea>
-                        </div>
+                        <label class="confirmacao-check" for="confirmacao">
+                            <input type="checkbox" id="confirmacao" required>
+                            <span>Confirmo que revisei o produto e estou ciente de que o expurgo é uma operação definitiva.</span>
+                        </label>
 
                         <div class="acoes-pagina">
-                            <button type="reset" class="btn btn-secondary">Limpar</button>
-                            <button type="submit" class="btn btn-danger">Confirmar expurgo</button>
+                            <button type="reset" class="btn btn-secondary" id="limparFormulario">Limpar</button>
+                            <button type="submit" class="btn btn-danger" id="btnExpurgar" disabled>Expurgar produto</button>
                         </div>
-
                     </form>
-
                 </section>
-
             </section>
-
         </main>
-
     </div>
 
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-box">
-            <h3 id="modalTitulo">Confirmar expurgo</h3>
+    <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+        <section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" aria-describedby="modalMensagem">
+            <span class="modal-icone" aria-hidden="true">!</span>
+            <h2 id="modalTitulo">Confirmar expurgo definitivo</h2>
             <p id="modalMensagem"></p>
             <div class="modal-acoes">
-                <button class="btn btn-secondary" id="modalCancelar">Cancelar</button>
-                <button class="btn btn-danger" id="modalConfirmar">Confirmar</button>
+                <button type="button" class="btn btn-secondary" id="modalCancelar">Voltar</button>
+                <button type="button" class="btn btn-danger" id="modalConfirmar">Confirmar expurgo</button>
             </div>
-        </div>
+        </section>
     </div>
-
 </body>
 
 </html>

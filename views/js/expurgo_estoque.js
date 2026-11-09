@@ -1,16 +1,7 @@
+
 document.addEventListener("DOMContentLoaded", () => {
-
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
-
     const params = new URLSearchParams(window.location.search);
     const origem = params.get("origem");
-
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
 
     const dashboardLink = document.querySelector("#dashboardLink");
     const breadcrumbLink = document.querySelector("#breadcrumbLink");
@@ -22,143 +13,243 @@ document.addEventListener("DOMContentLoaded", () => {
     const historicoLink = document.querySelector("#historicoLink");
     const relatoriosLink = document.querySelector("#relatoriosLink");
     const perfilLink = document.querySelector("#perfilLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-
-    // ========================================
-    // ADMINISTRADOR
-    // ========================================
-
-    if (origem !== "tecnico") {
-
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-        produtosLink.href = "produtos.html?origem=adm";
-        produtosMenuText.textContent = "Produtos";
-
-        entradaLink.href = "entrada_estoque.html?origem=adm";
-        saidaLink.href = "saída_estoque.html?origem=adm";
-        expurgoLink.href = "expurgo_estoque.html?origem=adm";
-        historicoLink.href = "historico_movimentacao.html?origem=adm";
-        relatoriosLink.href = "relatorios.html?origem=adm";
-        perfilLink.href = "perfil.html?origem=adm";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-
-    // ========================================
-    // TÉCNICO (sem acesso a esta tela)
-    // ========================================
 
     if (origem === "tecnico") {
-        // Expurgo é exclusivo do Administrador — redireciona o Técnico
         window.location.href = "dashboard_tec.html";
         return;
     }
 
+    dashboardLink.href = "dashboard_adm.html";
+    breadcrumbLink.href = "dashboard_adm.html";
+    produtosLink.href = "produtos.html?origem=adm";
+    entradaLink.href = "entrada_estoque.html?origem=adm";
+    saidaLink.href = "saída_estoque.html?origem=adm";
+    expurgoLink.href = "expurgo_estoque.html?origem=adm";
+    historicoLink.href = "historico_movimentacao.html?origem=adm";
+    relatoriosLink.href = "relatorios.html?origem=adm";
+    perfilLink.href = "perfil.html?origem=adm";
 
-    // ========================================
-    // CÓDIGO ESPECÍFICO DA PÁGINA
-    // ========================================
+    document.querySelector("#userRole").textContent = "Administrador";
+    document.querySelector("#username").textContent = "admin.stockmaster";
+    document.querySelector("#userAvatar").textContent = "AD";
+    usuariosLink.style.display = "";
+    relatoriosLink.style.display = "";
 
+    const formulario = document.querySelector("#formExpurgo");
     const select = document.querySelector("#produtoSelect");
-    const infoEstoque = document.querySelector("#infoEstoque");
+    const justificativa = document.querySelector("#justificativa");
+    const confirmacao = document.querySelector("#confirmacao");
+    const btnExpurgar = document.querySelector("#btnExpurgar");
     const mensagemArea = document.querySelector("#mensagemArea");
+    const produtoResumo = document.querySelector("#produtoResumo");
+    const infoNome = document.querySelector("#produtoNome");
+    const infoSku = document.querySelector("#produtoSku");
+    const infoSaldo = document.querySelector("#produtoSaldo");
+    const contadorCaracteres = document.querySelector("#contadorCaracteres");
+    const modalOverlay = document.querySelector("#modalOverlay");
+    const modalMensagem = document.querySelector("#modalMensagem");
+    const modalCancelar = document.querySelector("#modalCancelar");
+    const modalConfirmar = document.querySelector("#modalConfirmar");
 
-    const produtos = [
-    {
-        id: 1,
-        nome: "Display LCD 6.1",
-        sku: "SKU-001",
-        quantidade: 32
-    },
-    {
-        id: 2,
-        nome: "Bateria modelo A20",
-        sku: "SKU-002",
-        quantidade: 45
-    },
-    {
-        id: 3,
-        nome: "Conector USB-C",
-        sku: "SKU-003",
-        quantidade: 3
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
+    let produtos = [];
+    let produtoPendente = null;
+
+    function obterCabecalhos() {
+        return {
+            "Content-Type": "application/json",
+            "X-User": JSON.stringify({
+                id_usuario: usuario?.id_usuario,
+                id_nivel_acesso: usuario?.id_nivel_acesso
+            })
+        };
     }
-];
 
-    produtos.forEach((p) => {
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.nome} (SKU: ${p.sku})`;
-    select.appendChild(opt);
-});
+    function mostrarMensagem(texto, tipo = "erro") {
+        mensagemArea.replaceChildren();
+
+        const mensagem = document.createElement("p");
+        mensagem.className = tipo === "sucesso"
+            ? "mensagem-sucesso"
+            : tipo === "info"
+                ? "mensagem-info"
+                : "mensagem-erro";
+        mensagem.textContent = texto;
+        mensagemArea.appendChild(mensagem);
+    }
+
+    function obterProdutoSelecionado() {
+        return produtos.find(
+            (produto) => String(produto.id_produto) === select.value
+        );
+    }
+
+    function atualizarBotao() {
+        btnExpurgar.disabled = !(
+            select.value &&
+            justificativa.value.trim() &&
+            confirmacao.checked
+        );
+    }
+
+    function atualizarResumo() {
+        const produto = obterProdutoSelecionado();
+
+        if (!produto) {
+            produtoResumo.hidden = true;
+            atualizarBotao();
+            return;
+        }
+
+        infoNome.textContent = produto.nome;
+        infoSku.textContent = `SKU: ${produto.sku || "Não informado"}`;
+        infoSaldo.textContent = Number(produto.quantidade_estoque || 0).toLocaleString("pt-BR");
+        produtoResumo.hidden = false;
+        atualizarBotao();
+    }
+
+    async function carregarProdutos() {
+        if (!usuario?.id_usuario) {
+            select.innerHTML = '<option value="">Faça login novamente</option>';
+            mostrarMensagem("Não foi possível identificar o usuário. Faça login novamente.");
+            return;
+        }
+
+        try {
+            select.innerHTML = '<option value="">Carregando produtos...</option>';
+
+            const resposta = await fetch("/api/produtos/entrada/listar", {
+                headers: obterCabecalhos()
+            });
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(resultado.mensagem || "Não foi possível carregar os produtos.");
+            }
+
+            produtos = Array.isArray(resultado.produtos) ? resultado.produtos : [];
+            select.innerHTML = '<option value="">Selecione um produto...</option>';
+
+            produtos.forEach((produto) => {
+                const opcao = document.createElement("option");
+                opcao.value = produto.id_produto;
+                opcao.textContent = `${produto.nome} (SKU: ${produto.sku || "Sem SKU"})`;
+                select.appendChild(opcao);
+            });
+
+            if (!produtos.length) {
+                select.innerHTML = '<option value="">Nenhum produto cadastrado</option>';
+                mostrarMensagem("Não há produtos cadastrados para seleção.", "info");
+            }
+        } catch (erro) {
+            select.innerHTML = '<option value="">Erro ao carregar produtos</option>';
+            mostrarMensagem(erro.message);
+        }
+    }
+
+    function abrirModal(produto) {
+        produtoPendente = {
+            id_produto: Number(produto.id_produto),
+            nome: produto.nome,
+            sku: produto.sku,
+            quantidade: Number(produto.quantidade_estoque),
+            justificativa: justificativa.value.trim()
+        };
+
+        modalMensagem.textContent =
+            `Você está prestes a solicitar o expurgo de ${produtoPendente.quantidade} unidade(s) de "${produtoPendente.nome}". Esta operação é definitiva. Deseja continuar?`;
+        modalOverlay.classList.add("show");
+        modalOverlay.setAttribute("aria-hidden", "false");
+        modalCancelar.focus();
+    }
+
+    function fecharModal() {
+        modalOverlay.classList.remove("show");
+        modalOverlay.setAttribute("aria-hidden", "true");
+        produtoPendente = null;
+    }
 
     select.addEventListener("change", () => {
-    const produto = produtos.find(
-        (p) => String(p.id) === String(select.value)
-    );
-
-    infoEstoque.textContent = produto
-        ? `Estoque disponível: ${produto.quantidade} unidade(s).`
-        : "";
-});
-
-    document.querySelector("#formExpurgo").addEventListener("submit", (e) => {
-        e.preventDefault();
-        mensagemArea.innerHTML = "";
-
-        const produtoId = select.value;
-        const quantidade = Number(document.querySelector("#quantidade").value);
-        const justificativa = document.querySelector("#justificativa").value.trim();
-
-        if (!produtoId) {
-            mensagemArea.innerHTML = `<p class="mensagem-erro">Selecione um produto para continuar.</p>`;
-            return;
-        }
-
-        const produto = produtos.find(
-    (p) => String(p.id) === String(produtoId)
-);
-
-        if (!quantidade || quantidade <= 0 || quantidade > produto.quantidade) {
-            mensagemArea.innerHTML = `<p class="mensagem-erro">Informe uma quantidade válida (disponível: ${produto.quantidade}).</p>`;
-            return;
-        }
-
-        // RN12: expurgo exige justificativa obrigatória
-        if (!justificativa) {
-            mensagemArea.innerHTML = `<p class="mensagem-erro">A justificativa é obrigatória para o expurgo.</p>`;
-            return;
-        }
-
-        const overlay = document.querySelector("#modalOverlay");
-        document.querySelector("#modalTitulo").textContent = "Confirmar expurgo";
-        document.querySelector("#modalMensagem").textContent =
-            `Confirma o expurgo de ${quantidade} unidade(s) de "${produto.nome}"? Esta ação não pode ser desfeita.`;
-
-        overlay.classList.add("show");
-
-        document.querySelector("#modalCancelar").onclick = () => overlay.classList.remove("show");
-        document.querySelector("#modalConfirmar").onclick = () => {
-            overlay.classList.remove("show");
-
-            produto.quantidade -= quantidade;          
-
-            mensagemArea.innerHTML = `<p class="mensagem-sucesso">Expurgo de ${quantidade} unidade(s) de "${produto.nome}" registrado com sucesso.</p>`;
-            document.querySelector("#formExpurgo").reset();
-            infoEstoque.textContent = "";
-        };
+        mensagemArea.replaceChildren();
+        atualizarResumo();
     });
 
+    justificativa.addEventListener("input", () => {
+        contadorCaracteres.textContent = `${justificativa.value.length}/255`;
+        atualizarBotao();
+    });
+
+    confirmacao.addEventListener("change", atualizarBotao);
+
+    formulario.addEventListener("reset", () => {
+        window.setTimeout(() => {
+            mensagemArea.replaceChildren();
+            produtoResumo.hidden = true;
+            contadorCaracteres.textContent = "0/255";
+            atualizarBotao();
+        }, 0);
+    });
+
+    formulario.addEventListener("submit", (evento) => {
+        evento.preventDefault();
+        mensagemArea.replaceChildren();
+
+        const produto = obterProdutoSelecionado();
+        const motivo = justificativa.value.trim();
+
+        if (!produto) {
+            mostrarMensagem("Selecione um produto válido.");
+            select.focus();
+            return;
+        }
+
+        if (!Number.isInteger(Number(produto.quantidade_estoque)) || Number(produto.quantidade_estoque) <= 0) {
+            mostrarMensagem("O produto selecionado não possui saldo disponível para expurgo.");
+            return;
+        }
+
+        if (!motivo) {
+            mostrarMensagem("O motivo do expurgo é obrigatório.");
+            justificativa.focus();
+            return;
+        }
+
+        if (!confirmacao.checked) {
+            mostrarMensagem("Confirme que está ciente de que o expurgo é definitivo.");
+            confirmacao.focus();
+            return;
+        }
+
+        abrirModal(produto);
+    });
+
+    modalCancelar.addEventListener("click", fecharModal);
+
+    modalConfirmar.addEventListener("click", () => {
+        if (!produtoPendente) return;
+
+        // PONTO DE INTEGRAÇÃO: enviar produtoPendente ao Controller do RF-15.
+        // A quantidade representa todo o saldo atual do produto.
+        window.dispatchEvent(new CustomEvent("expurgo:confirmado", {
+            detail: { ...produtoPendente }
+        }));
+
+        fecharModal();
+        mostrarMensagem(
+            "Confirmação registrada na interface. O envio e a efetivação do expurgo dependem da integração com o Controller.",
+            "info"
+        );
+    });
+
+    modalOverlay.addEventListener("click", (evento) => {
+        if (evento.target === modalOverlay) fecharModal();
+    });
+
+    document.addEventListener("keydown", (evento) => {
+        if (evento.key === "Escape" && modalOverlay.classList.contains("show")) {
+            fecharModal();
+        }
+    });
+
+    carregarProdutos();
 });
