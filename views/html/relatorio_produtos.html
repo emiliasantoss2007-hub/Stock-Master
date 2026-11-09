@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Relatório de produtos cadastrados no StockMaster">
+    <title>StockMaster | Relatório de Produtos</title>
+
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/relatorio_produtos.css">
+    <script src="../js/relatorio_produtos.js" defer></script>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">SM</div>
+                <div>
+                    <strong>StockMaster</strong>
+                    <small>Gestão de estoque</small>
+                </div>
+            </div>
+
+            <p class="nav-title">Menu principal</p>
+            <nav class="sidebar-nav" aria-label="Navegação">
+                <a href="dashboard_adm.html"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="usuarios.html"><span class="nav-icon">♙</span>Usuários</a>
+                <a href="produtos.html"><span class="nav-icon">▣</span>Produtos</a>
+                <a href="entrada_estoque.html"><span class="nav-icon">＋</span>Entrada de estoque</a>
+                <a href="saída_estoque.html"><span class="nav-icon">−</span>Saída de estoque</a>
+                <a href="expurgo_estoque.html"><span class="nav-icon">⌫</span>Expurgo</a>
+                <a href="historico_movimentacao.html"><span class="nav-icon">◷</span>Histórico</a>
+                <a href="relatorios.html" class="active" aria-current="page"><span class="nav-icon">▤</span>Relatórios</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="perfil.html">⚙ Meu perfil</a>
+                <a href="login.html">↪ Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <header class="topbar">
+                <div class="topbar-context">
+                    <small>Área autenticada</small>
+                    <strong>Relatório de Produtos</strong>
+                </div>
+                <div class="user-area">
+                    <div>
+                        <strong>Administrador</strong>
+                        <small>StockMaster</small>
+                    </div>
+                    <span class="avatar" aria-hidden="true">AD</span>
+                </div>
+            </header>
+
+            <section class="content">
+                <a class="report-back-link" href="relatorios.html">
+                    <span aria-hidden="true">←</span>
+                    Voltar
+                </a>
+
+                <div class="breadcrumb">
+                    <a href="dashboard_adm.html">Início</a> /
+                    <a href="relatorios.html">Relatórios</a> /
+                    <span aria-current="page">Produtos</span>
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1>Relatório de Produtos</h1>
+                        <p>Consulte os produtos cadastrados no sistema.</p>
+                    </div>
+                </header>
+
+                <section class="panel" aria-labelledby="productReportFiltersTitle">
+                    <div class="panel-header">
+                        <div>
+                            <h2 id="productReportFiltersTitle">Filtros</h2>
+                            <p class="report-panel-description">
+                                Pesquise localmente entre os produtos recebidos do Controller.
+                                Esses filtros não consultam o banco de dados.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="product-report-filters">
+                        <div class="product-report-filter">
+                            <label for="filterProductName">Nome do produto</label>
+                            <input id="filterProductName" type="search" autocomplete="off"
+                                placeholder="Pesquisar pelo nome">
+                        </div>
+                        <div class="product-report-filter">
+                            <label for="filterProductCategory">Categoria</label>
+                            <select id="filterProductCategory">
+                                <option value="">Todas as categorias</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button id="clearProductReportFilters" class="btn btn-secondary" type="button">
+                            Limpar filtros
+                        </button>
+                        <button id="generateProductReport" class="btn btn-primary" type="button">
+                            Gerar Relatório
+                        </button>
+                    </div>
+                </section>
+
+                <section class="panel report-results-panel" aria-labelledby="productReportResultsTitle">
+                    <div class="panel-header">
+                        <div>
+                            <h2 id="productReportResultsTitle">Produtos cadastrados</h2>
+                            <p class="report-panel-description">Dados organizados conforme o contrato do Model RF-18.</p>
+                        </div>
+                    </div>
+
+                    <p id="productReportStatus" class="report-status" role="status" aria-live="polite">
+                        Aguardando geração do relatório.
+                    </p>
+
+                    <div class="report-table-wrapper">
+                        <table class="product-report-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Nome</th>
+                                    <th scope="col">SKU</th>
+                                    <th scope="col">Código de barras</th>
+                                    <th scope="col">Categoria</th>
+                                    <th scope="col">Quantidade em estoque</th>
+                                    <th scope="col">Marca</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productReportRows">
+                                <tr class="report-placeholder-row">
+                                    <td colspan="6">Aguardando geração do relatório.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>
