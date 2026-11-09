@@ -96,7 +96,6 @@ const excluirProduto = async (req, res) => {
     }
 };
 
-
 // RF-12 — LISTAR PRODUTOS PARA ENTRADA
 const listarParaEntrada = async (req, res) => {
     try {
@@ -104,7 +103,7 @@ const listarParaEntrada = async (req, res) => {
 
         return res.status(200).json({
             sucesso: true,
-            produtos
+        produtos
         });
 
     } catch (erro) {

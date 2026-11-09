@@ -1,236 +1,322 @@
+const db = require('../config/database');
 
-const connection = require("../config/database");
+function buscarPorId(id) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT
+        id_produto,
+        sku,
+        nome,
+        categoria,
+        quantidade_estoque,
+        valor
+      FROM produto
+      WHERE id_produto = ?
+    `;
 
-// EXCLUIR PRODUTO COM VERIFICAÇÃO E TRANSAÇÃO
-async function excluirComVerificacao(idProduto) {
-    const id = Number(idProduto);
-
-    // Validar o identificador antes de acessar o banco.
-    if (!Number.isInteger(id) || id <= 0) {
-        throw criarErro(
-            "O identificador do produto é inválido.",
-            400,
-            "PRODUCT_ID_INVALID"
-        );
-    }
-
-    await iniciarTransacao();
-
-    try {
-        // 1. Localizar e bloquear o produto.
-        const produtos = await query(
-            `SELECT id_produto, quantidade_estoque
-             FROM produto
-             WHERE id_produto = ?
-             FOR UPDATE`,
-            [id]
-        );
-
-        if (produtos.length === 0) {
-            throw criarErro(
-                "Produto não encontrado.",
-                404,
-                "PRODUCT_NOT_FOUND"
-            );
-        }
-
-        const produto = produtos[0];
-        const saldo = Number(produto.quantidade_estoque);
-
-        // 2. Bloquear exclusão se houver qualquer saldo.
-        // Saldo negativo também deve ser tratado como inconsistência.
-        if (!Number.isFinite(saldo) || saldo !== 0) {
-            throw criarErro(
-                "O produto possui saldo em estoque e não pode ser excluído.",
-                409,
-                "PRODUCT_HAS_STOCK"
-            );
-        }
-
-        // 3. Verificar se existe histórico de movimentação.
-        const movimentacoes = await query(
-            `SELECT id_movimentacao
-             FROM movimentacao
-             WHERE id_produto = ?
-             LIMIT 1
-             FOR UPDATE`,
-            [id]
-        );
-
-        if (movimentacoes.length > 0) {
-            throw criarErro(
-                "O produto possui movimentações registradas e não pode ser excluído.",
-                409,
-                "PRODUCT_HAS_MOVEMENTS"
-            );
-        }
-
-        // 4. Excluir somente após todas as verificações.
-        const resultado = await query(
-            `DELETE FROM produto
-             WHERE id_produto = ?`,
-            [id]
-        );
-
-        if (resultado.affectedRows !== 1) {
-            throw criarErro(
-                "Não foi possível confirmar a exclusão do produto.",
-                409,
-                "PRODUCT_DELETE_NOT_CONFIRMED"
-            );
-        }
-
-        // 5. Confirmar a operação.
-        await confirmarTransacao();
-
-        return {
-            id_produto: id,
-            excluido: true
-        };
-
-    } catch (erro) {
-        // Se alguma etapa falhar, tentar desfazer as alterações.
-        await desfazerTransacao();
-        throw erro;
-    }
+    db.query(sql, [id], (erro, resultados) => {
+      if (erro) return reject(erro);
+      resolve(resultados[0] || null);
+    });
+  });
 }
 
- // RF-12 — LISTAR PRODUTOS PARA ENTRADA
-async function listarParaEntrada() {
-    return await query(
-        `SELECT
-            id_produto,
-            nome,
-            sku,
-            quantidade_estoque
+function verificarSaldo(idProduto) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT quantidade_estoque
+      FROM produto
+      WHERE id_produto = ?
+    `;
+
+    db.query(sql, [idProduto], (erro, resultados) => {
+      if (erro) return reject(erro);
+      const row = resultados[0];
+      if (!row) return resolve(null);
+      resolve(Number(row.quantidade_estoque));
+    });
+  });
+}
+
+function verificarMovimentacoes(idProduto) {
+  return new Promise((resolve, reject) => {
+    // Se a tabela de movimentação tiver outro nome, ajuste aqui
+    const sql = `
+      SELECT COUNT(*) AS total
+      FROM movimentacao
+      WHERE id_produto = ?
+    `;
+
+    db.query(sql, [idProduto], (erro, resultados) => {
+      if (erro) {
+        // Tabela ainda não existe: trata como zero movimentações
+        if (erro.code === 'ER_NO_SUCH_TABLE') return resolve(0);
+        return reject(erro);
+      }
+      resolve(Number(resultados[0].total));
+    });
+  });
+}
+
+function excluir(idProduto) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      DELETE FROM produto
+      WHERE id_produto = ?
+    `;
+
+    db.query(sql, [idProduto], (erro, resultado) => {
+      if (erro) return reject(erro);
+      resolve(resultado.affectedRows > 0);
+    });
+  });
+}
+
+// RF-12 — produtos para o select de entrada
+function listarParaEntrada() {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT
+        id_produto,
+        sku,
+        nome,
+        quantidade_estoque
+      FROM produto
+      ORDER BY nome ASC
+    `;
+
+    db.query(sql, (erro, resultados) => {
+      if (erro) return reject(erro);
+      resolve(resultados);
+    });
+  });
+}
+
+/**
+ * RF-12 — Registrar entrada
+ * registrarEntrada(id_produto, quantidade, id_usuario)
+ */
+function registrarEntrada(idProduto, quantidade, idUsuario) {
+  const idProd = Number(idProduto);
+  const qtd = Number(quantidade);
+  const idUser = Number(idUsuario);
+
+  return new Promise((resolve, reject) => {
+    if (!idProd || !Number.isInteger(idProd) || idProd <= 0) {
+      const e = new Error('Identificador de produto inválido.');
+      e.code = 'PRODUCT_ID_INVALID';
+      return reject(e);
+    }
+
+    if (!Number.isFinite(qtd) || !Number.isInteger(qtd) || qtd <= 0) {
+      const e = new Error('Informe uma quantidade inteira maior que zero.');
+      e.code = 'QUANTITY_INVALID';
+      return reject(e);
+    }
+
+    if (!idUser || !Number.isInteger(idUser) || idUser <= 0) {
+      const e = new Error('Usuário inválido.');
+      e.code = 'USER_ID_INVALID';
+      return reject(e);
+    }
+
+    db.beginTransaction((errBegin) => {
+      if (errBegin) return reject(errBegin);
+
+      db.query(
+        `SELECT id_produto, sku, nome, quantidade_estoque
          FROM produto
-         ORDER BY nome ASC`,
-        []
-    );
-}
+         WHERE id_produto = ?
+         FOR UPDATE`,
+        [idProd],
+        (errProd, rows) => {
+          if (errProd) {
+            return db.rollback(() => reject(errProd));
+          }
 
-// RF-12 — REGISTRAR ENTRADA DE ESTOQUE
-async function registrarEntrada(idProduto, quantidade, idUsuario) {
-    const id = Number(idProduto);
-    const qtd = Number(quantidade);
-    const usuario = Number(idUsuario);
+          if (!rows.length) {
+            return db.rollback(() => {
+              const e = new Error('Produto não encontrado.');
+              e.code = 'PRODUCT_NOT_FOUND';
+              reject(e);
+            });
+          }
 
-    if (!Number.isInteger(id) || id <= 0) {
-        throw criarErro("Produto inválido.", 400, "PRODUCT_ID_INVALID");
-    }
+          const produto = rows[0];
+          const saldoAnterior = Number(produto.quantidade_estoque);
+          const saldoNovo = saldoAnterior + qtd;
 
-    if (!Number.isInteger(qtd) || qtd <= 0) {
-        throw criarErro("Quantidade inválida.", 400, "QUANTITY_INVALID");
-    }
-
-    if (!Number.isInteger(usuario) || usuario <= 0) {
-        throw criarErro("Usuário inválido.", 401, "USER_ID_INVALID");
-    }
-
-    await iniciarTransacao();
-
-    try {
-        const produtos = await query(
-            `SELECT id_produto
-             FROM produto
-             WHERE id_produto = ?
-             FOR UPDATE`,
-            [id]
-        );
-
-        if (produtos.length === 0) {
-            throw criarErro("Produto não encontrado.", 404, "PRODUCT_NOT_FOUND");
-        }
-
-        await query(
-            `INSERT INTO movimentacao
-                (tipo_movimentacao, quantidade, justificativa, id_produto, id_usuario)
-             VALUES (?, ?, ?, ?, ?)`,
-            ["entrada", qtd, "Entrada de produtos no estoque", id, usuario]
-        );
-
-        await query(
+          db.query(
             `UPDATE produto
-             SET quantidade_estoque = quantidade_estoque + ?
+             SET quantidade_estoque = ?
              WHERE id_produto = ?`,
-            [qtd, id]
-        );
+            [saldoNovo, idProd],
+            (errUpd) => {
+              if (errUpd) {
+                return db.rollback(() => reject(errUpd));
+              }
 
-        await confirmarTransacao();
+              db.query(
+                `INSERT INTO movimentacao (
+                   tipo_movimentacao,
+                   quantidade,
+                   justificativa,
+                   id_produto,
+                   id_usuario
+                 ) VALUES (?, ?, ?, ?, ?)`,
+                ['ENTRADA', qtd, null, idProd, idUser],
+                (errMov, resultMov) => {
+                  if (errMov) {
+                    return db.rollback(() => reject(errMov));
+                  }
 
-        return {
-            id_produto: id,
-            quantidade: qtd
-        };
-    } catch (erro) {
-        await desfazerTransacao();
-        throw erro;
+                  db.commit((errCommit) => {
+                    if (errCommit) {
+                      return db.rollback(() => reject(errCommit));
+                    }
+
+                    resolve({
+                      idMovimentacao: resultMov.insertId,
+                      idProduto: idProd,
+                      sku: produto.sku,
+                      nome: produto.nome,
+                      quantidade: qtd,
+                      saldoAnterior,
+                      saldoNovo,
+                      idUsuario: idUser
+                    });
+                  });
+                }
+              );
+            }
+          );
+        }
+      );
+    });
+  });
+}
+
+/**
+ * RF-15 — Estrutura de expurgo
+ * registrarExpurgo(idProduto, quantidade, idUsuario, justificativa)
+ */
+function registrarExpurgo(idProduto, quantidade, idUsuario, justificativa) {
+  const idProd = Number(idProduto);
+  const qtd = Number(quantidade);
+  const idUser = Number(idUsuario);
+  const motivo = justificativa != null ? String(justificativa).trim() : '';
+
+  return new Promise((resolve, reject) => {
+    if (!idProd || !Number.isInteger(idProd) || idProd <= 0) {
+      const e = new Error('Identificador de produto inválido.');
+      e.code = 'PRODUCT_ID_INVALID';
+      return reject(e);
     }
-}
 
+    if (!Number.isFinite(qtd) || !Number.isInteger(qtd) || qtd <= 0) {
+      const e = new Error('Informe uma quantidade inteira maior que zero.');
+      e.code = 'QUANTITY_INVALID';
+      return reject(e);
+    }
 
-// EXECUTAR CONSULTAS
-function query(sql, parametros = []) {
-    return new Promise((resolve, reject) => {
-        connection.query(sql, parametros, (erro, resultado) => {
-            if (erro) {
-                return reject(erro);
+    if (!idUser || !Number.isInteger(idUser) || idUser <= 0) {
+      const e = new Error('Usuário inválido.');
+      e.code = 'USER_ID_INVALID';
+      return reject(e);
+    }
+
+    // Motivo definido (obrigatório no expurgo)
+    if (!motivo) {
+      const e = new Error('A justificativa (motivo) é obrigatória para o expurgo.');
+      e.code = 'JUSTIFICATIVA_REQUIRED';
+      return reject(e);
+    }
+
+    db.beginTransaction((errBegin) => {
+      if (errBegin) return reject(errBegin);
+
+      db.query(
+        `SELECT id_produto, sku, nome, quantidade_estoque
+         FROM produto
+         WHERE id_produto = ?
+         FOR UPDATE`,
+        [idProd],
+        (errProd, rows) => {
+          if (errProd) return db.rollback(() => reject(errProd));
+
+          if (!rows.length) {
+            return db.rollback(() => {
+              const e = new Error('Produto não encontrado.');
+              e.code = 'PRODUCT_NOT_FOUND';
+              reject(e);
+            });
+          }
+
+          const produto = rows[0];
+          const saldoAnterior = Number(produto.quantidade_estoque);
+
+          if (qtd > saldoAnterior) {
+            return db.rollback(() => {
+              const e = new Error(
+                'Quantidade de expurgo maior que o saldo disponível em estoque.'
+              );
+              e.code = 'INSUFFICIENT_STOCK';
+              reject(e);
+            });
+          }
+
+          const saldoNovo = saldoAnterior - qtd;
+
+          db.query(
+            `UPDATE produto SET quantidade_estoque = ? WHERE id_produto = ?`,
+            [saldoNovo, idProd],
+            (errUpd) => {
+              if (errUpd) return db.rollback(() => reject(errUpd));
+
+              db.query(
+                `INSERT INTO movimentacao (
+                   tipo_movimentacao,
+                   quantidade,
+                   justificativa,
+                   id_produto,
+                   id_usuario
+                 ) VALUES (?, ?, ?, ?, ?)`,
+                ['EXPURGO', qtd, motivo, idProd, idUser],
+                (errMov, resultMov) => {
+                  if (errMov) return db.rollback(() => reject(errMov));
+
+                  db.commit((errCommit) => {
+                    if (errCommit) return db.rollback(() => reject(errCommit));
+
+                    resolve({
+                      idMovimentacao: resultMov.insertId,
+                      idProduto: idProd,
+                      sku: produto.sku,
+                      nome: produto.nome,
+                      quantidade: qtd,
+                      justificativa: motivo,
+                      saldoAnterior,
+                      saldoNovo,
+                      idUsuario: idUser,
+                      operacao: 'expurgo'
+                    });
+                  });
+                }
+              );
             }
-
-            resolve(resultado);
-        });
+          );
+        }
+      );
     });
+  });
 }
 
-
-// INICIAR TRANSAÇÃO
-function iniciarTransacao() {
-    return new Promise((resolve, reject) => {
-        connection.beginTransaction((erro) => {
-            if (erro) {
-                return reject(erro);
-            }
-
-            resolve();
-        });
-    });
-}
-
-
-// CONFIRMAR TRANSAÇÃO
-function confirmarTransacao() {
-    return new Promise((resolve, reject) => {
-        connection.commit((erro) => {
-            if (erro) {
-                return reject(erro);
-            }
-
-            resolve();
-        });
-    });
-}
-
-
-// DESFAZER TRANSAÇÃO
-function desfazerTransacao() {
-    return new Promise((resolve) => {
-        connection.rollback(() => resolve());
-    });
-}
-
-
-// PADRONIZAR ERROS
-function criarErro(mensagem, statusCode, code) {
-    return Object.assign(new Error(mensagem), {
-        statusCode,
-        code
-    });
-}
-
-
-// EXPORTAR MÉTODOS DO MODEL
 module.exports = {
-    excluirComVerificacao,
-    listarParaEntrada,
-    registrarEntrada
+  buscarPorId,
+  verificarSaldo,
+  verificarMovimentacoes,
+  excluir,
+  listarParaEntrada,
+  registrarEntrada,
+  registrarExpurgo
 };
