@@ -7,8 +7,7 @@ function consultarRelatorioProdutos() {
             p.sku,
             p.codigo_barras,
             p.categoria,
-            p.quantidade_estoque,
-            p.marca
+            p.quantidade_estoque
         FROM produto p
     `;
 

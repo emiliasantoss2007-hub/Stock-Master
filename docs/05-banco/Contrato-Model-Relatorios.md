@@ -23,16 +23,13 @@ consolidação além da listagem depende de definição da equipe.
 
 ## RF-18 — Relatório de produtos
 
-`consultarRelatorioProdutos()` retorna uma Promise com uma lista de objetos
-contendo `nome`, `sku`, `codigo_barras`, `categoria` e `quantidade_estoque`,
-além de `marca`, proposta como coluna nullable em `database/script.sql`. Sem
-registros, retorna uma lista vazia; erros do driver são propagados.
-
-O RF-18 menciona `marca`, mas a tabela `produto` no schema atual de `develop`
-ainda não possui essa coluna. Sua inclusão no script é apenas uma proposta local;
-não foi aplicada ao banco real e requer aprovação e atualização controlada de
-instalações existentes. O RF-18 não especifica filtros; nenhum filtro foi
-inventado ou implementado.
+O produto consultado é cada registro cadastrado na tabela `produto`.
+`consultarRelatorioProdutos()` não recebe filtros e retorna a Promise da lista
+de linhas produzida pela consulta. Cada objeto contém `nome`, `sku`,
+`codigo_barras`, `categoria` e `quantidade_estoque`, com os nomes exatos das
+colunas selecionadas. Sem produtos, a consulta retorna uma lista vazia; erros
+do driver são propagados. O RF-18 não define filtros específicos; nenhum filtro
+foi inventado ou implementado.
 
 ## Desempenho
 

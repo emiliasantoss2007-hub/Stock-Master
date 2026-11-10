@@ -14,8 +14,7 @@ describe('RF-18 - Model de relatório de produtos', () => {
             sku: 'sku001',
             codigo_barras: '789000000001',
             categoria: 'Componentes',
-            quantidade_estoque: 10,
-            marca: null
+            quantidade_estoque: 10
         }];
         connection.query.mockImplementation((sql, callback) => callback(null, produtos));
 
@@ -28,8 +27,14 @@ describe('RF-18 - Model de relatório de produtos', () => {
         expect(sql).toContain('p.codigo_barras');
         expect(sql).toContain('p.categoria');
         expect(sql).toContain('p.quantidade_estoque');
-        expect(sql).toContain('p.marca');
-        expect(produtos[0].marca).toBeNull();
+        expect(sql).not.toMatch(/p\.marca\b/i);
+        expect(Object.keys(produtos[0])).toEqual([
+            'nome',
+            'sku',
+            'codigo_barras',
+            'categoria',
+            'quantidade_estoque'
+        ]);
         expect(sql).not.toMatch(/senha|token|email/i);
         expect(connection.query).toHaveBeenCalledTimes(1);
     });
