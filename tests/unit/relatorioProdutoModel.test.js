@@ -22,12 +22,13 @@ describe('RF-18 - Model de relatório de produtos', () => {
 
         const [sql] = connection.query.mock.calls[0];
         expect(sql).toContain('FROM produto p');
-        expect(sql).toContain('p.nome');
-        expect(sql).toContain('p.sku');
-        expect(sql).toContain('p.codigo_barras');
-        expect(sql).toContain('p.categoria');
-        expect(sql).toContain('p.quantidade_estoque');
-        expect(sql).not.toMatch(/p\.marca\b/i);
+        expect(sql.match(/p\.[a-z_]+/g)).toEqual([
+            'p.nome',
+            'p.sku',
+            'p.codigo_barras',
+            'p.categoria',
+            'p.quantidade_estoque'
+        ]);
         expect(Object.keys(produtos[0])).toEqual([
             'nome',
             'sku',
