@@ -11,8 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ["sku", "SKU"],
         ["codigo_barras", "Código de barras"],
         ["categoria", "Categoria"],
-        ["quantidade_estoque", "Quantidade em estoque"],
-        ["marca", "Marca"]
+        ["quantidade_estoque", "Quantidade em estoque"]
     ];
 
     function renderizarEstado(mensagem, tipo = "") {
@@ -81,9 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
             colunas.forEach(([campo]) => {
                 const celula = document.createElement("td");
                 const valor = produto && produto[campo];
-                const valorAusente = campo === "marca" ? "—" : "-";
                 celula.textContent = valor === null || valor === undefined || valor === ""
-                    ? valorAusente
+                    ? "-"
                     : String(valor);
                 linha.appendChild(celula);
             });
