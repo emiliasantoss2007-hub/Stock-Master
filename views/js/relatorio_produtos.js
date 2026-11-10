@@ -81,8 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
             colunas.forEach(([campo]) => {
                 const celula = document.createElement("td");
                 const valor = produto && produto[campo];
+                const valorAusente = campo === "marca" ? "—" : "-";
                 celula.textContent = valor === null || valor === undefined || valor === ""
-                    ? "-"
+                    ? valorAusente
                     : String(valor);
                 linha.appendChild(celula);
             });
