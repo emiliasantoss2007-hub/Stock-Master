@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -111,81 +110,104 @@
 
                 <section class="panel relatorio-panel">
 
-                    <div class="secao-titulo">
-                        <div>
-                            <h2>Filtros do relatório</h2>
-                            <p>Informe os critérios para gerar a consulta.</p>
-                        </div>
-                    </div>
+                    <div id="mensagemArea"></div>
 
                     <form id="formRelatorio">
 
-                        <div class="filtros-relatorio">
-
+                        <div class="nome-da-secao">
                             <div class="campo-especifico">
-                                <label for="filtroBusca">Produto ou SKU</label>
-                                <input
-                                    type="search"
-                                    id="filtroBusca"
-                                    name="busca"
-                                    placeholder="Digite o nome ou SKU do produto"
-                                >
+                                <label for="busca">Pesquisar produto</label>
+                                <input type="text" id="busca" placeholder="Digite o nome ou SKU">
                             </div>
 
                             <div class="campo-especifico">
-                                <label for="filtroCategoria">Categoria</label>
-                                <input
-                                    type="text"
-                                    id="filtroCategoria"
-                                    name="categoria"
-                                    placeholder="Ex.: Componentes"
-                                >
+                                <label for="categoria">Categoria</label>
+                                <input type="text" id="categoria" placeholder="Digite a categoria">
                             </div>
-
                         </div>
 
-                        <label class="filtro-checkbox" for="apenasZerados">
-                            <input
-                                type="checkbox"
-                                id="apenasZerados"
-                                name="apenasZerados"
-                            >
-                            <span>Exibir somente produtos com estoque zerado</span>
-                        </label>
+                        <div class="nome-da-secao">
+                            <label class="filtro-zerados">
+                                <input type="checkbox" id="apenasZerados">
+                                Exibir somente produtos sem estoque
+                            </label>
+                        </div>
 
                         <div class="acoes-pagina">
-                            <button
-                                type="reset"
-                                class="btn btn-secondary"
-                                id="btnLimpar"
-                            >
-                                Limpar filtros
+                            <button type="reset" class="btn btn-secondary">
+                                Limpar
                             </button>
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                id="btnGerar"
-                            >
+                            <button type="submit" class="btn btn-primary">
                                 Gerar relatório
                             </button>
                         </div>
 
                     </form>
 
-                    <div
-                        id="mensagemArea"
-                        role="status"
-                        aria-live="polite"
-                    ></div>
+                    <!-- RESULTADO DO RELATÓRIO -->
+                    <section id="resultadoArea" style="display: none;">
+
+                        <div class="cabecalho-relatorio">
+                            <h2 id="relatorioTitulo">Relatório de Estoque</h2>
+                            <p>Gerado em: <span id="dataGeracao">-</span></p>
+                            <p id="quantidadeResultados"></p>
+                        </div>
+
+                        <div class="resumo-relatorio">
+
+                            <div class="resumo-card">
+                                <span>Total de produtos</span>
+                                <strong id="totalProdutos">0</strong>
+                            </div>
+
+                            <div class="resumo-card">
+                                <span>Total de unidades</span>
+                                <strong id="totalUnidades">0</strong>
+                            </div>
+
+                            <div class="resumo-card">
+                                <span>Produtos zerados</span>
+                                <strong id="produtosZerados">0</strong>
+                            </div>
+
+                            <div class="resumo-card">
+                                <span>Valor total do estoque</span>
+                                <strong id="valorTotal">R$ 0,00</strong>
+                            </div>
+
+                        </div>
+
+                        <div class="acoes-relatorio">
+                            <button type="button" id="btnImprimir" class="btn btn-primary">
+                                Imprimir relatório
+                            </button>
+                        </div>
+
+                        <div class="tabela-container">
+                            <table class="tabela-padrao">
+
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Produto</th>
+                                        <th>Categoria</th>
+                                        <th>Quantidade</th>
+                                        <th>Valor unitário</th>
+                                        <th>Valor em estoque</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="relatorioCorpo"></tbody>
+
+                            </table>
+                        </div>
+
+                    </section>
 
                 </section>
 
-                <section
-                    class="panel resultado-panel"
-                    id="resultadoArea"
-                    hidden
-                >
+                <section class="panel resultado-panel" id="resultadoArea" hidden>
 
                     <div class="resultado-cabecalho">
                         <div>
@@ -193,11 +215,7 @@
                             <p id="dataGeracao">Aguardando consulta</p>
                         </div>
 
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            id="btnImprimir"
-                        >
+                        <button type="button" class="btn btn-secondary" id="btnImprimir">
                             Imprimir relatório
                         </button>
                     </div>
@@ -265,4 +283,5 @@
     </div>
 
 </body>
+
 </html>
