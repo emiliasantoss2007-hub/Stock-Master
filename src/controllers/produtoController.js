@@ -285,23 +285,34 @@ const registrarExpurgo = async (req, res) => {
   }
 };
 
-// RF-17 — RELATÓRIO DE ESTOQUE
+// RF-17 — RELATÓRIO DE ESTOQUE (com filtros)
 const relatorioEstoque = async (req, res) => {
   try {
     const usuarioLogado = req.usuario;
 
-    // Relatório restrito a Administrador (ajuste se o grupo liberar Técnico)
     if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
       return res.status(403).json({
         sucesso: false,
-        mensagem: 'Acesso negado. Apenas administradores podem gerar relatórios de estoque.'
+        mensagem:
+          'Acesso negado. Apenas administradores podem gerar relatórios de estoque.'
       });
     }
 
+    // 1. Filtros recebidos (query string)
+    const { busca, categoria, apenasZerados } = req.query;
+
+    const filtros = {
+      busca,
+      categoria,
+      apenasZerados
+    };
+
+    // 2. Consulta acionada
     const inicio = Date.now();
-    const relatorio = await ProdutoModel.listarRelatorioEstoque();
+    const relatorio = await ProdutoModel.listarRelatorioEstoque(filtros);
     const tempoMs = Date.now() - inicio;
 
+    // 3. Dados tratados + retorno implementado
     return res.status(200).json({
       sucesso: true,
       mensagem: 'Relatório de estoque gerado com sucesso.',

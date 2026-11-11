@@ -312,12 +312,14 @@ function registrarExpurgo(idProduto, quantidade, idUsuario, justificativa) {
 }
 
 /**
- * RF-17 — Relatório de estoque
- * Consulta e consolida dados de todos os produtos
+ * RF-17 — Relatório de estoque com filtros opcionais
+ * filtros: { busca, categoria, apenasZerados }
  */
-function listarRelatorioEstoque() {
+function listarRelatorioEstoque(filtros = {}) {
+  const { busca, categoria, apenasZerados } = filtros;
+
   return new Promise((resolve, reject) => {
-    const sql = `
+    let sql = `
       SELECT
         id_produto,
         sku,
@@ -327,10 +329,32 @@ function listarRelatorioEstoque() {
         valor,
         (quantidade_estoque * IFNULL(valor, 0)) AS valor_estoque
       FROM produto
-      ORDER BY nome ASC
+      WHERE 1 = 1
     `;
+    const params = [];
 
-    db.query(sql, (erro, resultados) => {
+    if (busca != null && String(busca).trim() !== '') {
+      sql += ` AND (nome LIKE ? OR sku LIKE ?)`;
+      const termo = `%${String(busca).trim()}%`;
+      params.push(termo, termo);
+    }
+
+    if (categoria != null && String(categoria).trim() !== '') {
+      sql += ` AND categoria = ?`;
+      params.push(String(categoria).trim());
+    }
+
+    if (
+      apenasZerados === true ||
+      apenasZerados === 'true' ||
+      apenasZerados === '1'
+    ) {
+      sql += ` AND quantidade_estoque = 0`;
+    }
+
+    sql += ` ORDER BY nome ASC`;
+
+    db.query(sql, params, (erro, resultados) => {
       if (erro) return reject(erro);
 
       const itens = resultados.map((row) => ({
@@ -358,6 +382,17 @@ function listarRelatorioEstoque() {
 
       resolve({
         geradoEm: new Date().toISOString(),
+        filtrosAplicados: {
+          busca: busca != null && String(busca).trim() !== '' ? String(busca).trim() : null,
+          categoria:
+            categoria != null && String(categoria).trim() !== ''
+              ? String(categoria).trim()
+              : null,
+          apenasZerados:
+            apenasZerados === true ||
+            apenasZerados === 'true' ||
+            apenasZerados === '1'
+        },
         resumo: {
           totalItens,
           totalUnidades,
