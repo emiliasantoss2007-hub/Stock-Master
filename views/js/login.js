@@ -154,29 +154,41 @@ loginForm.addEventListener(
 
             if (resultado.success) {
 
-                const perfil =
-                    resultado.data.perfil;
 
-                if (perfil.id === 1) {
+                if (resultado.success) {
 
-                    window.location.href =
-                        "/html/dashboard_adm.html";
+                    const perfil = resultado.data.perfil;
+
+                    // Salvar usuário logado
+                    localStorage.setItem("usuarioLogado", JSON.stringify({
+                        id_usuario: resultado.data.id_usuario,
+                        id_nivel_acesso: perfil.id,
+                        nome: resultado.data.nome,
+                        login: resultado.data.login
+                    }));
+
+                    if (perfil.id === 1) {
+
+                        window.location.href =
+                            "/html/dashboard_adm.html";
+
+                        return;
+                    }
+
+                    if (perfil.id === 2) {
+
+                        window.location.href =
+                            "/html/dashboard_tec.html";
+
+                        return;
+                    }
+
+                    formMessage.textContent =
+                        "Perfil de usuário não reconhecido.";
 
                     return;
                 }
 
-                if (perfil.id === 2) {
-
-                    window.location.href =
-                        "/html/dashboard_tec.html";
-
-                    return;
-                }
-
-                formMessage.textContent =
-                    "Perfil de usuário não reconhecido.";
-
-                return;
             }
 
 

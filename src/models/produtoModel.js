@@ -311,6 +311,100 @@ function registrarExpurgo(idProduto, quantidade, idUsuario, justificativa) {
   });
 }
 
+/**
+ * RF-17 — Relatório de estoque com filtros opcionais
+ * filtros: { busca, categoria, apenasZerados }
+ */
+function listarRelatorioEstoque(filtros = {}) {
+  const { busca, categoria, apenasZerados } = filtros;
+
+  return new Promise((resolve, reject) => {
+    let sql = `
+      SELECT
+        id_produto,
+        sku,
+        nome,
+        categoria,
+        quantidade_estoque,
+        valor,
+        (quantidade_estoque * IFNULL(valor, 0)) AS valor_estoque
+      FROM produto
+      WHERE 1 = 1
+    `;
+    const params = [];
+
+    if (busca != null && String(busca).trim() !== '') {
+      sql += ` AND (nome LIKE ? OR sku LIKE ?)`;
+      const termo = `%${String(busca).trim()}%`;
+      params.push(termo, termo);
+    }
+
+    if (categoria != null && String(categoria).trim() !== '') {
+      sql += ` AND categoria = ?`;
+      params.push(String(categoria).trim());
+    }
+
+    if (
+      apenasZerados === true ||
+      apenasZerados === 'true' ||
+      apenasZerados === '1'
+    ) {
+      sql += ` AND quantidade_estoque = 0`;
+    }
+
+    sql += ` ORDER BY nome ASC`;
+
+    db.query(sql, params, (erro, resultados) => {
+      if (erro) return reject(erro);
+
+      const itens = resultados.map((row) => ({
+        idProduto: row.id_produto,
+        sku: row.sku,
+        nome: row.nome,
+        categoria: row.categoria,
+        quantidadeEstoque: Number(row.quantidade_estoque),
+        valorUnitario: row.valor != null ? Number(row.valor) : null,
+        valorEstoque: Number(row.valor_estoque)
+      }));
+
+      const totalItens = itens.length;
+      const totalUnidades = itens.reduce(
+        (acc, item) => acc + item.quantidadeEstoque,
+        0
+      );
+      const valorTotalEstoque = itens.reduce(
+        (acc, item) => acc + item.valorEstoque,
+        0
+      );
+      const produtosZerados = itens.filter(
+        (item) => item.quantidadeEstoque === 0
+      ).length;
+
+      resolve({
+        geradoEm: new Date().toISOString(),
+        filtrosAplicados: {
+          busca: busca != null && String(busca).trim() !== '' ? String(busca).trim() : null,
+          categoria:
+            categoria != null && String(categoria).trim() !== ''
+              ? String(categoria).trim()
+              : null,
+          apenasZerados:
+            apenasZerados === true ||
+            apenasZerados === 'true' ||
+            apenasZerados === '1'
+        },
+        resumo: {
+          totalItens,
+          totalUnidades,
+          valorTotalEstoque: Number(valorTotalEstoque.toFixed(2)),
+          produtosZerados
+        },
+        itens
+      });
+    });
+  });
+}
+
 module.exports = {
   buscarPorId,
   verificarSaldo,
@@ -318,5 +412,6 @@ module.exports = {
   excluir,
   listarParaEntrada,
   registrarEntrada,
-  registrarExpurgo
+  registrarExpurgo,
+  listarRelatorioEstoque
 };
