@@ -5,38 +5,30 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     const formulario = document.querySelector("#formRelatorio");
-    const busca = document.querySelector("#filtroBusca");
-    const categoria = document.querySelector("#filtroCategoria");
+    const busca = document.querySelector("#busca");
+    const categoria = document.querySelector("#categoria");
     const apenasZerados = document.querySelector("#apenasZerados");
     const mensagemArea = document.querySelector("#mensagemArea");
-    const btnGerar = document.querySelector("#btnGerar");
+    const btnGerar = formulario.querySelector('button[type="submit"]');
+    const resultadoArea = document.querySelector("#resultadoArea");
+    const corpoRelatorio = document.querySelector("#relatorioCorpo");
+    const btnImprimir = document.querySelector("#btnImprimir");
 
     const username = document.querySelector("#username");
     const userAvatar = document.querySelector("#userAvatar");
 
-    if (
-        !usuario ||
-        Number(usuario.id_nivel_acesso) !== 1
-    ) {
+    if (!usuario || Number(usuario.id_nivel_acesso) !== 1) {
         window.location.href = "login.html";
         return;
     }
 
     username.textContent = usuario.nome || usuario.login || "Administrador";
-    userAvatar.textContent = (
-        usuario.nome || "AD"
-    ).substring(0, 2).toUpperCase();
-
-    function obterCabecalhos() {
-        return {
-            "Content-Type": "application/json",
-            "X-User": JSON.stringify(usuario)
-        };
-    }
+    userAvatar.textContent = (usuario.nome || "AD")
+        .substring(0, 2)
+        .toUpperCase();
 
     function mostrarMensagem(texto, tipo) {
         mensagemArea.innerHTML = "";
-
         const mensagem = document.createElement("p");
 
         mensagem.className = tipo === "sucesso"
@@ -47,42 +39,84 @@ document.addEventListener("DOMContentLoaded", () => {
         mensagemArea.appendChild(mensagem);
     }
 
-    // CARREGAR CATEGORIAS
-    async function carregarCategorias() {
-        try {
-            const resposta = await fetch(
-                "/api/produtos/entrada/listar",
-                { headers: obterCabecalhos() }
-            );
+    function formatarMoeda(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
 
-            const resultado = await resposta.json();
+    function formatarData(data) {
+        if (!data) return "-";
+        return new Date(data).toLocaleString("pt-BR");
+    }
 
-            if (!resposta.ok || !resultado.sucesso) {
-                throw new Error(
-                    resultado.mensagem || "Erro ao carregar categorias."
-                );
-            }
+    function exibirRelatorio(relatorio) {
+        const resumo = relatorio.resumo;
+        const itens = relatorio.itens;
 
-            const categorias = [
-                ...new Set(
-                    resultado.produtos
-                        .map(produto => produto.categoria)
-                        .filter(Boolean)
-                )
-            ].sort();
+        document.querySelector("#relatorioTitulo").textContent =
+            "Relatório de Estoque";
 
-            categorias.forEach(nome => {
-                const opcao = document.createElement("option");
+        document.querySelector("#dataGeracao").textContent =
+            formatarData(relatorio.geradoEm);
 
-                opcao.value = nome;
-                opcao.textContent = nome;
+        document.querySelector("#quantidadeResultados").textContent =
+            `${itens.length} produto(s) encontrado(s)`;
 
-                categoria.appendChild(opcao);
+        document.querySelector("#totalProdutos").textContent =
+            resumo.totalItens;
+
+        document.querySelector("#totalUnidades").textContent =
+            resumo.totalUnidades;
+
+        document.querySelector("#produtosZerados").textContent =
+            resumo.produtosZerados;
+
+        document.querySelector("#valorTotal").textContent =
+            formatarMoeda(resumo.valorTotalEstoque);
+
+        corpoRelatorio.innerHTML = "";
+
+        if (itens.length === 0) {
+            const linha = document.createElement("tr");
+            const celula = document.createElement("td");
+
+            celula.colSpan = 6;
+            celula.textContent =
+                "Nenhum produto encontrado para os filtros informados.";
+
+            linha.appendChild(celula);
+            corpoRelatorio.appendChild(linha);
+        } else {
+            itens.forEach((item) => {
+                const linha = document.createElement("tr");
+
+                const valores = [
+                    item.sku,
+                    item.nome,
+                    item.categoria,
+                    item.quantidadeEstoque,
+                    item.valorUnitario == null
+                        ? "-"
+                        : formatarMoeda(item.valorUnitario),
+                    formatarMoeda(item.valorEstoque)
+                ];
+
+                valores.forEach((valor) => {
+                    const celula = document.createElement("td");
+
+                    celula.textContent =
+                        valor == null ? "-" : valor;
+
+                    linha.appendChild(celula);
+                });
+
+                corpoRelatorio.appendChild(linha);
             });
-
-        } catch (erro) {
-            mostrarMensagem(erro.message, "erro");
         }
+
+        resultadoArea.style.display = "block";
     }
 
     // SOLICITAR RELATÓRIO
@@ -93,27 +127,26 @@ document.addEventListener("DOMContentLoaded", () => {
         btnGerar.disabled = true;
         btnGerar.textContent = "Gerando relatório...";
 
+        const filtros = {
+            busca: busca.value.trim(),
+            categoria: categoria.value.trim(),
+            apenasZerados: apenasZerados.checked
+        };
+
+        const parametros = new URLSearchParams({
+            busca: filtros.busca,
+            categoria: filtros.categoria,
+            apenasZerados: String(filtros.apenasZerados)
+        });
+
         try {
-            const filtros = {
-                busca: busca.value.trim(),
-                categoria: categoria.value,
-                apenasZerados: apenasZerados.checked
-            };
-
-            const parametros = new URLSearchParams();
-
-            parametros.set("busca", filtros.busca);
-            parametros.set("categoria", filtros.categoria);
-            parametros.set(
-                "apenasZerados",
-                String(filtros.apenasZerados)
-            );
-
             const resposta = await fetch(
                 `/api/relatorios/estoque?${parametros.toString()}`,
                 {
                     method: "GET",
-                    headers: obterCabecalhos()
+                    headers: {
+                        "X-User": JSON.stringify(usuario)
+                    }
                 }
             );
 
@@ -121,32 +154,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!resposta.ok || !resultado.sucesso) {
                 throw new Error(
-                    resultado.mensagem || "Não foi possível gerar o relatório."
+                    resultado.mensagem ||
+                    "Não foi possível gerar o relatório."
                 );
             }
 
-            if (!resultado.dados || !Array.isArray(resultado.dados.itens)) {
+            if (
+                !resultado.dados ||
+                !resultado.dados.resumo ||
+                !Array.isArray(resultado.dados.itens)
+            ) {
                 throw new Error("O servidor retornou dados inválidos.");
             }
 
-            // GUARDAR RESULTADO PARA VISUALIZAÇÃO
-            sessionStorage.setItem(
-                "relatorioEstoque",
-                JSON.stringify({
-                    filtros,
-                    dados: resultado.dados,
-                    desempenho: resultado.desempenho
-                })
-            );
-
-            mostrarMensagem(
-                resultado.mensagem,
-                "sucesso"
-            );
-
-            // ENCAMINHAR PARA VISUALIZAÇÃO
-            window.location.href =
-                "visualizar_relatorios.html?origem=adm";
+            exibirRelatorio(resultado.dados);
+            mostrarMensagem(resultado.mensagem, "sucesso");
 
         } catch (erro) {
             mostrarMensagem(erro.message, "erro");
@@ -159,8 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // LIMPAR FILTROS
     formulario.addEventListener("reset", () => {
         mensagemArea.innerHTML = "";
-        sessionStorage.removeItem("relatorioEstoque");
+        resultadoArea.style.display = "none";
+        corpoRelatorio.innerHTML = "";
     });
 
-    carregarCategorias();
+    // IMPRIMIR RELATÓRIO
+    btnImprimir.addEventListener("click", () => {
+        window.print();
+    });
 });

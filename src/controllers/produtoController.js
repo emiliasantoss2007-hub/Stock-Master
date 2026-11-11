@@ -299,14 +299,14 @@ const relatorioEstoque = async (req, res) => {
     }
 
     // 1. Filtros recebidos (query string)
-    const { busca, categoria, apenasZerados } = req.query;
+const { busca, categoria, apenasZerados } = req.query;
 
-    const filtros = {
-      busca,
-      categoria,
-      apenasZerados
-    };
-
+const filtros = {
+  busca: typeof busca === 'string' ? busca.trim() : '',
+  categoria: typeof categoria === 'string' ? categoria.trim() : '',
+  apenasZerados:
+    apenasZerados === 'true' || apenasZerados === '1'
+};
     // 2. Consulta acionada
     const inicio = Date.now();
     const relatorio = await ProdutoModel.listarRelatorioEstoque(filtros);
