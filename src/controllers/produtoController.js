@@ -285,10 +285,45 @@ const registrarExpurgo = async (req, res) => {
   }
 };
 
+// RF-17 — RELATÓRIO DE ESTOQUE
+const relatorioEstoque = async (req, res) => {
+  try {
+    const usuarioLogado = req.usuario;
+
+    // Relatório restrito a Administrador (ajuste se o grupo liberar Técnico)
+    if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+      return res.status(403).json({
+        sucesso: false,
+        mensagem: 'Acesso negado. Apenas administradores podem gerar relatórios de estoque.'
+      });
+    }
+
+    const inicio = Date.now();
+    const relatorio = await ProdutoModel.listarRelatorioEstoque();
+    const tempoMs = Date.now() - inicio;
+
+    return res.status(200).json({
+      sucesso: true,
+      mensagem: 'Relatório de estoque gerado com sucesso.',
+      desempenho: {
+        tempoMs
+      },
+      dados: relatorio
+    });
+  } catch (erro) {
+    console.error('Erro no RF-17 (relatório de estoque):', erro);
+    return res.status(500).json({
+      sucesso: false,
+      mensagem: 'Erro ao gerar relatório de estoque.'
+    });
+  }
+};
+
 module.exports = {
   excluirProduto,
   listarParaEntrada,
   registrarEntrada,
   listarParaExpurgo,
-  registrarExpurgo
+  registrarExpurgo,
+  relatorioEstoque
 };

@@ -311,6 +311,65 @@ function registrarExpurgo(idProduto, quantidade, idUsuario, justificativa) {
   });
 }
 
+/**
+ * RF-17 — Relatório de estoque
+ * Consulta e consolida dados de todos os produtos
+ */
+function listarRelatorioEstoque() {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT
+        id_produto,
+        sku,
+        nome,
+        categoria,
+        quantidade_estoque,
+        valor,
+        (quantidade_estoque * IFNULL(valor, 0)) AS valor_estoque
+      FROM produto
+      ORDER BY nome ASC
+    `;
+
+    db.query(sql, (erro, resultados) => {
+      if (erro) return reject(erro);
+
+      const itens = resultados.map((row) => ({
+        idProduto: row.id_produto,
+        sku: row.sku,
+        nome: row.nome,
+        categoria: row.categoria,
+        quantidadeEstoque: Number(row.quantidade_estoque),
+        valorUnitario: row.valor != null ? Number(row.valor) : null,
+        valorEstoque: Number(row.valor_estoque)
+      }));
+
+      const totalItens = itens.length;
+      const totalUnidades = itens.reduce(
+        (acc, item) => acc + item.quantidadeEstoque,
+        0
+      );
+      const valorTotalEstoque = itens.reduce(
+        (acc, item) => acc + item.valorEstoque,
+        0
+      );
+      const produtosZerados = itens.filter(
+        (item) => item.quantidadeEstoque === 0
+      ).length;
+
+      resolve({
+        geradoEm: new Date().toISOString(),
+        resumo: {
+          totalItens,
+          totalUnidades,
+          valorTotalEstoque: Number(valorTotalEstoque.toFixed(2)),
+          produtosZerados
+        },
+        itens
+      });
+    });
+  });
+}
+
 module.exports = {
   buscarPorId,
   verificarSaldo,
@@ -318,5 +377,6 @@ module.exports = {
   excluir,
   listarParaEntrada,
   registrarEntrada,
-  registrarExpurgo
+  registrarExpurgo,
+  listarRelatorioEstoque
 };
