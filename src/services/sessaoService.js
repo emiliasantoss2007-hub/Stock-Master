@@ -24,4 +24,9 @@ function obterUsuario(token) {
     return sessao.usuario;
 }
 
-module.exports = { criar, obterUsuario };
+function encerrar(token) {
+    if (!token) return false;
+    return sessoes.delete(token);
+}
+
+module.exports = { criar, obterUsuario, encerrar };
