@@ -57,7 +57,6 @@ describe('Sessão de autenticação para autorização de produtos', () => {
         expect(next).not.toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(401);
     });
-
     test('autentica usuário pela sessão emitida pelo login', () => {
         const usuarioEsperado = {
             id_nivel_acesso: 1,
@@ -72,5 +71,73 @@ describe('Sessão de autenticação para autorização de produtos', () => {
 
         expect(req.usuario).toEqual(usuarioEsperado);
         expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    test('logout invalida a sessão recebida pelo cookie', () => {
+        const usuario = { id_usuario: 5 };
+        const token = sessaoService.criar(usuario);
+
+        const req = {
+            headers: {
+                cookie: `stockmaster_session=${token}`
+            },
+            secure: false
+        };
+
+        const res = {
+            clearCookie: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        AuthController.encerrarSessao(req, res);
+
+        expect(sessaoService.obterUsuario(token)).toBeNull();
+        expect(res.clearCookie).toHaveBeenCalledWith(
+            'stockmaster_session',
+            expect.objectContaining({ path: '/' })
+        );
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    test('logout invalida a sessão recebida pelo Bearer', () => {
+        const token = sessaoService.criar({ id_usuario: 6 });
+
+        const req = {
+            headers: {
+                authorization: `Bearer ${token}`
+            },
+            secure: false
+        };
+
+        const res = {
+            clearCookie: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        AuthController.encerrarSessao(req, res);
+
+        expect(sessaoService.obterUsuario(token)).toBeNull();
+    });
+
+    test('logout sem cookie ou Bearer não gera erro', () => {
+        const req = {
+            headers: {},
+            secure: false
+        };
+
+        const res = {
+            clearCookie: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        AuthController.encerrarSessao(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({ success: true })
+        );
     });
 });

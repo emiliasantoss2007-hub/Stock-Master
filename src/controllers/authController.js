@@ -1,3 +1,4 @@
+
 /* =========================================================
    STOCKMASTER — CONTROLLER DE AUTENTICAÇÃO
    RF-01 — Realizar Login
@@ -7,6 +8,23 @@
 
 const Autenticacao = require("../models/autenticacaoModel");
 const sessaoService = require("../services/sessaoService");
+
+function obterCookie(cookieHeader, nome) {
+    if (!cookieHeader) return null;
+
+    const cookie = cookieHeader
+        .split(';')
+        .map((parte) => parte.trim())
+        .find((parte) => parte.startsWith(`${nome}=`));
+
+    if (!cookie) return null;
+
+    try {
+        return decodeURIComponent(cookie.slice(nome.length + 1));
+    } catch {
+        return null;
+    }
+}
 
 const AuthController = {
 
@@ -52,6 +70,37 @@ const AuthController = {
                 code: "INTERNAL_ERROR"
             });
         }
+    },
+
+    encerrarSessao(req, res) {
+        const authorization = req.headers.authorization || '';
+        const match = authorization.match(/^Bearer\s+(\S+)$/i);
+        const bearerToken = match && match[1];
+
+        const cookieToken = obterCookie(
+            req.headers.cookie,
+            'stockmaster_session'
+        );
+
+        if (bearerToken) {
+            sessaoService.encerrar(bearerToken);
+        }
+
+        if (cookieToken && cookieToken !== bearerToken) {
+            sessaoService.encerrar(cookieToken);
+        }
+
+        res.clearCookie('stockmaster_session', {
+            httpOnly: true,
+            secure: Boolean(req.secure) || process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sessão encerrada com sucesso.'
+        });
     }
 
 };
