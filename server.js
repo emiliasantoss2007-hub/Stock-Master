@@ -20,6 +20,55 @@ app.use(express.json());
 // Permite receber dados de formulários
 app.use(express.urlencoded({ extended: true }));
 
+const sessaoService = require('./src/services/sessaoService');
+
+const COOKIE_SESSAO = 'stockmaster_session';
+
+function obterCookie(req, nome) {
+    const cookies = (req.headers.cookie || '').split(';');
+
+    const cookie = cookies
+        .map((parte) => parte.trim())
+        .find((parte) => parte.startsWith(`${nome}=`));
+
+    if (!cookie) return null;
+
+    try {
+        return decodeURIComponent(cookie.slice(nome.length + 1));
+    } catch {
+        return null;
+    }
+}
+
+app.use((req, res, next) => {
+    const caminho = req.path.toLowerCase();
+
+    // Verifica somente solicitações de páginas HTML
+    if (!caminho.endsWith('.html')) {
+        return next();
+    }
+
+    // Páginas que podem ser acessadas sem login
+    const paginasPublicas = [
+        '/html/login.html',
+        '/html/recuperar_senha.html',
+        '/html/redefinir_senha.html'
+    ];
+
+    if (paginasPublicas.includes(caminho)) {
+        return next();
+    }
+
+    const token = obterCookie(req, COOKIE_SESSAO);
+    const usuario = token && sessaoService.obterUsuario(token);
+
+    if (!usuario) {
+        return res.redirect('/html/login.html');
+    }
+
+    next();
+});
+
 // Arquivos estáticos do Front-end
 app.use(express.static(path.join(__dirname, 'views')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
