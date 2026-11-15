@@ -77,6 +77,7 @@ Armazena os produtos cadastrados no sistema.
 | categoria          | VARCHAR(100)  | NOT NULL   |
 | descricao          | TEXT          | NULL       |
 | quantidade_estoque | INT           | NOT NULL   |
+| estoque_minimo     | INT           | NOT NULL, DEFAULT 0 |
 | valor              | DECIMAL(10,2) | NULL       |
 
 ### Relacionamentos

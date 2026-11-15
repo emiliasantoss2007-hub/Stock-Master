@@ -154,41 +154,46 @@ loginForm.addEventListener(
 
             if (resultado.success) {
 
+                // Armazenamento em sessionStorage (integração develop)
+                sessionStorage.setItem(
+                    "stockmaster.usuario",
+                    JSON.stringify(resultado.data)
+                );
+                sessionStorage.setItem(
+                    "stockmaster.accessToken",
+                    resultado.accessToken
+                );
 
-                if (resultado.success) {
+                const perfil = resultado.data.perfil;
 
-                    const perfil = resultado.data.perfil;
+                // Salvar usuário logado no localStorage (integração HEAD)
+                localStorage.setItem("usuarioLogado", JSON.stringify({
+                    id_usuario: resultado.data.id_usuario,
+                    id_nivel_acesso: perfil.id,
+                    nome: resultado.data.nome,
+                    login: resultado.data.login
+                }));
 
-                    // Salvar usuário logado
-                    localStorage.setItem("usuarioLogado", JSON.stringify({
-                        id_usuario: resultado.data.id_usuario,
-                        id_nivel_acesso: perfil.id,
-                        nome: resultado.data.nome,
-                        login: resultado.data.login
-                    }));
+                if (perfil.id === 1) {
 
-                    if (perfil.id === 1) {
-
-                        window.location.href =
-                            "/html/dashboard_adm.html";
-
-                        return;
-                    }
-
-                    if (perfil.id === 2) {
-
-                        window.location.href =
-                            "/html/dashboard_tec.html";
-
-                        return;
-                    }
-
-                    formMessage.textContent =
-                        "Perfil de usuário não reconhecido.";
+                    window.location.href =
+                        "/html/dashboard_adm.html";
 
                     return;
                 }
 
+                if (perfil.id === 2) {
+
+                    window.location.href =
+                        "/html/dashboard_tec.html";
+
+                    return;
+                }
+
+                formMessage.textContent =
+                    "Perfil de usuário não reconhecido.";
+
+                return;
             }
 
 

@@ -38,7 +38,13 @@
                     <span class="nav-icon">♙</span>Usuários</a>
 
                 <a href="produtos.html" class="active">
-                    <span class="nav-icon">▣</span>
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3 21 8 12 13 3 8 12 3Z"/>
+                            <path d="M3 8v9l9 5 9-5V8"/>
+                            <path d="M12 13v9"/>
+                        </svg>
+                    </span>
                     <span id="produtosMenuText">Produtos</span></a>
 
                 <a href="entrada_estoque.html" id="entradaLink">
@@ -240,76 +246,3 @@
                                                     Excluir
                                                 </button>
                                             </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <p id="productsMessage" class="product-form-message" aria-live="polite"></p>
-                    </section>
-            </section>
-        </main>
-    </div>
-    
-<!-- Modal de confirmação de exclusão de produto -->
-<div class="product-modal-backdrop" id="deleteProductModal" hidden>
-    <section
-        class="product-confirm-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="deleteProductTitle"
-        aria-describedby="deleteProductDescription"
-        tabindex="-1">
-
-        <div class="product-confirm-icon" aria-hidden="true">!</div>
-
-        <h2 id="deleteProductTitle">
-            Confirmar exclusão do produto
-        </h2>
-
-        <p id="deleteProductDescription">
-            Você está prestes a solicitar a exclusão deste produto.
-            Esta ação pode ser permanente.
-        </p>
-
-        <div class="product-confirm-identity" id="deleteProductIdentity">
-            <strong id="deleteProductName">Produto</strong>
-            <span id="deleteProductSku">SKU</span>
-            <small id="deleteProductId"></small>
-        </div>
-
-        <p class="product-confirm-warning">
-            Confira a identificação antes de continuar.
-            Se houver movimentações vinculadas, o servidor poderá
-            impedir a exclusão.
-        </p>
-
-        <p
-            id="deleteProductFeedback"
-            class="product-feedback"
-            role="status"
-            aria-live="polite">
-        </p>
-
-        <div class="product-confirm-actions">
-            <button
-                type="button"
-                class="product-button-secondary"
-                id="cancelDeleteProduct">
-                Cancelar
-            </button>
-
-            <button
-                type="button"
-                class="product-button-danger"
-                id="confirmDeleteProduct">
-                Confirmar exclusão
-            </button>
-        </div>
-    </section>
-</div>
-
-</body>
-
-</html>
