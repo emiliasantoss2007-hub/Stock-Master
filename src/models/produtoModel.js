@@ -1,5 +1,96 @@
 const db = require('../config/database');
 
+// --- Funções de Verificação e Cadastro (branch develop) ---
+
+function verificarSKU(sku, callback) {
+    const skuNormalizado = String(sku || '').trim();
+
+    if (!skuNormalizado) {
+        return callback(null, false);
+    }
+
+    const sql = 'SELECT id_produto FROM produto WHERE sku = ?';
+
+    db.query(sql, [skuNormalizado], (erro, resultados) => {
+        if (erro) {
+            return callback(erro);
+        }
+
+        callback(null, resultados.length > 0);
+    });
+}
+
+const verificarSku = verificarSKU;
+
+function erroSkuDuplicado() {
+    const erro = new Error('SKU já cadastrado');
+    erro.code = 'SKU_DUPLICADO';
+    return erro;
+}
+
+function cadastrarProduto(dados, callback) {
+    const {
+        sku,
+        codigo_barras,
+        nome,
+        categoria,
+        descricao,
+        quantidade_estoque,
+        estoque_minimo,
+        valor
+    } = dados || {};
+
+    const skuNormalizado = String(sku || '').trim();
+    const nomeNormalizado = String(nome || '').trim();
+    const categoriaNormalizada = String(categoria || '').trim();
+
+    if (!skuNormalizado || !nomeNormalizado || !categoriaNormalizada) {
+        return callback(new Error('Nome, categoria e SKU são obrigatórios'));
+    }
+
+    const estoqueMinimo = Number(estoque_minimo ?? 0);
+    if (!Number.isInteger(estoqueMinimo) || estoqueMinimo < 0) {
+        return callback(new Error('Estoque mínimo deve ser um número inteiro não negativo'));
+    }
+
+    verificarSKU(skuNormalizado, (erro, jaExiste) => {
+        if (erro) {
+            return callback(erro);
+        }
+
+        if (jaExiste) {
+            return callback(erroSkuDuplicado());
+        }
+
+        const sql = `
+            INSERT INTO produto
+            (sku, codigo_barras, nome, categoria, descricao, quantidade_estoque, estoque_minimo, valor)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const valores = [
+            skuNormalizado,
+            codigo_barras || null,
+            nomeNormalizado,
+            categoriaNormalizada,
+            descricao || null,
+            Number(quantidade_estoque || 0),
+            estoqueMinimo,
+            valor === undefined || valor === null ? null : Number(valor)
+        ];
+
+        db.query(sql, valores, (errInsert, resultado) => {
+            if (errInsert) {
+                return callback(errInsert);
+            }
+
+            callback(null, resultado);
+        });
+    });
+}
+
+// --- Funções de Consulta, Exclusão, Movimentações e Relatórios (branch HEAD) ---
+
 function buscarPorId(id) {
   return new Promise((resolve, reject) => {
     const sql = `
@@ -40,7 +131,6 @@ function verificarSaldo(idProduto) {
 
 function verificarMovimentacoes(idProduto) {
   return new Promise((resolve, reject) => {
-    // Se a tabela de movimentação tiver outro nome, ajuste aqui
     const sql = `
       SELECT COUNT(*) AS total
       FROM movimentacao
@@ -49,7 +139,6 @@ function verificarMovimentacoes(idProduto) {
 
     db.query(sql, [idProduto], (erro, resultados) => {
       if (erro) {
-        // Tabela ainda não existe: trata como zero movimentações
         if (erro.code === 'ER_NO_SUCH_TABLE') return resolve(0);
         return reject(erro);
       }
@@ -94,7 +183,6 @@ function listarParaEntrada() {
 
 /**
  * RF-12 — Registrar entrada
- * registrarEntrada(id_produto, quantidade, id_usuario)
  */
 function registrarEntrada(idProduto, quantidade, idUsuario) {
   const idProd = Number(idProduto);
@@ -197,8 +285,7 @@ function registrarEntrada(idProduto, quantidade, idUsuario) {
 }
 
 /**
- * RF-15 — Estrutura de expurgo
- * registrarExpurgo(idProduto, quantidade, idUsuario, justificativa)
+ * RF-15 — Registrar expurgo
  */
 function registrarExpurgo(idProduto, quantidade, idUsuario, justificativa) {
   const idProd = Number(idProduto);
@@ -225,7 +312,6 @@ function registrarExpurgo(idProduto, quantidade, idUsuario, justificativa) {
       return reject(e);
     }
 
-    // Motivo definido (obrigatório no expurgo)
     if (!motivo) {
       const e = new Error('A justificativa (motivo) é obrigatória para o expurgo.');
       e.code = 'JUSTIFICATIVA_REQUIRED';
@@ -446,6 +532,9 @@ function prepararDadosExportacaoPdf(filtros = {}) {
 }
 
 module.exports = {
+  cadastrarProduto,
+  verificarSKU,
+  verificarSku,
   buscarPorId,
   verificarSaldo,
   verificarMovimentacoes,

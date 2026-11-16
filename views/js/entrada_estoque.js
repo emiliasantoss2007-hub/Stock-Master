@@ -7,6 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const origem = params.get("origem");
 
+    const voltarLink = document.querySelector("#voltarLink");
+
+    if (origem === "tecnico") {
+    voltarLink.href = "dashboard_tec.html";
+    } else {
+    voltarLink.href = "dashboard_adm.html";
+}
+
 
     // ========================================
     // ELEMENTOS DA NAVEGAÇÃO
