@@ -405,6 +405,46 @@ function listarRelatorioEstoque(filtros = {}) {
   });
 }
 
+/**
+ * RF-20 — Prepara dados no formato do relatório PDF de estoque
+ */
+function prepararDadosExportacaoPdf(filtros = {}) {
+  return listarRelatorioEstoque(filtros).then((relatorio) => {
+    return {
+      titulo: 'Relatório de Estoque',
+      sistema: 'StockMaster',
+      geradoEm: relatorio.geradoEm,
+      filtros: relatorio.filtrosAplicados || {
+        busca: null,
+        categoria: null,
+        apenasZerados: false
+      },
+      resumo: {
+        totalItens: relatorio.resumo.totalItens,
+        totalUnidades: relatorio.resumo.totalUnidades,
+        valorTotalEstoque: relatorio.resumo.valorTotalEstoque,
+        produtosZerados: relatorio.resumo.produtosZerados
+      },
+      colunas: [
+        'sku',
+        'nome',
+        'categoria',
+        'quantidadeEstoque',
+        'valorUnitario',
+        'valorEstoque'
+      ],
+      linhas: relatorio.itens.map((item) => ({
+        sku: item.sku,
+        nome: item.nome,
+        categoria: item.categoria,
+        quantidadeEstoque: item.quantidadeEstoque,
+        valorUnitario: item.valorUnitario,
+        valorEstoque: item.valorEstoque
+      }))
+    };
+  });
+}
+
 module.exports = {
   buscarPorId,
   verificarSaldo,
@@ -413,5 +453,6 @@ module.exports = {
   listarParaEntrada,
   registrarEntrada,
   registrarExpurgo,
-  listarRelatorioEstoque
+  listarRelatorioEstoque,
+  prepararDadosExportacaoPdf
 };
