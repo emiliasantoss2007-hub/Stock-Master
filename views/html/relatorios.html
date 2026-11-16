@@ -146,47 +146,52 @@
                     </form>
 
                     <!-- RESULTADO DO RELATÓRIO -->
-                    <section id="resultadoArea" style="display: none;">
+                    <section id="resultadoArea" class="resultado-panel" hidden>
 
                         <div class="cabecalho-relatorio">
-                            <h2 id="relatorioTitulo">Relatório de Estoque</h2>
-                            <p>Gerado em: <span id="dataGeracao">-</span></p>
-                            <p id="quantidadeResultados"></p>
+                            <div>
+                                <p class="identificacao-relatorio">STOCKMASTER | GESTÃO DE ESTOQUE</p>
+                                <h2 id="relatorioTitulo">Relatório de Estoque</h2>
+                                <p>Gerado em: <span id="dataGeracao">-</span></p>
+                                <p id="quantidadeResultados">0 produtos encontrados</p>
+                                <p id="tempoConsulta">Tempo de consulta: -</p>
+                            </div>
+
+                            <button type="button" id="btnExportarPdf" class="btn btn-pdf" disabled>
+                                <span aria-hidden="true">⇩</span>
+                                Exportar PDF
+                            </button>
                         </div>
 
                         <div class="resumo-relatorio">
-
-                            <div class="resumo-card">
+                            <article class="resumo-card">
                                 <span>Total de produtos</span>
                                 <strong id="totalProdutos">0</strong>
-                            </div>
+                            </article>
 
-                            <div class="resumo-card">
+                            <article class="resumo-card">
                                 <span>Total de unidades</span>
                                 <strong id="totalUnidades">0</strong>
-                            </div>
+                            </article>
 
-                            <div class="resumo-card">
+                            <article class="resumo-card">
                                 <span>Produtos zerados</span>
                                 <strong id="produtosZerados">0</strong>
-                            </div>
+                            </article>
 
-                            <div class="resumo-card">
-                                <span>Valor total do estoque</span>
+                            <article class="resumo-card">
+                                <span>Valor total em estoque</span>
                                 <strong id="valorTotal">R$ 0,00</strong>
-                            </div>
-
+                            </article>
                         </div>
 
-                        <div class="acoes-relatorio">
-                            <button type="button" id="btnImprimir" class="btn btn-primary">
-                                Imprimir relatório
-                            </button>
+                        <div class="tabela-cabecalho">
+                            <h3>Produtos encontrados</h3>
+                            <span id="quantidadeTabela">0 registros</span>
                         </div>
 
                         <div class="tabela-container">
                             <table class="tabela-padrao">
-
                                 <thead>
                                     <tr>
                                         <th>SKU</th>
@@ -198,10 +203,17 @@
                                     </tr>
                                 </thead>
 
-                                <tbody id="relatorioCorpo"></tbody>
-
+                                <tbody id="relatorioCorpo">
+                                    <tr>
+                                        <td colspan="6">Nenhum relatório gerado.</td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
+
+                        <p class="rodape-relatorio">
+                            Documento gerado pelo sistema StockMaster.
+                        </p>
 
                     </section>
 
