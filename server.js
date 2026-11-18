@@ -4,6 +4,7 @@ const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
+const relatorioRoutes = require('./src/routes/relatorioRoutes');
 // Se você tiver um arquivo de rotas de usuários separado, certifique-se de importá-lo:
 // const usuarioRoutes = require('./src/routes/usuarioRoutes'); 
 
@@ -70,6 +71,7 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
+app.use('/api/relatorios', relatorioRoutes);
 
 // Rotas de usuários (caso utilize)
 // app.use(usuarioRoutes);
