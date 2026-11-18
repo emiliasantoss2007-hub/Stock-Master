@@ -154,6 +154,15 @@ loginForm.addEventListener(
 
             if (resultado.success) {
 
+                sessionStorage.setItem(
+                    "stockmaster.usuario",
+                    JSON.stringify(resultado.data)
+                );
+                sessionStorage.setItem(
+                    "stockmaster.accessToken",
+                    resultado.accessToken
+                );
+
                 const perfil =
                     resultado.data.perfil;
 
