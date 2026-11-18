@@ -6,6 +6,7 @@ const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
+const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
 const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
 
@@ -76,6 +77,7 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
+app.use('/api', relatorioProdutoRoutes);
 app.use('/api', movimentacaoRoutes);
 app.use('/api', produtoRoutes);
 

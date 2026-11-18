@@ -1,0 +1,214 @@
+.report-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.report-back-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.report-back-link span {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.panel-header {
+    margin-bottom: 18px;
+}
+
+.panel-header h2 {
+    color: var(--primary-dark);
+    font-size: 17px;
+}
+
+.report-panel-description {
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.product-report-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.product-report-filter {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.product-report-filter label {
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.product-report-filter input,
+.product-report-filter select {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.product-report-filter input:focus,
+.product-report-filter select:focus {
+    border-color: var(--primary);
+    outline: 3px solid var(--primary-soft);
+}
+
+.report-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.btn {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.btn:focus-visible {
+    outline: 3px solid var(--primary-soft);
+    outline-offset: 2px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.btn-secondary {
+    border-color: var(--border);
+    background: #ffffff;
+    color: var(--primary);
+}
+
+.btn-secondary:hover {
+    background: var(--background);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.btn:disabled {
+    cursor: wait;
+    opacity: .7;
+}
+
+.report-results-panel {
+    margin-top: 20px;
+}
+
+.report-status {
+    min-height: 18px;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.report-status.is-error {
+    color: var(--danger);
+}
+
+.report-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.product-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left;
+}
+
+.product-report-table th {
+    padding: 12px 10px;
+    background: var(--primary-dark);
+    color: #ffffff;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.product-report-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.product-report-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.product-report-table td {
+    padding: 13px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.product-report-table tbody tr:nth-child(even):not(.report-placeholder-row) {
+    background: #f5f7fa;
+}
+
+.product-report-table tbody tr:hover:not(.report-placeholder-row) {
+    background: var(--primary-soft);
+}
+
+.report-placeholder-row td {
+    padding: 34px 16px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .report-table-wrapper {
+        margin: 0 -8px;
+        padding: 0 8px;
+    }
+
+    .product-report-table {
+        min-width: 760px;
+    }
+}
+
+@media (max-width: 600px) {
+    .product-report-filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .report-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .report-actions .btn {
+        width: 100%;
+    }
+}
