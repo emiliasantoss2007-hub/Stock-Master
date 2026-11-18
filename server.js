@@ -1,29 +1,23 @@
 require('dotenv').config();
-require('./src/config/database');
-
 const express = require('express');
 const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
-const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
-const produtoRoutes = require('./src/routes/produtoRoutes');
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
-
-// Permite receber dados em JSON
-app.use(express.json());
-
-// Permite receber dados de formulários
-app.use(express.urlencoded({ extended: true }));
+const relatorioRoutes = require('./src/routes/relatorioRoutes');
+// Se você tiver um arquivo de rotas de usuários separado, certifique-se de importá-lo:
+// const usuarioRoutes = require('./src/routes/usuarioRoutes'); 
 
 const sessaoService = require('./src/services/sessaoService');
 
+const app = express();
+const PORT = process.env.PORT || 3001;
 const COOKIE_SESSAO = 'stockmaster_session';
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Função auxiliar para extrair cookies
 function obterCookie(req, nome) {
     const cookies = (req.headers.cookie || '').split(';');
 
@@ -40,6 +34,7 @@ function obterCookie(req, nome) {
     }
 }
 
+// Middleware de proteção de rotas HTML
 app.use((req, res, next) => {
     const caminho = req.path.toLowerCase();
 
@@ -69,25 +64,24 @@ app.use((req, res, next) => {
     next();
 });
 
-// Arquivos estáticos do Front-end
+// Arquivos estáticos
 app.use(express.static(path.join(__dirname, 'views')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
-app.use('/api', movimentacaoRoutes);
-app.use('/api', produtoRoutes);
+app.use('/api/relatorios', relatorioRoutes);
 
-// Rotas de usuários
-app.use(usuarioRoutes);
+// Rotas de usuários (caso utilize)
+// app.use(usuarioRoutes);
 
-// Rota inicial → login
+// Rota raiz
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
+  res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
 });
 
-// Inicia o servidor
+// Inicialização do servidor
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
