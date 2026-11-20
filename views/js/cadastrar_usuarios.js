@@ -1,108 +1,249 @@
+
 document.addEventListener("DOMContentLoaded", () => {
-    const userForm = document.querySelector("#userForm");
-    const formMessage = document.querySelector("#formMessage");
+    const usuario = JSON.parse(
+        localStorage.getItem("usuarioLogado") || "null"
+    );
 
-    const fields = {
-        nome: document.querySelector("#nome"),
-        email: document.querySelector("#email"),
-        login: document.querySelector("#login"),
-        senha: document.querySelector("#senha"),
-        perfil: document.querySelector("#perfil")
-    };
+    const formulario = document.querySelector("#formRelatorio");
+    const busca = document.querySelector("#busca");
+    const categoria = document.querySelector("#categoria");
+    const apenasZerados = document.querySelector("#apenasZerados");
+    const mensagemArea = document.querySelector("#mensagemArea");
+    const resultadoArea = document.querySelector("#resultadoArea");
+    const corpoRelatorio = document.querySelector("#relatorioCorpo");
+    const btnGerar = formulario.querySelector('button[type="submit"]');
+    const btnExportarPdf = document.querySelector("#btnExportarPdf");
 
-    const errors = {
-        nome: document.querySelector("#nomeError"),
-        email: document.querySelector("#emailError"),
-        login: document.querySelector("#loginError"),
-        senha: document.querySelector("#senhaError"),
-        perfil: document.querySelector("#perfilError")
-    };
+    const username = document.querySelector("#username");
+    const userAvatar = document.querySelector("#userAvatar");
 
-    userForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        let formValid = true;
-        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim());
-
-        Object.values(errors).forEach((error) => {
-            error.textContent = "";
-        });
-
-        Object.values(fields).forEach((field) => {
-            field.classList.remove("field-invalid");
-        });
-
-        if (!fields.nome.value.trim()) {
-            errors.nome.textContent = "Informe o nome completo.";
-            fields.nome.classList.add("field-invalid");
-            formValid = false;
-        }
-
-        if (!emailValid) {
-            errors.email.textContent = "Informe um e-mail válido.";
-            fields.email.classList.add("field-invalid");
-            formValid = false;
-        }
-
-        if (!fields.login.value.trim()) {
-            errors.login.textContent = "Informe o login do usuário.";
-            fields.login.classList.add("field-invalid");
-            formValid = false;
-        }
-
-        if (fields.senha.value.length < 8) {
-            errors.senha.textContent = "A senha deve possuir pelo menos 8 caracteres.";
-            fields.senha.classList.add("field-invalid");
-            formValid = false;
-        }
-
-        if (!fields.perfil.value) {
-            errors.perfil.textContent = "Selecione o perfil de acesso.";
-            fields.perfil.classList.add("field-invalid");
-            formValid = false;
-        }
-
-       if (!formValid) {
-    formMessage.textContent = "Corrija os campos destacados antes de continuar.";
-    formMessage.className = "form-message form-message-error";
-    return;
-}
-
-const dadosUsuario = {
-    nome: fields.nome.value.trim(),
-    email: fields.email.value.trim(),
-    login: fields.login.value.trim(),
-    senha: fields.senha.value,
-    perfil: fields.perfil.value
-};
-
-try {
-    const resposta = await fetch("http://localhost:3001/usuarios", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(dadosUsuario)
-    });
-
-    const resultado = await resposta.json();
-
-    if (!resposta.ok) {
-        formMessage.textContent = resultado.message;
-        formMessage.className = "form-message form-message-error";
+    if (!usuario || Number(usuario.id_nivel_acesso) !== 1) {
+        window.location.href = "login.html";
         return;
     }
 
-    formMessage.textContent = resultado.message;
-    formMessage.className = "form-message form-message-success";
+    username.textContent = usuario.nome || usuario.login || "Administrador";
+    userAvatar.textContent = (usuario.nome || "AD")
+        .substring(0, 2)
+        .toUpperCase();
 
-    window.setTimeout(() => {
-        window.location.href = "usuarios.html?cadastro=sucesso";
-    }, 900);
+    function mostrarMensagem(texto, tipo) {
+        mensagemArea.replaceChildren();
 
-} catch (erro) {
-    formMessage.textContent = "Não foi possível realizar o cadastro.";
-    formMessage.className = "form-message form-message-error";
-}
+        const mensagem = document.createElement("p");
+
+        mensagem.className = tipo === "sucesso"
+            ? "mensagem-sucesso"
+            : tipo === "info"
+                ? "mensagem-info"
+                : "mensagem-erro";
+
+        mensagem.setAttribute("role", "status");
+        mensagem.textContent = texto;
+
+        mensagemArea.appendChild(mensagem);
+    }
+
+    function formatarMoeda(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
+    function formatarData(data) {
+        if (!data) return "-";
+
+        const dataFormatada = new Date(data);
+
+        if (Number.isNaN(dataFormatada.getTime())) return "-";
+
+        return dataFormatada.toLocaleString("pt-BR");
+    }
+
+    function exibirRelatorio(relatorio, desempenho) {
+        const resumo = relatorio.resumo;
+        const itens = relatorio.itens;
+
+        document.querySelector("#relatorioTitulo").textContent =
+            "Relatório de Estoque";
+
+        document.querySelector("#dataGeracao").textContent =
+            formatarData(relatorio.geradoEm);
+
+        document.querySelector("#quantidadeResultados").textContent =
+            `${itens.length} produto(s) encontrado(s)`;
+
+        document.querySelector("#quantidadeTabela").textContent =
+            `${itens.length} registro(s)`;
+
+        document.querySelector("#tempoConsulta").textContent =
+            `Tempo de consulta: ${Number(desempenho?.tempoMs ?? 0)} ms`;
+
+        document.querySelector("#totalProdutos").textContent =
+            resumo.totalItens;
+
+        document.querySelector("#totalUnidades").textContent =
+            resumo.totalUnidades;
+
+        document.querySelector("#produtosZerados").textContent =
+            resumo.produtosZerados;
+
+        document.querySelector("#valorTotal").textContent =
+            formatarMoeda(resumo.valorTotalEstoque);
+
+        corpoRelatorio.replaceChildren();
+
+        if (itens.length === 0) {
+            const linha = document.createElement("tr");
+            const celula = document.createElement("td");
+
+            celula.colSpan = 6;
+            celula.textContent =
+                "Nenhum produto encontrado para os filtros informados.";
+
+            linha.appendChild(celula);
+            corpoRelatorio.appendChild(linha);
+        } else {
+            itens.forEach((item) => {
+                const linha = document.createElement("tr");
+
+                const valores = [
+                    item.sku,
+                    item.nome,
+                    item.categoria,
+                    item.quantidadeEstoque,
+                    item.valorUnitario == null
+                        ? "-"
+                        : formatarMoeda(item.valorUnitario),
+                    formatarMoeda(item.valorEstoque)
+                ];
+
+                valores.forEach((valor, indice) => {
+                    const celula = document.createElement("td");
+
+                    celula.textContent =
+                        valor == null ? "-" : String(valor);
+
+                    if (
+                        indice === 3 &&
+                        Number(item.quantidadeEstoque) === 0
+                    ) {
+                        celula.classList.add("estoque-zerado");
+                    }
+
+                    linha.appendChild(celula);
+                });
+
+                corpoRelatorio.appendChild(linha);
+            });
+        }
+
+        resultadoArea.hidden = false;
+        btnExportarPdf.disabled = false;
+    }
+
+    // GERAR RELATÓRIO
+    formulario.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+
+        mensagemArea.replaceChildren();
+
+        btnGerar.disabled = true;
+        btnGerar.textContent = "Gerando relatório...";
+        btnExportarPdf.disabled = true;
+
+        const filtros = {
+            busca: busca.value.trim(),
+            categoria: categoria.value.trim(),
+            apenasZerados: apenasZerados.checked
+        };
+
+        const parametros = new URLSearchParams({
+            busca: filtros.busca,
+            categoria: filtros.categoria,
+            apenasZerados: String(filtros.apenasZerados)
+        });
+
+        try {
+            const resposta = await fetch(
+                `/api/relatorios/estoque?${parametros.toString()}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "X-User": JSON.stringify(usuario)
+                    }
+                }
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(
+                    resultado.mensagem ||
+                    "Não foi possível gerar o relatório."
+                );
+            }
+
+            if (
+                !resultado.dados ||
+                !resultado.dados.resumo ||
+                !Array.isArray(resultado.dados.itens)
+            ) {
+                throw new Error("O servidor retornou dados inválidos.");
+            }
+
+            exibirRelatorio(
+                resultado.dados,
+                resultado.desempenho
+            );
+
+            mostrarMensagem(
+                resultado.mensagem || "Relatório gerado com sucesso.",
+                "sucesso"
+            );
+
+        } catch (erro) {
+            mostrarMensagem(erro.message, "erro");
+
+        } finally {
+            btnGerar.disabled = false;
+            btnGerar.textContent = "Gerar relatório";
+        }
+    });
+
+    // LIMPAR FILTROS
+    formulario.addEventListener("reset", () => {
+        mensagemArea.replaceChildren();
+        resultadoArea.hidden = true;
+        corpoRelatorio.replaceChildren();
+
+        btnExportarPdf.disabled = true;
+    });
+
+    // EXPORTAR PDF PELO NAVEGADOR
+    btnExportarPdf.addEventListener("click", () => {
+        if (resultadoArea.hidden) {
+            mostrarMensagem(
+                "Gere um relatório antes de exportar o PDF.",
+                "erro"
+            );
+            return;
+        }
+
+        const tituloOriginal = document.title;
+
+        document.title = "StockMaster - Relatorio de Estoque";
+
+        mostrarMensagem(
+            "Na janela de impressão, selecione 'Salvar como PDF' para exportar o relatório.",
+            "info"
+        );
+
+        window.addEventListener("afterprint", () => {
+            document.title = tituloOriginal;
+        }, { once: true });
+
+        window.print();
     });
 });

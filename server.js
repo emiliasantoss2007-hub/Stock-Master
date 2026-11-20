@@ -1,95 +1,86 @@
 require('dotenv').config();
-require('./src/config/database');
-
 const express = require('express');
 const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
-const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
-const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
-
-// Permite receber dados em JSON
-app.use(express.json());
-
-// Permite receber dados de formulários
-app.use(express.urlencoded({ extended: true }));
+// Se existir e você usar:
+// const usuarioRoutes = require('./src/routes/usuarioRoutes');
 
 const sessaoService = require('./src/services/sessaoService');
 
+// Garante conexão com o banco ao subir o servidor
+require('./src/config/database');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
 const COOKIE_SESSAO = 'stockmaster_session';
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Função auxiliar para extrair cookies
 function obterCookie(req, nome) {
-    const cookies = (req.headers.cookie || '').split(';');
+  const cookies = (req.headers.cookie || '').split(';');
 
-    const cookie = cookies
-        .map((parte) => parte.trim())
-        .find((parte) => parte.startsWith(`${nome}=`));
+  const cookie = cookies
+    .map((parte) => parte.trim())
+    .find((parte) => parte.startsWith(`${nome}=`));
 
-    if (!cookie) return null;
+  if (!cookie) return null;
 
-    try {
-        return decodeURIComponent(cookie.slice(nome.length + 1));
-    } catch {
-        return null;
-    }
+  try {
+    return decodeURIComponent(cookie.slice(nome.length + 1));
+  } catch {
+    return null;
+  }
 }
 
+// Middleware de proteção de rotas HTML
 app.use((req, res, next) => {
-    const caminho = req.path.toLowerCase();
+  const caminho = req.path.toLowerCase();
 
-    // Verifica somente solicitações de páginas HTML
-    if (!caminho.endsWith('.html')) {
-        return next();
-    }
+  if (!caminho.endsWith('.html')) {
+    return next();
+  }
 
-    // Páginas que podem ser acessadas sem login
-    const paginasPublicas = [
-        '/html/login.html',
-        '/html/recuperar_senha.html',
-        '/html/redefinir_senha.html'
-    ];
+  const paginasPublicas = [
+    '/html/login.html',
+    '/html/recuperar_senha.html',
+    '/html/redefinir_senha.html'
+  ];
 
-    if (paginasPublicas.includes(caminho)) {
-        return next();
-    }
+  if (paginasPublicas.includes(caminho)) {
+    return next();
+  }
 
-    const token = obterCookie(req, COOKIE_SESSAO);
-    const usuario = token && sessaoService.obterUsuario(token);
+  const token = obterCookie(req, COOKIE_SESSAO);
+  const usuario = token && sessaoService.obterUsuario(token);
 
-    if (!usuario) {
-        return res.redirect('/html/login.html');
-    }
+  if (!usuario) {
+    return res.redirect('/html/login.html');
+  }
 
-    next();
+  next();
 });
 
-// Arquivos estáticos do Front-end
+// Arquivos estáticos
 app.use(express.static(path.join(__dirname, 'views')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
-app.use('/api', relatorioProdutoRoutes);
-app.use('/api', movimentacaoRoutes);
 app.use('/api', produtoRoutes);
+// app.use('/api', usuarioRoutes);
 
-// Rotas de usuários
-app.use(usuarioRoutes);
-
-// Rota inicial → login
+// Rota raiz
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
+  res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
 });
 
-// Inicia o servidor
+// Inicialização do servidor
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

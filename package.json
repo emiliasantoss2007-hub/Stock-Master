@@ -8,9 +8,9 @@
     "test": "tests"
   },
   "scripts": {
-  "start": "node server.js",
-  "test": "jest"
-},
+    "start": "node server.js",
+    "test": "jest --runInBand"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emiliasantoss2007-hub/Stock-Master.git"
@@ -27,7 +27,9 @@
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mysql2": "^3.24.3"
+    "mysql2": "^3.24.3",
+    "pdfkit": "^0.21.0",
+    "side-channel": "^1.1.1"
   },
   "devDependencies": {
     "jest": "^30.5.2"

@@ -35,25 +35,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (origem !== "tecnico") {
 
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-        produtosLink.href = "produtos.html?origem=adm";
-        produtosMenuText.textContent = "Produtos";
+        if (dashboardLink) dashboardLink.href = "dashboard_adm.html";
+        if (breadcrumbLink) breadcrumbLink.href = "dashboard_adm.html";
+        if (produtosLink) produtosLink.href = "produtos.html?origem=adm";
+        if (produtosMenuText) produtosMenuText.textContent = "Produtos";
 
-        entradaLink.href = "entrada_estoque.html?origem=adm";
-        saidaLink.href = "saída_estoque.html?origem=adm";
-        expurgoLink.href = "expurgo_estoque.html?origem=adm";
-        historicoLink.href = "historico_movimentacao.html?origem=adm";
-        relatoriosLink.href = "relatorios.html?origem=adm";
-        perfilLink.href = "perfil.html?origem=adm";
+        if (entradaLink) entradaLink.href = "entrada_estoque.html?origem=adm";
+        if (saidaLink) saidaLink.href = "saída_estoque.html?origem=adm";
+        if (expurgoLink) expurgoLink.href = "expurgo_estoque.html?origem=adm";
+        if (historicoLink) historicoLink.href = "historico_movimentacao.html?origem=adm";
+        if (relatoriosLink) relatoriosLink.href = "relatorios.html?origem=adm";
+        if (perfilLink) perfilLink.href = "perfil.html?origem=adm";
 
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
+        if (userRole) userRole.textContent = "Administrador";
+        if (username) username.textContent = "admin.stockmaster";
+        if (userAvatar) userAvatar.textContent = "AD";
 
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
+        if (usuariosLink) usuariosLink.style.display = "";
+        if (expurgoLink) expurgoLink.style.display = "";
+        if (relatoriosLink) relatoriosLink.style.display = "";
     }
 
 
@@ -63,23 +63,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (origem === "tecnico") {
 
-        dashboardLink.href = "dashboard_tec.html";
-        breadcrumbLink.href = "dashboard_tec.html";
-        produtosLink.href = "produtos.html?origem=tecnico";
-        produtosMenuText.textContent = "Consultar produtos";
+        if (dashboardLink) dashboardLink.href = "dashboard_tec.html";
+        if (breadcrumbLink) breadcrumbLink.href = "dashboard_tec.html";
+        if (produtosLink) produtosLink.href = "produtos.html?origem=tecnico";
+        if (produtosMenuText) produtosMenuText.textContent = "Consultar produtos";
 
-        entradaLink.href = "entrada_estoque.html?origem=tecnico";
-        saidaLink.href = "saída_estoque.html?origem=tecnico";
-        historicoLink.href = "historico_movimentacao.html?origem=tecnico";
-        perfilLink.href = "perfil.html?origem=tecnico";
+        if (entradaLink) entradaLink.href = "entrada_estoque.html?origem=tecnico";
+        if (saidaLink) saidaLink.href = "saída_estoque.html?origem=tecnico";
+        if (historicoLink) historicoLink.href = "historico_movimentacao.html?origem=tecnico";
+        if (perfilLink) perfilLink.href = "perfil.html?origem=tecnico";
 
-        userRole.textContent = "Técnico";
-        username.textContent = "tecnico.stockmaster";
-        userAvatar.textContent = "TC";
+        if (userRole) userRole.textContent = "Técnico";
+        if (username) username.textContent = "tecnico.stockmaster";
+        if (userAvatar) userAvatar.textContent = "TC";
 
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
+        if (usuariosLink) usuariosLink.style.display = "none";
+        if (expurgoLink) expurgoLink.style.display = "none";
+        if (relatoriosLink) relatoriosLink.style.display = "none";
     }
 
 
@@ -90,120 +90,174 @@ document.addEventListener("DOMContentLoaded", () => {
     const select = document.querySelector("#produtoSelect");
     const infoEstoque = document.querySelector("#infoEstoque");
     const mensagemArea = document.querySelector("#mensagemArea");
+    const formulario = document.querySelector("#formSaida");
+    const campoQuantidade = document.querySelector("#quantidade");
 
-    const produtos = [
-    {
-        id: 1,
-        nome: "Display LCD 6.1",
-        sku: "SKU-001",
-        quantidade: 32
-    },
-    {
-        id: 2,
-        nome: "Bateria modelo A20",
-        sku: "SKU-002",
-        quantidade: 45
-    },
-    {
-        id: 3,
-        nome: "Conector USB-C",
-        sku: "SKU-003",
-        quantidade: 3
+    const usuario = JSON.parse(
+        localStorage.getItem("usuarioLogado") || "null"
+    );
+
+    let produtosCarregados = [];
+
+    function obterCabecalhos() {
+        const headers = {
+            "Content-Type": "application/json"
+        };
+
+        if (usuario?.id_usuario) {
+            headers["X-User"] = JSON.stringify({
+                id_usuario: usuario.id_usuario,
+                id_nivel_acesso: usuario.id_nivel_acesso,
+                nome: usuario.nome,
+                login: usuario.login
+            });
+        }
+
+        return headers;
     }
-];
 
-produtos.forEach((p) => {
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.nome} (SKU: ${p.sku})`;
-    select.appendChild(opt);
-});
+    function mostrarMensagem(texto, tipo = "erro") {
+        if (!mensagemArea) return;
+        mensagemArea.innerHTML = "";
+
+        const mensagem = document.createElement("p");
+        mensagem.className = tipo === "sucesso"
+            ? "mensagem-sucesso"
+            : tipo === "alerta"
+                ? "mensagem-alerta"
+                : "mensagem-erro";
+
+        mensagem.textContent = texto;
+        mensagemArea.appendChild(mensagem);
+    }
+
+    async function carregarProdutos() {
+        try {
+            const resposta = await fetch(
+                "/api/produtos/entrada/listar",
+                {
+                    method: "GET",
+                    credentials: "include",
+                    headers: obterCabecalhos()
+                }
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(resultado.mensagem || "Erro ao carregar produtos.");
+            }
+
+            produtosCarregados = Array.isArray(resultado.produtos)
+                ? resultado.produtos
+                : [];
+
+            select.innerHTML = '<option value="">Selecione um produto...</option>';
+
+            produtosCarregados.forEach((produto) => {
+                const opcao = document.createElement("option");
+                opcao.value = produto.id_produto;
+                opcao.textContent = `${produto.nome} (SKU: ${produto.sku})`;
+                select.appendChild(opcao);
+            });
+        } catch (erro) {
+            mostrarMensagem(erro.message || "Não foi possível carregar os produtos.", "erro");
+        }
+    }
 
     select.addEventListener("change", () => {
-        const produto = smGetProdutoPorId(select.value);
-        infoEstoque.textContent = produto ? `Estoque disponível: ${produto.quantidade} unidade(s).` : "";
+        if (!infoEstoque) return;
+        infoEstoque.textContent = "";
+
+        if (!select.value) return;
+
+        const produto = produtosCarregados.find(
+            (item) => String(item.id_produto) === String(select.value)
+        );
+
+        if (produto) {
+            infoEstoque.textContent =
+                `Estoque disponível: ${produto.quantidade_estoque} unidade(s).`;
+        }
     });
 
-    select.addEventListener("change", () => {
-    const produto = produtos.find(
-        (p) => String(p.id) === String(select.value)
-    );
+    formulario.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (mensagemArea) mensagemArea.innerHTML = "";
 
-    infoEstoque.textContent = produto
-        ? `Estoque disponível: ${produto.quantidade} unidade(s).`
-        : "";
-});
+        const idProduto = Number(select.value);
+        const quantidade = Number(campoQuantidade.value);
 
+        if (!Number.isInteger(idProduto) || idProduto <= 0) {
+            mostrarMensagem("Selecione um produto para continuar.", "erro");
+            return;
+        }
 
-document.querySelector("#formSaida").addEventListener("submit", (e) => {
-    e.preventDefault();
+        if (!Number.isInteger(quantidade) || quantidade <= 0) {
+            mostrarMensagem("Informe uma quantidade maior que zero.", "erro");
+            return;
+        }
 
-    mensagemArea.innerHTML = "";
+        const produto = produtosCarregados.find(
+            (p) => Number(p.id_produto) === idProduto
+        );
 
-    const produtoId = select.value;
+        if (!produto) {
+            mostrarMensagem("Produto não encontrado.", "erro");
+            return;
+        }
 
-    const quantidade = Number(
-        document.querySelector("#quantidade").value
-    );
+        // RN10: não permitir saída maior que o estoque disponível
+        if (quantidade > Number(produto.quantidade_estoque)) {
+            mostrarMensagem(
+                `Estoque insuficiente. Disponível: ${produto.quantidade_estoque} unidade(s).`,
+                "alerta"
+            );
+            return;
+        }
 
-    if (!produtoId) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-erro">
-                Selecione um produto para continuar.
-            </p>`;
-        return;
-    }
+        try {
+            const resposta = await fetch("/api/produtos/saida", {
+                method: "POST",
+                credentials: "include",
+                headers: obterCabecalhos(),
+                body: JSON.stringify({
+                    id_produto: idProduto,
+                    quantidade
+                })
+            });
 
-    if (!quantidade || quantidade <= 0) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-erro">
-                Informe uma quantidade maior que zero.
-            </p>`;
-        return;
-    }
+            const resultado = await resposta.json();
 
-    const produto = produtos.find(
-        (p) => String(p.id) === String(produtoId)
-    );
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(resultado.mensagem || "Erro ao registrar saída.");
+            }
 
-    if (!produto) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-erro">
-                Produto não encontrado.
-            </p>`;
-        return;
-    }
+            const novoSaldo = resultado.dados?.quantidade_estoque ?? (Number(produto.quantidade_estoque) - quantidade);
+            let textoSucesso = resultado.mensagem || `Saída de ${quantidade} unidade(s) de "${produto.nome}" registrada com sucesso!`;
 
-    // RN10: não permitir saída maior que o estoque disponível
-    if (quantidade > produto.quantidade) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-alerta">
-                Estoque insuficiente. Disponível:
-                ${produto.quantidade} unidade(s).
-            </p>`;
-        return;
-    }
+            mostrarMensagem(textoSucesso, "sucesso");
 
-    produto.quantidade -= quantidade;
+            if (novoSaldo <= 5 && mensagemArea) {
+                const alerta = document.createElement("p");
+                alerta.className = "mensagem-alerta";
+                alerta.textContent = `Atenção: "${produto.nome}" está com estoque crítico (${novoSaldo} unidade(s)).`;
+                mensagemArea.appendChild(alerta);
+            }
 
-    let html =
-        `<p class="mensagem-sucesso">
-            Saída de ${quantidade} unidade(s) de
-            "${produto.nome}" registrada com sucesso!
-        </p>`;
+            formulario.reset();
+            if (infoEstoque) infoEstoque.textContent = "";
+            await carregarProdutos();
+        } catch (erro) {
+            mostrarMensagem(erro.message || "Erro ao registrar saída.", "erro");
+        }
+    });
 
-    if (produto.quantidade <= 5) {
-        html +=
-            `<p class="mensagem-alerta">
-                Atenção: "${produto.nome}" está com estoque crítico
-                (${produto.quantidade} unidade(s)).
-            </p>`;
-    }
+    formulario.addEventListener("reset", () => {
+        if (mensagemArea) mensagemArea.innerHTML = "";
+        if (infoEstoque) infoEstoque.textContent = "";
+    });
 
-    mensagemArea.innerHTML = html;
-
-    document.querySelector("#formSaida").reset();
-    infoEstoque.textContent = "";
-});
+    carregarProdutos();
 
 });

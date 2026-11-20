@@ -154,6 +154,7 @@ loginForm.addEventListener(
 
             if (resultado.success) {
 
+                // Armazenamento em sessionStorage (integração develop)
                 sessionStorage.setItem(
                     "stockmaster.usuario",
                     JSON.stringify(resultado.data)
@@ -163,8 +164,15 @@ loginForm.addEventListener(
                     resultado.accessToken
                 );
 
-                const perfil =
-                    resultado.data.perfil;
+                const perfil = resultado.data.perfil;
+
+                // Salvar usuário logado no localStorage (integração HEAD)
+                localStorage.setItem("usuarioLogado", JSON.stringify({
+                    id_usuario: resultado.data.id_usuario,
+                    id_nivel_acesso: perfil.id,
+                    nome: resultado.data.nome,
+                    login: resultado.data.login
+                }));
 
                 if (perfil.id === 1) {
 
