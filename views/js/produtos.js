@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ========================================
@@ -80,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
         produtosMenuText.textContent = "Consultar produtos";
         breadcrumbPage.textContent = "Produtos";
 
-        // Esconde funções exclusivas do administrador
         usuariosLink.style.display = "none";
         expurgoLink.style.display = "none";
         relatoriosLink.style.display = "none";
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const situationFilter =
         document.querySelector("#filterSituation");
 
-    const rows = Array.from(
+    let rows = Array.from(
         document.querySelectorAll("#productsTableBody tr")
     );
 
@@ -146,6 +146,224 @@ document.addEventListener("DOMContentLoaded", () => {
     const productsMessage =
         document.querySelector("#productsMessage");
 
+
+    // ========================================
+    // ELEMENTOS DO MODAL DE EXCLUSÃO
+    // ========================================
+
+    const deleteModal =
+        document.querySelector("#deleteProductModal");
+
+    const deleteProductName =
+        document.querySelector("#deleteProductName");
+
+    const deleteProductSku =
+        document.querySelector("#deleteProductSku");
+
+    const deleteProductId =
+        document.querySelector("#deleteProductId");
+
+    const deleteProductFeedback =
+        document.querySelector("#deleteProductFeedback");
+
+    const cancelDeleteProduct =
+        document.querySelector("#cancelDeleteProduct");
+
+    const confirmDeleteProduct =
+        document.querySelector("#confirmDeleteProduct");
+
+    let selectedProductId = null;
+    let selectedProductRow = null;
+
+
+    // ========================================
+    // MENSAGENS DO MODAL
+    // ========================================
+
+    function setDeleteFeedback(message, type = "") {
+
+        deleteProductFeedback.textContent = message;
+
+        deleteProductFeedback.className = type
+            ? `product-feedback product-feedback-${type}`
+            : "product-feedback";
+    }
+
+
+    // ========================================
+    // ABRIR MODAL
+    // ========================================
+
+    function openDeleteModal(row) {
+
+        selectedProductRow = row;
+        selectedProductId = row.dataset.productId;
+
+        deleteProductName.textContent =
+            row.querySelector(".product-cell strong").textContent;
+
+        deleteProductSku.textContent =
+            row.querySelector("td:nth-child(2)").textContent;
+
+        deleteProductId.textContent = selectedProductId;
+
+        setDeleteFeedback("");
+
+        confirmDeleteProduct.disabled = false;
+
+        deleteModal.hidden = false;
+
+        document.body.classList.add("product-modal-open");
+    }
+
+
+    // ========================================
+    // FECHAR MODAL
+    // ========================================
+
+    function closeDeleteModal() {
+
+        deleteModal.hidden = true;
+
+        document.body.classList.remove("product-modal-open");
+
+        selectedProductId = null;
+        selectedProductRow = null;
+    }
+
+
+    // ========================================
+    // BOTÕES DE EXCLUSÃO
+    // ========================================
+
+    const deleteButtons =
+        document.querySelectorAll(".product-action-delete");
+
+    if (origem === "tecnico") {
+
+        deleteButtons.forEach((button) => {
+            button.hidden = true;
+        });
+
+    }
+
+    deleteButtons.forEach((button) => {
+
+        button.addEventListener("click", () => {
+
+            const row = button.closest("tr");
+
+            if (row) {
+                openDeleteModal(row);
+            }
+
+        });
+
+    });
+
+
+    // ========================================
+    // BOTÃO CANCELAR
+    // ========================================
+
+    cancelDeleteProduct.addEventListener(
+        "click",
+        closeDeleteModal
+    );
+
+
+    // ========================================
+    // FECHAR AO CLICAR FORA DO MODAL
+    // ========================================
+
+    deleteModal.addEventListener("click", (event) => {
+
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+
+    });
+
+
+    // ========================================
+    // CONFIRMAR EXCLUSÃO
+    // ========================================
+
+    confirmDeleteProduct.addEventListener("click", async () => {
+
+        if (!selectedProductId || !selectedProductRow) {
+            return;
+        }
+
+        const token =
+            sessionStorage.getItem("stockmaster.accessToken");
+
+        if (!token) {
+
+            setDeleteFeedback(
+                "Sessão expirada. Faça login novamente.",
+                "error"
+            );
+
+            return;
+        }
+
+        confirmDeleteProduct.disabled = true;
+
+        setDeleteFeedback("Excluindo produto...", "pending");
+
+        try {
+
+            const response = await fetch(
+                `/api/produtos/${encodeURIComponent(selectedProductId)}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Accept": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || data.sucesso === false) {
+
+                throw new Error(
+                    data.mensagem || "Não foi possível excluir o produto."
+                );
+
+            }
+
+            selectedProductRow.remove();
+
+            rows = rows.filter(
+                (row) => row !== selectedProductRow
+            );
+
+            closeDeleteModal();
+
+            filterProducts();
+
+            productsMessage.textContent =
+                data.mensagem || "Produto excluído com sucesso.";
+
+        } catch (erro) {
+
+            setDeleteFeedback(erro.message, "error");
+
+        } finally {
+
+            confirmDeleteProduct.disabled = false;
+
+        }
+
+    });
+
+
+    // ========================================
+    // FILTRAR PRODUTOS
+    // ========================================
 
     function filterProducts() {
 
@@ -184,6 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (shouldShow) {
                 visibleRows++;
             }
+
         });
 
         productsCount.textContent =
@@ -195,6 +414,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "";
     }
 
+
+    // ========================================
+    // EVENTOS DOS FILTROS
+    // ========================================
 
     searchInput.addEventListener(
         "input",

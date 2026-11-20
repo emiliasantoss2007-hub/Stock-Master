@@ -87,8 +87,78 @@ function cadastrarProduto(dados, callback) {
     });
 }
 
+function buscarPorId(id) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT id_produto, sku, nome, categoria,
+                   quantidade_estoque, valor
+            FROM produto
+            WHERE id_produto = ?
+        `;
+
+        connection.query(sql, [id], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados[0] || null);
+        });
+    });
+}
+
+function verificarSaldo(idProduto) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT quantidade_estoque
+            FROM produto
+            WHERE id_produto = ?
+        `;
+
+        connection.query(sql, [idProduto], (erro, resultados) => {
+            if (erro) return reject(erro);
+
+            const produto = resultados[0];
+            if (!produto) return resolve(null);
+
+            resolve(Number(produto.quantidade_estoque));
+        });
+    });
+}
+
+function verificarMovimentacoes(idProduto) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT COUNT(*) AS total
+            FROM movimentacao
+            WHERE id_produto = ?
+        `;
+
+        connection.query(sql, [idProduto], (erro, resultados) => {
+            if (erro) return reject(erro);
+
+            resolve(Number(resultados[0].total));
+        });
+    });
+}
+
+function excluir(idProduto) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            DELETE FROM produto
+            WHERE id_produto = ?
+        `;
+
+        connection.query(sql, [idProduto], (erro, resultado) => {
+            if (erro) return reject(erro);
+
+            resolve(resultado.affectedRows > 0);
+        });
+    });
+}
+
 module.exports = {
     cadastrarProduto,
     verificarSKU,
-    verificarSku
+    verificarSku,
+    buscarPorId,
+    verificarSaldo,
+    verificarMovimentacoes,
+    excluir
 };
