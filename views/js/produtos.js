@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ========================================
@@ -452,6 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (shouldShow) {
                 visibleRows++;
             }
+
         });
 
         if (productsCount) {

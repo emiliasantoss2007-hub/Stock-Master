@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -7,18 +8,17 @@
     <meta name="description" content="Consulta de produtos StockMaster">
     <title>StockMaster | Consultar produtos</title>
 
-    <!-- CONEXÃO CSS: layout geral -->
+    <!-- CSS -->
     <link rel="stylesheet" href="../css/dashboard.css">
-
-    <!-- CONEXÃO CSS: tabela e filtros de produtos -->
     <link rel="stylesheet" href="../css/produtos.css">
 
-    <!-- CONEXÃO JS: busca e filtros -->
+    <!-- JavaScript -->
     <script src="../js/produtos.js" defer></script>
 </head>
 
 <body>
     <div class="dashboard-layout">
+
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark">SM</div>
@@ -29,7 +29,9 @@
             </div>
 
             <p class="nav-title">Menu principal</p>
+
             <nav class="sidebar-nav" aria-label="Navegação">
+
 
                 <a href="dashboard_adm.html" id="dashboardLink">
                     <span class="nav-icon">⌂</span>Dashboard</a>
@@ -39,7 +41,10 @@
 
                 <a href="produtos.html" class="active">
                     <span class="nav-icon">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="20" height="20"
+                            fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linejoin="round"
+                            aria-hidden="true">
                             <path d="M12 3 21 8 12 13 3 8 12 3Z"/>
                             <path d="M3 8v9l9 5 9-5V8"/>
                             <path d="M12 13v9"/>
@@ -65,15 +70,13 @@
             </nav>
 
             <div class="sidebar-bottom">
-                <!-- HREF DESTINO FUTURO -->
                 <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
-
-                <!-- HREF: produtos.html -> login.html -->
                 <a href="login.html">↪ Sair</a>
             </div>
         </aside>
 
         <main class="main-area">
+
             <header class="topbar">
                 <div class="topbar-context">
                     <small>Área autenticada</small>
@@ -95,6 +98,7 @@
                     <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
                     <span id="breadcrumbPage">Produtos</span>
                 </div>
+                </div>
 
                 <header class="page-header">
                     <div>
@@ -110,6 +114,7 @@
                 </header>
 
                 <section class="product-toolbar" aria-label="Filtros de produtos">
+
                     <div class="product-toolbar-field">
                         <label for="searchProduct">Buscar produto</label>
                         <input type="search" id="searchProduct" placeholder="Nome, SKU ou categoria">
@@ -134,9 +139,11 @@
                             <option value="Crítico">Estoque crítico</option>
                         </select>
                     </div>
+
                 </section>
 
                 <section class="panel">
+
                     <div class="panel-header">
                         <h2>Produtos cadastrados</h2>
                         <span id="productsCount">1 produto</span>
@@ -146,6 +153,7 @@
 
                     <div class="table-wrapper">
                         <table class="product-table">
+
                             <thead>
                                 <tr>
                                     <th>Produto</th>
@@ -189,11 +197,60 @@
                                         </div>
                                     </td>
                                 </tr>
+
                             </tbody>
                         </table>
                     </div>
                 </section>
             </section>
+
+            <!-- MODAL DE EXCLUSÃO DE PRODUTO -->
+            <div id="deleteProductModal"
+                 class="product-modal-backdrop"
+                 hidden>
+
+                <div class="product-confirm-modal"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="deleteProductTitle">
+
+                    <div class="product-confirm-icon" aria-hidden="true">!</div>
+
+                    <h2 id="deleteProductTitle">Excluir produto</h2>
+
+                    <p>Tem certeza de que deseja excluir este produto?</p>
+
+                    <div class="product-confirm-identity">
+                        <strong id="deleteProductName"></strong>
+                        <span id="deleteProductSku"></span>
+                        <small id="deleteProductId"></small>
+                    </div>
+
+                    <p class="product-confirm-warning">
+                        A exclusão não poderá ser desfeita.
+                    </p>
+
+                    <p id="deleteProductFeedback"
+                       class="product-feedback"
+                       aria-live="polite"></p>
+
+                    <div class="product-confirm-actions">
+                        <button type="button"
+                                id="cancelDeleteProduct"
+                                class="product-button-secondary">
+                            Cancelar
+                        </button>
+
+                        <button type="button"
+                                id="confirmDeleteProduct"
+                                class="product-button-danger">
+                            Excluir produto
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
         </main>
     </div>
 
