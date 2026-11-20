@@ -44,21 +44,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (origem !== "tecnico") {
 
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
+        if (dashboardLink) dashboardLink.href = "dashboard_adm.html";
+        if (breadcrumbLink) breadcrumbLink.href = "dashboard_adm.html";
 
-        cadastrarProdutoLink.href = "cadastrar_produto.html?origem=adm";
-        entradaLink.href = "entrada_estoque.html?origem=adm";
+        if (cadastrarProdutoLink) cadastrarProdutoLink.href = "cadastrar_produto.html?origem=adm";
+        if (entradaLink) entradaLink.href = "entrada_estoque.html?origem=adm";
 
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
+        if (userRole) userRole.textContent = "Administrador";
+        if (username) username.textContent = "admin.stockmaster";
 
-        produtosMenuText.textContent = "Produtos";
-        breadcrumbPage.textContent = "Produtos";
+        if (produtosMenuText) produtosMenuText.textContent = "Produtos";
+        if (breadcrumbPage) breadcrumbPage.textContent = "Produtos";
 
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
+        if (usuariosLink) usuariosLink.style.display = "";
+        if (expurgoLink) expurgoLink.style.display = "";
+        if (relatoriosLink) relatoriosLink.style.display = "";
     }
 
 
@@ -68,22 +68,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (origem === "tecnico") {
 
-        dashboardLink.href = "dashboard_tec.html";
-        breadcrumbLink.href = "dashboard_tec.html";
+        if (dashboardLink) dashboardLink.href = "dashboard_tec.html";
+        if (breadcrumbLink) breadcrumbLink.href = "dashboard_tec.html";
 
-        cadastrarProdutoLink.href = "cadastrar_produto.html?origem=tecnico";
-        entradaLink.href = "entrada_estoque.html?origem=tecnico";
+        if (cadastrarProdutoLink) cadastrarProdutoLink.href = "cadastrar_produto.html?origem=tecnico";
+        if (entradaLink) entradaLink.href = "entrada_estoque.html?origem=tecnico";
 
-        userRole.textContent = "Técnico";
-        username.textContent = "tecnico.stockmaster";
+        if (userRole) userRole.textContent = "Técnico";
+        if (username) username.textContent = "tecnico.stockmaster";
 
-        produtosMenuText.textContent = "Consultar produtos";
-        breadcrumbPage.textContent = "Produtos";
+        if (produtosMenuText) produtosMenuText.textContent = "Consultar produtos";
+        if (breadcrumbPage) breadcrumbPage.textContent = "Produtos";
 
         // Esconde funções exclusivas do administrador
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
+        if (usuariosLink) usuariosLink.style.display = "none";
+        if (expurgoLink) expurgoLink.style.display = "none";
+        if (relatoriosLink) relatoriosLink.style.display = "none";
 
         document.querySelectorAll(".product-action-delete").forEach((button) => {
             button.hidden = true;
@@ -149,13 +149,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const productsMessage =
         document.querySelector("#productsMessage");
-        
+
+
     // ========================================
     // EXCLUSÃO DE PRODUTOS
     // ========================================
 
     const deleteModal = document.querySelector("#deleteProductModal");
-    const deleteModalPanel = deleteModal.querySelector(".product-confirm-modal");
+    const deleteModalPanel = deleteModal?.querySelector(".product-confirm-modal") || null;
     const deleteProductName = document.querySelector("#deleteProductName");
     const deleteProductSku = document.querySelector("#deleteProductSku");
     const deleteProductId = document.querySelector("#deleteProductId");
@@ -168,13 +169,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastFocusedElement = null;
 
     function showDeleteFeedback(message, type = "") {
+        if (!deleteProductFeedback) return;
         deleteProductFeedback.textContent = message;
         deleteProductFeedback.className =
             `product-feedback${type ? ` product-feedback-${type}` : ""}`;
     }
 
     function openDeleteModal(button) {
-        if (origem === "tecnico") return;
+        if (origem === "tecnico" || !deleteModal) return;
 
         const row = button.closest("tr");
         if (!row) return;
@@ -195,29 +197,38 @@ document.addEventListener("DOMContentLoaded", () => {
             cells[1]?.textContent.trim()
             || "SKU não informado";
 
-        deleteProductName.textContent = productName;
-        deleteProductSku.textContent = sku;
-        deleteProductId.textContent =
-            `ID do produto: ${selectedProductId || "não informado"}`;
+        if (deleteProductName) deleteProductName.textContent = productName;
+        if (deleteProductSku) deleteProductSku.textContent = sku;
+        if (deleteProductId) {
+            deleteProductId.textContent =
+                `ID do produto: ${selectedProductId || "não informado"}`;
+        }
 
         showDeleteFeedback("");
 
-        confirmDeleteProduct.disabled = false;
-        cancelDeleteProduct.disabled = false;
-
-        cancelDeleteProduct.textContent = "Cancelar";
-        confirmDeleteProduct.textContent = "Confirmar exclusão";
+        if (confirmDeleteProduct) {
+            confirmDeleteProduct.disabled = false;
+            confirmDeleteProduct.textContent = "Confirmar exclusão";
+        }
+        if (cancelDeleteProduct) {
+            cancelDeleteProduct.disabled = false;
+            cancelDeleteProduct.textContent = "Cancelar";
+        }
 
         deleteModal.hidden = false;
         document.body.classList.add("product-modal-open");
 
-        confirmDeleteProduct.focus();
+        if (confirmDeleteProduct) {
+            confirmDeleteProduct.focus();
+        }
     }
 
     function closeDeleteModal() {
+        if (!deleteModal) return;
+
         // Não permite fechar enquanto a solicitação está em andamento.
-        if (confirmDeleteProduct.disabled &&
-            !deleteProductFeedback.classList.contains("product-feedback-success")) {
+        if (confirmDeleteProduct?.disabled &&
+            !deleteProductFeedback?.classList.contains("product-feedback-success")) {
             return;
         }
 
@@ -238,172 +249,182 @@ document.addEventListener("DOMContentLoaded", () => {
         button.addEventListener("click", () => openDeleteModal(button));
     });
 
-    cancelDeleteProduct.addEventListener("click", closeDeleteModal);
+    if (cancelDeleteProduct) {
+        cancelDeleteProduct.addEventListener("click", closeDeleteModal);
+    }
 
-    // Permite fechar clicando no fundo do modal.
-    deleteModal.addEventListener("click", (event) => {
-        if (event.target === deleteModal) {
-            closeDeleteModal();
-        }
-    });
+    if (deleteModal) {
+        // Permite fechar clicando no fundo do modal.
+        deleteModal.addEventListener("click", (event) => {
+            if (event.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
 
-    // Permite fechar com Escape.
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && !deleteModal.hidden) {
-            closeDeleteModal();
-        }
-    });
+        // Permite fechar com Escape.
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && !deleteModal.hidden) {
+                closeDeleteModal();
+            }
+        });
+    }
 
     // Confirma e envia a solicitação de exclusão.
+    if (confirmDeleteProduct) {
         confirmDeleteProduct.addEventListener("click", async () => {
-        if (!selectedProductId || !selectedProductRow) {
+            if (!selectedProductId || !selectedProductRow) {
+                showDeleteFeedback(
+                    "Não foi possível identificar o produto selecionado.",
+                    "error"
+                );
+                return;
+            }
+
+            confirmDeleteProduct.disabled = true;
+            if (cancelDeleteProduct) cancelDeleteProduct.disabled = true;
+            confirmDeleteProduct.textContent = "Excluindo...";
+
             showDeleteFeedback(
-                "Não foi possível identificar o produto selecionado.",
-                "error"
+                "Enviando solicitação de exclusão...",
+                "pending"
             );
-            return;
-        }
 
-        confirmDeleteProduct.disabled = true;
-        cancelDeleteProduct.disabled = true;
-        confirmDeleteProduct.textContent = "Excluindo...";
+            // Usuário logado (admin) — mesmo padrão dos testes do RF-10
+            const usuarioLogado = {
+                id_usuario: 2,
+                id_nivel_acesso: 1,
+                nome: "Administrador"
+            };
 
-        showDeleteFeedback(
-            "Enviando solicitação de exclusão...",
-            "pending"
-        );
+            try {
+                const response = await fetch(
+                    `/api/produtos/${encodeURIComponent(selectedProductId)}`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Accept": "application/json",
+                            "Content-Type": "application/json",
+                            "X-User": JSON.stringify(usuarioLogado)
+                        }
+                    }
+                );
 
-        // Usuário logado (admin) — mesmo padrão dos testes do RF-10
-        const usuarioLogado = {
-            id_usuario: 2,
-            id_nivel_acesso: 1,
-            nome: "Administrador"
-        };
+                let data = {};
+                const responseText = await response.text();
 
-        try {
-            const response = await fetch(
-                `/api/produtos/${encodeURIComponent(selectedProductId)}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        "Accept": "application/json",
-                        "Content-Type": "application/json",
-                        "X-User": JSON.stringify(usuarioLogado)
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch {
+                        if (response.ok) {
+                            throw new Error(
+                                "O servidor retornou uma resposta inválida."
+                            );
+                        }
                     }
                 }
-            );
 
-            let data = {};
-            const responseText = await response.text();
-
-            if (responseText) {
-                try {
-                    data = JSON.parse(responseText);
-                } catch {
-                    if (response.ok) {
+                if (!response.ok || data.sucesso === false) {
+                    if (response.status === 403) {
                         throw new Error(
-                            "O servidor retornou uma resposta inválida."
+                            data.mensagem ||
+                            "Acesso negado. Apenas administradores podem excluir produtos."
                         );
                     }
-                }
-            }
 
-            if (!response.ok || data.sucesso === false) {
-                if (response.status === 403) {
+                    if (response.status === 404) {
+                        throw new Error(
+                            data.mensagem ||
+                            "Produto não encontrado."
+                        );
+                    }
+
+                    if (response.status === 409) {
+                        throw new Error(
+                            data.mensagem ||
+                            "Não é possível excluir o produto (estoque ou movimentações)."
+                        );
+                    }
+
                     throw new Error(
                         data.mensagem ||
-                        "Acesso negado. Apenas administradores podem excluir produtos."
+                        "Não foi possível excluir o produto. Tente novamente."
                     );
                 }
 
-                if (response.status === 404) {
-                    throw new Error(
-                        data.mensagem ||
-                        "Produto não encontrado."
-                    );
-                }
+                const productName = deleteProductName?.textContent || "Produto";
+                const rowToRemove = selectedProductRow;
 
-                if (response.status === 409) {
-                    throw new Error(
-                        data.mensagem ||
-                        "Não é possível excluir o produto (estoque ou movimentações)."
-                    );
-                }
+                rowToRemove.remove();
+                rows = rows.filter((row) => row !== rowToRemove);
+                filterProducts();
 
-                throw new Error(
+                showDeleteFeedback(
                     data.mensagem ||
-                    "Não foi possível excluir o produto. Tente novamente."
+                    `Produto "${productName}" excluído com sucesso.`,
+                    "success"
                 );
+
+                confirmDeleteProduct.textContent = "Concluído";
+                if (cancelDeleteProduct) {
+                    cancelDeleteProduct.disabled = false;
+                    cancelDeleteProduct.textContent = "Fechar";
+                }
+
+                selectedProductRow = null;
+                selectedProductId = null;
+
+            } catch (error) {
+                console.error("Erro ao excluir produto:", error);
+
+                showDeleteFeedback(
+                    error.message ||
+                    "Falha de comunicação. Verifique a conexão e tente novamente.",
+                    "error"
+                );
+
+                confirmDeleteProduct.disabled = false;
+                if (cancelDeleteProduct) cancelDeleteProduct.disabled = false;
+                confirmDeleteProduct.textContent = "Tentar novamente";
             }
-
-            const productName = deleteProductName.textContent;
-            const rowToRemove = selectedProductRow;
-
-            rowToRemove.remove();
-            rows = rows.filter((row) => row !== rowToRemove);
-            filterProducts();
-
-            showDeleteFeedback(
-                data.mensagem ||
-                `Produto "${productName}" excluído com sucesso.`,
-                "success"
-            );
-
-            confirmDeleteProduct.textContent = "Concluído";
-            cancelDeleteProduct.disabled = false;
-            cancelDeleteProduct.textContent = "Fechar";
-
-            selectedProductRow = null;
-            selectedProductId = null;
-
-        } catch (error) {
-            console.error("Erro ao excluir produto:", error);
-
-            showDeleteFeedback(
-                error.message ||
-                "Falha de comunicação. Verifique a conexão e tente novamente.",
-                "error"
-            );
-
-            confirmDeleteProduct.disabled = false;
-            cancelDeleteProduct.disabled = false;
-            confirmDeleteProduct.textContent = "Tentar novamente";
-        }
-    });
+        });
+    }
 
     // Mantém o foco dentro do modal durante a navegação por teclado.
-    deleteModalPanel.addEventListener("keydown", (event) => {
-        if (event.key !== "Tab") return;
+    if (deleteModalPanel) {
+        deleteModalPanel.addEventListener("keydown", (event) => {
+            if (event.key !== "Tab") return;
 
-        const focusable = Array.from(
-            deleteModalPanel.querySelectorAll("button:not([disabled])")
-        );
+            const focusable = Array.from(
+                deleteModalPanel.querySelectorAll("button:not([disabled])")
+            );
 
-        if (!focusable.length) return;
+            if (!focusable.length) return;
 
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
 
-        if (event.shiftKey && document.activeElement === first) {
-            event.preventDefault();
-            last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-            event.preventDefault();
-            first.focus();
-        }
-    });
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
+    }
 
 
     function filterProducts() {
 
         const search =
-            searchInput.value.trim().toLowerCase();
+            searchInput?.value.trim().toLowerCase() || "";
 
         const category =
-            categoryFilter.value;
+            categoryFilter?.value || "";
 
         const situation =
-            situationFilter.value;
+            situationFilter?.value || "";
 
         let visibleRows = 0;
 
@@ -411,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const matchesSearch =
                 !search ||
-                row.dataset.search.includes(search);
+                (row.dataset.search || "").includes(search);
 
             const matchesCategory =
                 !category ||
@@ -433,29 +454,30 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        productsCount.textContent =
-            `${visibleRows} produto(s)`;
+        if (productsCount) {
+            productsCount.textContent =
+                `${visibleRows} produto(s)`;
+        }
 
-        productsMessage.textContent =
-            visibleRows === 0
-                ? "Nenhum produto encontrado para os filtros informados."
-                : "";
+        if (productsMessage) {
+            productsMessage.textContent =
+                visibleRows === 0
+                    ? "Nenhum produto encontrado para os filtros informados."
+                    : "";
+        }
     }
 
 
-    searchInput.addEventListener(
-        "input",
-        filterProducts
-    );
+    if (searchInput) {
+        searchInput.addEventListener("input", filterProducts);
+    }
 
-    categoryFilter.addEventListener(
-        "change",
-        filterProducts
-    );
+    if (categoryFilter) {
+        categoryFilter.addEventListener("change", filterProducts);
+    }
 
-    situationFilter.addEventListener(
-        "change",
-        filterProducts
-    );
+    if (situationFilter) {
+        situationFilter.addEventListener("change", filterProducts);
+    }
 
 });

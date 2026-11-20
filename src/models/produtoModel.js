@@ -1,5 +1,7 @@
 const db = require('../config/database');
 
+const PDFDocument = require('pdfkit');
+
 // --- Funções de Verificação e Cadastro (branch develop) ---
 
 function verificarSKU(sku, callback) {
@@ -531,6 +533,162 @@ function prepararDadosExportacaoPdf(filtros = {}) {
   });
 }
 
+/**
+ * RF-20 — Gera o PDF do relatório de estoque
+ * Retorna um Buffer com o arquivo PDF
+ */
+function gerarRelatorioEstoquePdf(filtros = {}) {
+  return prepararDadosExportacaoPdf(filtros).then((dados) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const doc = new PDFDocument({
+          size: 'A4',
+          margin: 50,
+          info: {
+            Title: dados.titulo,
+            Author: dados.sistema
+          }
+        });
+
+        const chunks = [];
+        doc.on('data', (chunk) => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+
+        // ---- Cabeçalho ----
+        doc.fontSize(16).font('Helvetica-Bold').text(dados.sistema, { align: 'center' });
+        doc.moveDown(0.3);
+        doc.fontSize(13).text(dados.titulo, { align: 'center' });
+        doc.moveDown(0.5);
+
+        doc.fontSize(9).font('Helvetica');
+        const dataLocal = new Date(dados.geradoEm).toLocaleString('pt-BR');
+        doc.text(`Gerado em: ${dataLocal}`);
+
+        const f = dados.filtros || {};
+        const partesFiltro = [];
+        if (f.busca) partesFiltro.push(`Busca: ${f.busca}`);
+        if (f.categoria) partesFiltro.push(`Categoria: ${f.categoria}`);
+        if (f.apenasZerados) partesFiltro.push('Apenas saldo zero');
+        doc.text(
+          partesFiltro.length
+            ? `Filtros: ${partesFiltro.join(' | ')}`
+            : 'Filtros: nenhum'
+        );
+
+        doc.moveDown(0.8);
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+        doc.moveDown(0.8);
+
+        // ---- Resumo ----
+        doc.fontSize(11).font('Helvetica-Bold').text('Resumo');
+        doc.moveDown(0.3);
+        doc.fontSize(10).font('Helvetica');
+        const r = dados.resumo;
+        doc.text(`Total de produtos: ${r.totalItens}`);
+        doc.text(`Total de unidades: ${r.totalUnidades}`);
+        doc.text(
+          `Valor total em estoque: R$ ${Number(r.valorTotalEstoque).toFixed(2)}`
+        );
+        doc.text(`Produtos com saldo zero: ${r.produtosZerados}`);
+
+        doc.moveDown(0.8);
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+        doc.moveDown(0.8);
+
+        // ---- Tabela de itens ----
+        doc.fontSize(11).font('Helvetica-Bold').text('Detalhamento');
+        doc.moveDown(0.4);
+
+        const colX = {
+          sku: 50,
+          nome: 110,
+          categoria: 250,
+          qtd: 340,
+          unit: 400,
+          total: 470
+        };
+
+        // Cabeçalho da tabela
+        doc.fontSize(8).font('Helvetica-Bold');
+        const yHeader = doc.y;
+        doc.text('SKU', colX.sku, yHeader, { width: 55 });
+        doc.text('Nome', colX.nome, yHeader, { width: 130 });
+        doc.text('Categoria', colX.categoria, yHeader, { width: 85 });
+        doc.text('Qtd', colX.qtd, yHeader, { width: 50 });
+        doc.text('Vl. unit.', colX.unit, yHeader, { width: 60 });
+        doc.text('Vl. est.', colX.total, yHeader, { width: 70 });
+        doc.moveDown(0.3);
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+        doc.moveDown(0.3);
+
+        // Linhas
+        doc.font('Helvetica').fontSize(8);
+        const linhas = dados.linhas || [];
+
+        if (linhas.length === 0) {
+          doc.text('Nenhum produto encontrado para os filtros informados.');
+        } else {
+          linhas.forEach((item) => {
+            // Quebra de página se necessário (layout + paginação)
+            if (doc.y > 720) {
+              doc.addPage();
+              doc.fontSize(8).font('Helvetica-Bold');
+              const yh = doc.y;
+              doc.text('SKU', colX.sku, yh, { width: 55 });
+              doc.text('Nome', colX.nome, yh, { width: 130 });
+              doc.text('Categoria', colX.categoria, yh, { width: 85 });
+              doc.text('Qtd', colX.qtd, yh, { width: 50 });
+              doc.text('Vl. unit.', colX.unit, yh, { width: 60 });
+              doc.text('Vl. est.', colX.total, yh, { width: 70 });
+              doc.moveDown(0.3);
+              doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+              doc.moveDown(0.3);
+              doc.font('Helvetica').fontSize(8);
+            }
+
+            const y = doc.y;
+            const unit =
+              item.valorUnitario != null
+                ? Number(item.valorUnitario).toFixed(2)
+                : '-';
+            const total = Number(item.valorEstoque || 0).toFixed(2);
+
+            doc.text(String(item.sku || ''), colX.sku, y, { width: 55 });
+            doc.text(String(item.nome || ''), colX.nome, y, { width: 130 });
+            doc.text(String(item.categoria || ''), colX.categoria, y, {
+              width: 85
+            });
+            doc.text(String(item.quantidadeEstoque ?? ''), colX.qtd, y, {
+              width: 50
+            });
+            doc.text(unit, colX.unit, y, { width: 60 });
+            doc.text(total, colX.total, y, { width: 70 });
+            doc.moveDown(0.55);
+          });
+        }
+
+        // ---- Rodapé em todas as páginas ----
+        const range = doc.bufferedPageRange();
+        for (let i = 0; i < range.count; i++) {
+          doc.switchToPage(range.start + i);
+          doc.fontSize(8).font('Helvetica');
+          doc.text(
+            `StockMaster — Relatório de Estoque — Página ${i + 1} de ${range.count}`,
+            50,
+            780,
+            { align: 'center', width: 495 }
+          );
+        }
+
+        doc.end();
+      } catch (erro) {
+        reject(erro);
+      }
+    });
+  });
+}
+
 module.exports = {
   cadastrarProduto,
   verificarSKU,
@@ -543,5 +701,6 @@ module.exports = {
   registrarEntrada,
   registrarExpurgo,
   listarRelatorioEstoque,
-  prepararDadosExportacaoPdf
+  prepararDadosExportacaoPdf,
+  gerarRelatorioEstoquePdf
 };

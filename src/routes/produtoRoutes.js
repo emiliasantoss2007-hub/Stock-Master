@@ -24,7 +24,14 @@ router.post('/produtos/entrada', auth, produtoController.registrarEntrada);
 router.get('/produtos/expurgo/listar', auth, produtoController.listarParaExpurgo);
 router.post('/produtos/expurgo', auth, produtoController.registrarExpurgo);
 
-// RF-17 — Relatório de estoque
+// RF-17 — Relatório de estoque (JSON)
 router.get('/relatorios/estoque', auth, produtoController.relatorioEstoque);
+
+// RF-20 — Exportar relatório de estoque em PDF
+router.get(
+  '/relatorios/estoque/pdf',
+  auth,
+  produtoController.exportarRelatorioEstoquePdf
+);
 
 module.exports = router;

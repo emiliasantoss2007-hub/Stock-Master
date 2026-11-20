@@ -415,6 +415,44 @@ const relatorioEstoque = async (req, res) => {
   }
 };
 
+// RF-20 — EXPORTAR RELATÓRIO DE ESTOQUE EM PDF
+const exportarRelatorioEstoquePdf = async (req, res) => {
+  try {
+    const usuarioLogado = req.usuario;
+
+    if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+      return res.status(403).json({
+        sucesso: false,
+        mensagem:
+          'Acesso negado. Apenas administradores podem exportar relatórios em PDF.'
+      });
+    }
+
+    const { busca, categoria, apenasZerados } = req.query;
+    const filtros = { busca, categoria, apenasZerados };
+
+    const pdfBuffer = await ProdutoModel.gerarRelatorioEstoquePdf(filtros);
+
+    const dataArquivo = new Date().toISOString().slice(0, 10);
+    const nomeArquivo = `relatorio-estoque-${dataArquivo}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${nomeArquivo}"`
+    );
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    return res.status(200).send(pdfBuffer);
+  } catch (erro) {
+    console.error('Erro no RF-20 (exportar PDF):', erro);
+    return res.status(500).json({
+      sucesso: false,
+      mensagem: 'Erro ao gerar o relatório em PDF.'
+    });
+  }
+};
+
 module.exports = {
   cadastrarProduto,
   excluirProduto,
@@ -422,5 +460,6 @@ module.exports = {
   registrarEntrada,
   listarParaExpurgo,
   registrarExpurgo,
-  relatorioEstoque
+  relatorioEstoque,
+  exportarRelatorioEstoquePdf
 };
