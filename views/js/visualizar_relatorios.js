@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     // ========================================
     // PARÂMETROS DA URL
@@ -26,6 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================
     // ELEMENTOS DA PÁGINA
     // ========================================
+
+    if (tipo === "produtos") {
+        window.location.replace("relatorio_produtos.html");
+        return;
+    }
 
     const titulo = document.querySelector("#relatorioTitulo");
     const meta = document.querySelector("#relatorioMeta");
@@ -73,61 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
-
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        }
-    ];
-
-
-    // ========================================
     // TÍTULOS
     // ========================================
 
     const nomesRelatorios = {
         movimentacoes: "Relatório de Movimentações de Estoque",
-        estoque: "Relatório de Estoque Atual",
-        produtos: "Relatório de Produtos Cadastrados"
+        estoque: "Relatório de Estoque Atual"
     };
 
 
@@ -168,67 +124,51 @@ document.addEventListener("DOMContentLoaded", () => {
     // MOVIMENTAÇÕES
     // ========================================
 
+    const colunasMovimentacoes = ["Código", "Produto", "SKU", "Tipo de movimentação",
+        "Quantidade", "Data", "Responsável", "Justificativa"];
+    let historicoCarregado = false;
     if (tipo === "movimentacoes") {
-
-        dados = movimentacoes
-            .filter((movimentacao) => {
-
-                if (!dataInicio) return true;
-
-                return new Date(movimentacao.data) >=
-                    new Date(dataInicio + "T00:00:00");
-            })
-            .filter((movimentacao) => {
-
-                if (!dataFim) return true;
-
-                return new Date(movimentacao.data) <=
-                    new Date(dataFim + "T23:59:59");
-            })
-            .filter((movimentacao) => {
-
-                if (!categoria) return true;
-
-                const produto = produtos.find(
-                    (p) => p.id === movimentacao.produtoId
-                );
-
-                return produto &&
-                    produto.categoria === categoria;
-            })
-            .map((movimentacao) => {
-
-                const produto = produtos.find(
-                    (p) => p.id === movimentacao.produtoId
-                );
-
-                const data = new Date(movimentacao.data);
-
-                return {
-                    Data:
-                        data.toLocaleDateString("pt-BR") +
-                        " " +
-                        data.toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                        }),
-
-                    Produto: produto
-                        ? produto.nome
-                        : "Produto removido",
-
-                    Tipo: movimentacao.tipo,
-
-                    Quantidade: movimentacao.quantidade,
-
-                    Responsável: movimentacao.usuario,
-
-                    Justificativa:
-                        movimentacao.justificativa || "-"
-                };
-            });
+        mensagemArea.setAttribute("role", "status");
+        if (categoria) {
+            mensagemArea.textContent = "Selecione Todas na Central de Relatórios para consultar movimentações.";
+            mensagemArea.className = "mensagem-erro";
+        } else {
+            mensagemArea.textContent = "Consultando movimentações...";
+            try {
+                const filtros = new URLSearchParams({ data_inicio: dataInicio, data_fim: dataFim });
+                const resposta = await fetch("/api/relatorio/movimentacoes?" + filtros, { credentials: "same-origin" });
+                if (!resposta.ok) {
+                    const erro = await resposta.json().catch(() => null);
+                    throw new Error(erro?.mensagem || erro?.message);
+                }
+                const registros = await resposta.json();
+                dados = registros.map(registro => {
+                    const valor = registro.data_movimentacao;
+                    const data = typeof valor === "string" ? valor.replace(" ", "T") : valor;
+                    const utc = typeof data === "string" && data.length > 10 && !/(?:Z|[+-]\d{2}:\d{2})$/.test(data)
+                        ? data + "Z" : data;
+                    const instante = utc ? new Date(utc) : null;
+                    return {
+                        Código: registro.id_movimentacao,
+                        Produto: registro.nome_produto,
+                        SKU: registro.sku_produto,
+                        "Tipo de movimentação": registro.tipo_movimentacao,
+                        Quantidade: registro.quantidade,
+                        Data: instante && Number.isFinite(instante.getTime())
+                            ? instante.toLocaleString("pt-BR", { timeZone: "UTC" }).replace(", ", " ")
+                            : valor,
+                        Responsável: registro.nome_responsavel,
+                        Justificativa: registro.justificativa
+                    };
+                });
+                historicoCarregado = true;
+                mensagemArea.textContent = "";
+            } catch (erro) {
+                mensagemArea.textContent = erro.message || "Não foi possível consultar as movimentações. Recarregue a página para tentar novamente.";
+                mensagemArea.className = "mensagem-erro";
+            }
+        }
     }
-
 
     // ========================================
     // ESTOQUE ATUAL
@@ -263,33 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================
-    // PRODUTOS CADASTRADOS
-    // ========================================
-
-    else if (tipo === "produtos") {
-
-        dados = produtos
-            .filter((produto) => {
-
-                if (!categoria) return true;
-
-                return produto.categoria === categoria;
-            })
-            .map((produto) => ({
-
-                SKU: produto.sku,
-
-                Produto: produto.nome,
-
-                Categoria: produto.categoria,
-
-                Descrição:
-                    produto.descricao || "-"
-            }));
-    }
-
-
-    // ========================================
     // META DO RELATÓRIO
     // ========================================
 
@@ -306,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     meta.textContent =
-        `Gerado por admin.stockmaster | ` +
+        (tipo === "movimentacoes" ? "Datas em UTC | " : "Gerado por admin.stockmaster | ") +
         `Categoria: ${categoria || "Todas"} | ` +
         `Período: ${periodo}`;
 
@@ -315,40 +228,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // MONTAR TABELA
     // ========================================
 
-    if (!dados.length) {
-
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align:center; padding:30px;">
-                    Nenhum dado encontrado para os filtros selecionados.
-                </td>
-            </tr>
-        `;
-
-    } else {
-
-        const colunas = Object.keys(dados[0]);
-
-        thead.innerHTML = `
-            <tr>
-                ${colunas
-                    .map((coluna) => `<th>${coluna}</th>`)
-                    .join("")}
-            </tr>
-        `;
-
-        tbody.innerHTML =
-            dados.map((linha) => `
-                <tr>
-                    ${colunas
-                        .map((coluna) =>
-                            `<td>${linha[coluna]}</td>`
-                        )
-                        .join("")}
-                </tr>
-            `).join("");
+    const colunas = tipo === "movimentacoes" ? colunasMovimentacoes : Object.keys(dados[0] || {});
+    if (colunas.length) {
+        const cabecalho = thead.insertRow();
+        for (const coluna of colunas) {
+            const celula = document.createElement("th");
+            celula.scope = "col";
+            celula.textContent = coluna;
+            cabecalho.append(celula);
+        }
     }
-
+    if (!dados.length && (tipo !== "movimentacoes" || historicoCarregado)) {
+        const celula = tbody.insertRow().insertCell();
+        celula.colSpan = colunas.length || 6;
+        celula.style.cssText = "text-align:center; padding:30px;";
+        celula.textContent = "Nenhum dado encontrado para os filtros selecionados.";
+    }
+    for (const registro of dados) {
+        const linha = tbody.insertRow();
+        for (const coluna of colunas) linha.insertCell().textContent = registro[coluna] ?? "—";
+    }
 
     // ========================================
     // EXPORTAR PDF
@@ -356,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const statusPdf = document.querySelector("#statusExportarPdf");
     btnPdf.hidden = tipo !== "movimentacoes";
+    btnPdf.disabled = !historicoCarregado;
 
     if (!btnPdf.hidden && categoria) {
         btnPdf.disabled = true;
@@ -456,6 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusExcel = document.querySelector("#statusExportarExcel");
 
     btnExcel.hidden = tipo !== "movimentacoes";
+    btnExcel.disabled = !historicoCarregado;
     if (!btnExcel.hidden && categoria) {
         btnExcel.disabled = true;
         statusExcel.className = "mensagem-erro";

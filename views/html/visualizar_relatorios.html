@@ -40,7 +40,13 @@
                 <a href="saída_estoque.html" id="saidaLink"><span class="nav-icon">−</span>Saída de estoque</a>
                 <a href="expurgo_estoque.html" id="expurgoLink"><span class="nav-icon">⌫</span>Expurgo</a>
                 <a href="historico_movimentacao.html" id="historicoLink"><span class="nav-icon">◷</span>Histórico</a>
-                <a href="relatorios.html" id="relatoriosLink"><span class="nav-icon">▤</span>Relatórios</a>
+                <details class="sidebar-reports" id="relatoriosLink" open>
+                    <summary><span class="nav-icon" aria-hidden="true">▤</span>Relatórios</summary>
+                    <div class="sidebar-report-links">
+                        <a href="relatorios.html?origem=adm">Central de Relatórios</a>
+                        <a href="relatorio_produtos.html">Relatório de Produtos</a>
+                    </div>
+                </details>
             </nav>
 
             <div class="sidebar-bottom">

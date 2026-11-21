@@ -108,7 +108,8 @@ body {
     gap: 5px;
 }
 
-.sidebar-nav a {
+.sidebar-nav a,
+.sidebar-reports summary {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -123,10 +124,40 @@ body {
 
 .sidebar-nav a:hover,
 .sidebar-nav a:focus-visible,
-.sidebar-nav a.active {
+.sidebar-nav a.active,
+.sidebar-reports summary:hover,
+.sidebar-reports summary:focus-visible,
+.sidebar-reports[open] > summary {
     background: rgba(255, 255, 255, .14);
     color: #ffffff;
     outline: none;
+}
+
+.sidebar-reports summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.sidebar-reports summary::-webkit-details-marker {
+    display: none;
+}
+
+.sidebar-reports summary::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin: 0 3px 3px auto;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+}
+
+.sidebar-reports[open] > summary::after {
+    transform: rotate(225deg);
+}
+
+.sidebar-report-links {
+    padding: 4px 0 0 22px;
 }
 
 .sidebar-nav a:active {

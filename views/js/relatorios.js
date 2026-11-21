@@ -92,53 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
-
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        }
-    ];
-
-    // ========================================
     // ELEMENTOS DO FORMULÁRIO
     // ========================================
 
@@ -147,6 +100,84 @@ document.addEventListener("DOMContentLoaded", () => {
     const filtroCategoria = document.querySelector("#filtroCategoria");
     const dataInicio = document.querySelector("#dataInicio");
     const dataFim = document.querySelector("#dataFim");
+
+    function dataParaIso(valor) {
+        const partes = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(valor);
+        if (!partes) return "";
+        const [, dia, mes, ano] = partes;
+        const iso = `${ano}-${mes}-${dia}`;
+        const data = new Date(iso);
+        return Number(ano) >= 1000 && Number.isFinite(data.getTime()) &&
+            data.toISOString().slice(0, 10) === iso ? iso : "";
+    }
+
+    const calendario = document.querySelector("#calendarioPeriodo");
+    const mesCalendario = document.querySelector("#mesCalendario");
+    const diasCalendario = document.querySelector("#diasCalendario");
+    const mesAnterior = document.querySelector("#mesAnterior");
+    const proximoMes = document.querySelector("#proximoMes");
+    const nomeMes = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+    const nomeDia = new Intl.DateTimeFormat("pt-BR", { dateStyle: "full", timeZone: "UTC" });
+    let campoCalendario;
+    let mesVisivel;
+
+    function renderizarCalendario() {
+        const ano = mesVisivel.getUTCFullYear();
+        const mes = mesVisivel.getUTCMonth();
+        const selecionada = dataParaIso(campoCalendario.value);
+        const dias = new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate();
+        const grade = document.createDocumentFragment();
+        mesCalendario.textContent = nomeMes.format(mesVisivel);
+        mesAnterior.disabled = ano === 1000 && mes === 0;
+        proximoMes.disabled = ano === 9999 && mes === 11;
+        for (let i = 0; i < mesVisivel.getUTCDay(); i++) grade.append(document.createElement("span"));
+        for (let dia = 1; dia <= dias; dia++) {
+            const data = new Date(Date.UTC(ano, mes, dia));
+            const iso = data.toISOString().slice(0, 10);
+            const botao = document.createElement("button");
+            botao.type = "button";
+            botao.textContent = dia;
+            botao.setAttribute("aria-label", nomeDia.format(data));
+            botao.setAttribute("aria-pressed", String(iso === selecionada));
+            botao.dataset.data = iso;
+            grade.append(botao);
+        }
+        diasCalendario.replaceChildren(grade);
+    }
+
+    diasCalendario.addEventListener("click", (evento) => {
+        const data = evento.target.dataset.data;
+        if (!data) return;
+        campoCalendario.value = data.split("-").reverse().join("/");
+        calendario.close();
+    });
+
+    for (const [botao, deslocamento] of [[mesAnterior, -1], [proximoMes, 1]]) {
+        botao.addEventListener("click", () => {
+            mesVisivel.setUTCMonth(mesVisivel.getUTCMonth() + deslocamento);
+            renderizarCalendario();
+        });
+    }
+
+    for (const campo of [dataInicio, dataFim]) {
+        const botao = campo.closest(".campo-data-br").querySelector("button");
+        campo.addEventListener("input", () => {
+            const digitos = campo.value.replace(/\D/g, "").slice(0, 8);
+            campo.value = [digitos.slice(0, 2), digitos.slice(2, 4), digitos.slice(4)]
+                .filter(Boolean).join("/");
+        });
+        botao.addEventListener("click", () => {
+            campoCalendario = campo;
+            const selecionada = dataParaIso(campo.value);
+            const hoje = new Date();
+            mesVisivel = selecionada
+                ? new Date(`${selecionada.slice(0, 7)}-01T00:00:00Z`)
+                : new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), 1));
+            renderizarCalendario();
+            calendario.showModal();
+            (diasCalendario.querySelector('[aria-pressed="true"]') || diasCalendario.querySelector("button")).focus();
+        });
+    }
     const mensagemArea = document.querySelector("#mensagemArea");
     
     const visualizarRelatorioArea = document.querySelector("#visualizarRelatorioArea");
@@ -181,11 +212,18 @@ document.addEventListener("DOMContentLoaded", () => {
         // Limpa somente a mensagem anterior.
         // NÃO limpa os campos do formulário.
         mensagemArea.innerHTML = "";
+        visualizarRelatorioArea.style.display = "none";
 
         const tipo = tipoRelatorio.value;
         const categoria = filtroCategoria.value;
-        const inicio = dataInicio.value;
-        const fim = dataFim.value;
+        const inicio = dataParaIso(dataInicio.value);
+        const fim = dataParaIso(dataFim.value);
+
+        if ((dataInicio.value && !inicio) || (dataFim.value && !fim)) {
+            mensagemArea.innerHTML = '<p class="mensagem-erro">Informe datas válidas no formato DD/MM/AAAA.</p>';
+            (dataInicio.value && !inicio ? dataInicio : dataFim).focus();
+            return;
+        }
 
         // ========================================
         // VALIDAÇÃO DO TIPO
@@ -232,88 +270,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // ========================================
 
         if (tipo === "movimentacoes") {
-
-            dados = movimentacoes
-
-                // Filtro de data inicial
-                .filter((movimentacao) => {
-
-                    if (!inicio) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) >=
-                        new Date(inicio + "T00:00:00");
-                })
-
-                // Filtro de data final
-                .filter((movimentacao) => {
-
-                    if (!fim) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) <=
-                        new Date(fim + "T23:59:59");
-                })
-
-                // Filtro de categoria
-                .filter((movimentacao) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
-                    );
-
-                    return produto &&
-                        produto.categoria === categoria;
-                })
-
-                // Formatação dos dados
-                .map((movimentacao) => {
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
-                    );
-
-                    const data = new Date(movimentacao.data);
-
-                    return {
-
-                        Data:
-                            data.toLocaleDateString("pt-BR") +
-                            " " +
-                            data.toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            }),
-
-                        Produto: produto
-                            ? produto.nome
-                            : "Produto removido",
-
-                        Tipo: movimentacao.tipo,
-
-                        Quantidade:
-                            movimentacao.quantidade,
-
-                        Responsável:
-                            movimentacao.usuario,
-
-                        Justificativa:
-                            movimentacao.justificativa || "-"
-                    };
-                });
+            if (categoria) {
+                mensagemArea.innerHTML = '<p class="mensagem-erro">Selecione Todas para consultar movimentações.</p>';
+                return;
+            }
+            const filtros = new URLSearchParams({ tipo, inicio, fim, origem: "adm" });
+            btnVisualizarRelatorio.href = "visualizar_relatorios.html?" + filtros;
+            visualizarRelatorioArea.style.display = "block";
+            return;
         }
 
         // ========================================
         // RELATÓRIO DE ESTOQUE ATUAL
         // ========================================
 
-        else if (tipo === "estoque") {
+        if (tipo === "estoque") {
 
             dados = produtos
 
@@ -345,36 +316,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ========================================
-        // RELATÓRIO DE PRODUTOS CADASTRADOS
-        // ========================================
-
-        else if (tipo === "produtos") {
-
-            dados = produtos
-
-                .filter((produto) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    return produto.categoria === categoria;
-                })
-
-                .map((produto) => ({
-
-                    SKU: produto.sku,
-
-                    Produto: produto.nome,
-
-                    Categoria: produto.categoria,
-
-                    Descrição:
-                        produto.descricao || "-"
-                }));
-        }
-
-        // ========================================
         // TÍTULO DO RELATÓRIO
         // ========================================
 
@@ -384,10 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Relatório de Movimentações de Estoque",
 
             estoque:
-                "Relatório de Estoque Atual",
-
-            produtos:
-                "Relatório de Produtos Cadastrados"
+                "Relatório de Estoque Atual"
         };
 
                 // ========================================
