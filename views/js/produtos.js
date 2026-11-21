@@ -122,93 +122,186 @@ document.addEventListener("DOMContentLoaded", () => {
             : `produto_detalhes.html?id=${productId}&origem=adm`;
     });
 
-
     // ========================================
     // BUSCA E FILTROS DE PRODUTOS
     // ========================================
 
-    const searchInput =
-        document.querySelector("#searchProduct");
+    const searchInput = document.querySelector("#searchProduct");
+    const categoryFilter = document.querySelector("#filterCategory");
+    const situationFilter = document.querySelector("#filterSituation");
+    const tabelaProdutos = document.querySelector("#productsTableBody");
 
-    const categoryFilter =
-        document.querySelector("#filterCategory");
+    const productsCount = document.querySelector("#productsCount");
+    const productsMessage = document.querySelector("#productsMessage");
 
-    const situationFilter =
-        document.querySelector("#filterSituation");
+    let produtos = [];
+    let temporizadorBusca;
 
-    const rows = Array.from(
-        document.querySelectorAll("#productsTableBody tr")
-    );
-
-    const productsCount =
-        document.querySelector("#productsCount");
-
-    const productsMessage =
-        document.querySelector("#productsMessage");
-
-
-    function filterProducts() {
-
-        const search =
-            searchInput.value.trim().toLowerCase();
-
-        const category =
-            categoryFilter.value;
-
-        const situation =
-            situationFilter.value;
-
-        let visibleRows = 0;
-
-        rows.forEach((row) => {
-
-            const matchesSearch =
-                !search ||
-                row.dataset.search.includes(search);
-
-            const matchesCategory =
-                !category ||
-                row.dataset.category === category;
-
-            const matchesSituation =
-                !situation ||
-                row.dataset.situation === situation;
-
-            const shouldShow =
-                matchesSearch &&
-                matchesCategory &&
-                matchesSituation;
-
-            row.hidden = !shouldShow;
-
-            if (shouldShow) {
-                visibleRows++;
-            }
-        });
-
-        productsCount.textContent =
-            `${visibleRows} produto(s)`;
-
-        productsMessage.textContent =
-            visibleRows === 0
-                ? "Nenhum produto encontrado para os filtros informados."
-                : "";
+    // SITUAÇÃO DO ESTOQUE
+    function obterSituacao(produto) {
+        return Number(produto.quantidadeEstoque) <= Number(produto.estoqueMinimo)
+            ? "Crítico"
+            : "Normal";
     }
 
+    // MONTAGEM DA TABELA
+    function preencherTabela(lista) {
+        tabelaProdutos.innerHTML = "";
 
-    searchInput.addEventListener(
-        "input",
-        filterProducts
-    );
+        lista.forEach((produto) => {
+            const linha = document.createElement("tr");
+            const situacao = obterSituacao(produto);
 
-    categoryFilter.addEventListener(
-        "change",
-        filterProducts
-    );
+            const nome = document.createElement("strong");
+            nome.textContent = produto.nome;
 
-    situationFilter.addEventListener(
-        "change",
-        filterProducts
-    );
+            const descricao = document.createElement("small");
+            descricao.textContent = produto.descricao || "Sem descrição";
+
+            const identificacao = document.createElement("div");
+            identificacao.className = "product-cell";
+
+            const miniatura = document.createElement("span");
+            miniatura.className = "product-thumb";
+            miniatura.textContent = "▣";
+
+            const detalhes = document.createElement("div");
+            detalhes.append(nome, descricao);
+            identificacao.append(miniatura, detalhes);
+
+            const celulaProduto = document.createElement("td");
+            celulaProduto.append(identificacao);
+
+            const celulaSku = document.createElement("td");
+            celulaSku.textContent = produto.sku;
+
+            const celulaCategoria = document.createElement("td");
+            celulaCategoria.textContent = produto.categoria;
+
+            const celulaSaldo = document.createElement("td");
+            const saldo = document.createElement("span");
+            saldo.className = "stock-value";
+            saldo.textContent = `${produto.quantidadeEstoque} un.`;
+            celulaSaldo.append(saldo);
+
+            const celulaSituacao = document.createElement("td");
+            const status = document.createElement("span");
+
+            status.className = situacao === "Crítico"
+                ? "status status-warning"
+                : "status status-success";
+
+            status.textContent = situacao === "Crítico"
+                ? "Estoque crítico"
+                : "Normal";
+
+            celulaSituacao.append(status);
+
+            const celulaAcoes = document.createElement("td");
+            const acoes = document.createElement("div");
+            acoes.className = "product-table-actions";
+
+            const editar = document.createElement("a");
+            editar.className = "product-action product-action-edit";
+            editar.textContent = "Editar";
+
+            editar.href = origem === "tecnico"
+                ? `editar_produto.html?id=${produto.idProduto}&origem=tecnico`
+                : `editar_produto.html?id=${produto.idProduto}&origem=adm`;
+
+            const visualizar = document.createElement("a");
+            visualizar.className = "product-action product-action-view";
+            visualizar.textContent = "Detalhes";
+
+            visualizar.href = origem === "tecnico"
+                ? `produto_detalhes.html?id=${produto.idProduto}&origem=tecnico`
+                : `produto_detalhes.html?id=${produto.idProduto}&origem=adm`;
+
+            acoes.append(editar, visualizar);
+            celulaAcoes.append(acoes);
+
+            linha.append(
+                celulaProduto,
+                celulaSku,
+                celulaCategoria,
+                celulaSaldo,
+                celulaSituacao,
+                celulaAcoes
+            );
+
+            tabelaProdutos.append(linha);
+        });
+
+        productsCount.textContent = `${lista.length} produto(s)`;
+    }
+
+    // CONSULTA À API
+    async function consultarProdutos() {
+        const nome = searchInput.value.trim();
+        const categoria = categoryFilter.value;
+
+        const parametros = new URLSearchParams();
+
+        if (nome) parametros.set("nome", nome);
+        if (categoria) parametros.set("categoria", categoria);
+
+        productsMessage.textContent = "Consultando produtos...";
+        tabelaProdutos.innerHTML = "";
+        productsCount.textContent = "Consultando...";
+
+        try {
+            const resposta = await fetch(
+                `/api/produtos/consulta?${parametros.toString()}`
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.success) {
+                throw new Error(
+                    resultado.message || "Erro ao consultar produtos."
+                );
+            }
+
+            produtos = resultado.data.produtos || [];
+
+            aplicarFiltroSituacao();
+
+        } catch (erro) {
+            console.error("Erro na consulta:", erro);
+
+            tabelaProdutos.innerHTML = "";
+            productsCount.textContent = "0 produto(s)";
+            productsMessage.textContent =
+                "Não foi possível consultar os produtos. Tente novamente.";
+        }
+    }
+
+    // FILTRO DE SITUAÇÃO
+    function aplicarFiltroSituacao() {
+        const situacaoSelecionada = situationFilter.value;
+
+        const produtosFiltrados = produtos.filter((produto) => {
+            return !situacaoSelecionada ||
+                obterSituacao(produto) === situacaoSelecionada;
+        });
+
+        preencherTabela(produtosFiltrados);
+
+        productsMessage.textContent = produtosFiltrados.length === 0
+            ? "Nenhum produto encontrado para os filtros informados."
+            : "";
+    }
+
+    // EVENTOS DOS FILTROS
+    searchInput.addEventListener("input", () => {
+        clearTimeout(temporizadorBusca);
+        temporizadorBusca = setTimeout(consultarProdutos, 300);
+    });
+
+    categoryFilter.addEventListener("change", consultarProdutos);
+    situationFilter.addEventListener("change", aplicarFiltroSituacao);
+
+    // CONSULTA INICIAL
+    consultarProdutos();
 
 });
