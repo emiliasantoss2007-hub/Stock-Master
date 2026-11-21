@@ -16,4 +16,9 @@ router.get('/produtos/entrada/listar', auth, produtoAccess, produtoController.li
 
 router.post('/produtos/entrada', auth, produtoAccess, produtoController.registrarEntrada);
 
+// RF-15 - Registrar expurgo de estoque
+router.get('/produtos/expurgo/listar', auth, produtoController.listarParaExpurgo);
+
+router.post('/produtos/expurgo', auth, produtoController.registrarExpurgo);
+
 module.exports = router;
