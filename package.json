@@ -24,14 +24,18 @@
   },
   "homepage": "https://github.com/emiliasantoss2007-hub/Stock-Master#readme",
   "dependencies": {
+    "@fontsource/noto-sans": "5.3.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "exceljs": "4.4.0",
     "express": "^5.2.1",
-    "mysql2": "^3.24.3"
+    "fontkit": "3.0.0",
+    "mysql2": "^3.24.3",
+    "pdfkit": "0.21.0"
   },
   "devDependencies": {
     "jest": "^30.5.2",
+    "pdfjs-dist": "6.5.438",
     "supertest": "^7.3.2"
   }
 }

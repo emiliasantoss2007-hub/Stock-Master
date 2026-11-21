@@ -354,10 +354,98 @@ document.addEventListener("DOMContentLoaded", () => {
     // EXPORTAR PDF
     // ========================================
 
-    btnPdf.addEventListener("click", () => {
+    const statusPdf = document.querySelector("#statusExportarPdf");
+    btnPdf.hidden = tipo !== "movimentacoes";
 
-        window.print();
+    if (!btnPdf.hidden && categoria) {
+        btnPdf.disabled = true;
+        statusPdf.className = "mensagem-erro";
+        statusPdf.textContent = "A exportação PDF não aceita filtro por categoria. Faça uma nova consulta com a opção Todas.";
+    }
 
+    async function baixarPdf(filtros) {
+        const query = new URLSearchParams(filtros);
+        const resposta = await fetch(`/api/relatorio/movimentacoes/pdf?${query}`, {
+            credentials: "same-origin"
+        });
+        if (!resposta.ok) {
+            const erro = await resposta.json().catch(() => null);
+            return { mensagem: erro?.mensagem || erro?.message };
+        }
+        const tipoArquivo = resposta.headers.get("content-type")?.split(";")[0];
+        const disposicao = resposta.headers.get("content-disposition");
+        if (tipoArquivo !== "application/pdf" || !/^attachment(?:;|$)/i.test(disposicao || "")) {
+            return false;
+        }
+
+        const arquivo = await resposta.blob();
+        if (await arquivo.slice(0, 5).text() !== "%PDF-") return false;
+
+        const url = URL.createObjectURL(arquivo);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "relatorio-movimentacoes.pdf";
+        try {
+            document.body.append(link);
+            link.click();
+            return true;
+        } finally {
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+    }
+
+    btnPdf.addEventListener("relatorio:exportar-pdf", ({ detail }) => {
+        detail.responderCom(baixarPdf(detail.filtros));
+    });
+
+    let exportandoPdf = false;
+    btnPdf.addEventListener("click", async () => {
+        if (exportandoPdf || btnPdf.disabled || btnPdf.hidden) return;
+
+        exportandoPdf = true;
+        btnPdf.setAttribute("aria-disabled", "true");
+        btnPdf.setAttribute("aria-busy", "true");
+        statusPdf.className = "mensagem-processamento-pdf";
+        statusPdf.textContent = "Preparando arquivo PDF...";
+
+        try {
+            let resposta;
+            btnPdf.dispatchEvent(new CustomEvent("relatorio:exportar-pdf", {
+                bubbles: true,
+                detail: {
+                    filtros: { data_inicio: dataInicio, data_fim: dataFim },
+                    // Registre a Promise durante o evento. Resolva com true só
+                    // após iniciar o download do PDF retornado pelo Controller.
+                    responderCom(operacao) {
+                        resposta ??= Promise.resolve(operacao);
+                    }
+                }
+            }));
+
+            if (!resposta) {
+                statusPdf.className = "mensagem-erro";
+                statusPdf.textContent = "A exportação PDF ainda não está disponível.";
+                return;
+            }
+
+            const resultado = await resposta;
+            if (resultado !== true) {
+                statusPdf.className = "mensagem-erro";
+                statusPdf.textContent = resultado?.mensagem ||
+                    "Não foi possível exportar o arquivo PDF. Tente novamente.";
+                return;
+            }
+            statusPdf.className = "mensagem-sucesso";
+            statusPdf.textContent = "Download do arquivo PDF iniciado.";
+        } catch {
+            statusPdf.className = "mensagem-erro";
+            statusPdf.textContent = "Não foi possível exportar o arquivo PDF. Tente novamente.";
+        } finally {
+            exportandoPdf = false;
+            btnPdf.removeAttribute("aria-disabled");
+            btnPdf.removeAttribute("aria-busy");
+        }
     });
 
 
