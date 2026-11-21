@@ -153,6 +153,123 @@ function excluir(idProduto) {
     });
 }
 
+function listarParaEntrada() {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                id_produto,
+                sku,
+                nome,
+                quantidade_estoque
+            FROM produto
+            ORDER BY nome ASC
+        `;
+
+        connection.query(sql, (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados);
+        });
+    });
+}
+
+function registrarEntrada(idProduto, quantidade, idUsuario) {
+    const idProd = Number(idProduto);
+    const qtd = Number(quantidade);
+    const idUser = Number(idUsuario);
+
+    return new Promise((resolve, reject) => {
+        if (!Number.isInteger(idProd) || idProd <= 0) {
+            const erro = new Error('Identificador de produto inválido.');
+            erro.code = 'PRODUCT_ID_INVALID';
+            return reject(erro);
+        }
+
+        if (!Number.isInteger(qtd) || qtd <= 0) {
+            const erro = new Error('Informe uma quantidade inteira maior que zero.');
+            erro.code = 'QUANTITY_INVALID';
+            return reject(erro);
+        }
+
+        if (!Number.isInteger(idUser) || idUser <= 0) {
+            const erro = new Error('Usuário inválido.');
+            erro.code = 'USER_ID_INVALID';
+            return reject(erro);
+        }
+
+        connection.beginTransaction((erroInicio) => {
+            if (erroInicio) return reject(erroInicio);
+
+            connection.query(
+                `SELECT id_produto, sku, nome, quantidade_estoque
+                 FROM produto
+                 WHERE id_produto = ?
+                 FOR UPDATE`,
+                [idProd],
+                (erroProduto, resultados) => {
+                    if (erroProduto) {
+                        return connection.rollback(() => reject(erroProduto));
+                    }
+
+                    if (!resultados.length) {
+                        const erro = new Error('Produto não encontrado.');
+                        erro.code = 'PRODUCT_NOT_FOUND';
+                        return connection.rollback(() => reject(erro));
+                    }
+
+                    const produto = resultados[0];
+                    const saldoAnterior = Number(produto.quantidade_estoque);
+                    const saldoNovo = saldoAnterior + qtd;
+
+                    connection.query(
+                        `UPDATE produto
+                         SET quantidade_estoque = ?
+                         WHERE id_produto = ?`,
+                        [saldoNovo, idProd],
+                        (erroAtualizacao) => {
+                            if (erroAtualizacao) {
+                                return connection.rollback(() => reject(erroAtualizacao));
+                            }
+
+                            connection.query(
+                                `INSERT INTO movimentacao (
+                                    tipo_movimentacao,
+                                    quantidade,
+                                    justificativa,
+                                    id_produto,
+                                    id_usuario
+                                ) VALUES (?, ?, ?, ?, ?)`,
+                                ['ENTRADA', qtd, null, idProd, idUser],
+                                (erroMovimentacao, resultadoMovimentacao) => {
+                                    if (erroMovimentacao) {
+                                        return connection.rollback(() => reject(erroMovimentacao));
+                                    }
+
+                                    connection.commit((erroCommit) => {
+                                        if (erroCommit) {
+                                            return connection.rollback(() => reject(erroCommit));
+                                        }
+
+                                        resolve({
+                                            idMovimentacao: resultadoMovimentacao.insertId,
+                                            idProduto: idProd,
+                                            sku: produto.sku,
+                                            nome: produto.nome,
+                                            quantidade: qtd,
+                                            saldoAnterior,
+                                            saldoNovo,
+                                            idUsuario: idUser
+                                        });
+                                    });
+                                }
+                            );
+                        }
+                    );
+                }
+            );
+        });
+    });
+}
+
 module.exports = {
     cadastrarProduto,
     verificarSKU,
@@ -160,5 +277,7 @@ module.exports = {
     buscarPorId,
     verificarSaldo,
     verificarMovimentacoes,
+    listarParaEntrada,
+    registrarEntrada,
     excluir
 };

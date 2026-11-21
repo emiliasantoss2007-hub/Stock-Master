@@ -179,7 +179,77 @@ async function excluirProduto(req, res) {
     }
 }
 
+async function listarParaEntrada(req, res) {
+    try {
+        const produtos = await produtoModel.listarParaEntrada();
+
+        return res.status(200).json({
+            sucesso: true,
+            produtos
+        });
+    } catch (erro) {
+        console.error('Erro ao listar produtos para entrada:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao listar produtos para entrada.'
+        });
+    }
+}
+
+async function registrarEntrada(req, res) {
+    const usuario = req.usuario;
+
+    if (!usuario || !usuario.id_usuario) {
+        return res.status(401).json({
+            sucesso: false,
+            mensagem: 'Usuário não autenticado.'
+        });
+    }
+
+    const { id_produto, quantidade } = req.body || {};
+
+    try {
+        const resultado = await produtoModel.registrarEntrada(
+            id_produto,
+            quantidade,
+            usuario.id_usuario
+        );
+
+        return res.status(201).json({
+            sucesso: true,
+            mensagem: 'Entrada de estoque registrada com sucesso.',
+            dados: resultado
+        });
+    } catch (erro) {
+        const errosValidacao = {
+            PRODUCT_ID_INVALID: [400, 'Identificador de produto inválido.'],
+            QUANTITY_INVALID: [400, 'Informe uma quantidade inteira maior que zero.'],
+            USER_ID_INVALID: [401, 'Usuário inválido.'],
+            PRODUCT_NOT_FOUND: [404, 'Produto não encontrado.']
+        };
+
+        if (errosValidacao[erro.code]) {
+            const [status, mensagem] = errosValidacao[erro.code];
+
+            return res.status(status).json({
+                sucesso: false,
+                mensagem
+            });
+        }
+
+        console.error('Erro ao registrar entrada:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao registrar entrada de estoque.'
+        });
+    }
+}
+
 module.exports = {
     cadastrarProduto,
-    excluirProduto
+    excluirProduto,
+    listarParaEntrada,
+    registrarEntrada
 };

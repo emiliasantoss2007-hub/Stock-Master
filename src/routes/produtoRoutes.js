@@ -11,4 +11,9 @@ router.post('/produtos', produtoAuth, produtoCsrf, produtoAccess, produtoControl
 
 router.delete('/produtos/:id', auth, produtoController.excluirProduto);
 
+// RF-12 - Registrar entrada de produtos
+router.get('/produtos/entrada/listar', auth, produtoAccess, produtoController.listarParaEntrada);
+
+router.post('/produtos/entrada', auth, produtoAccess, produtoController.registrarEntrada);
+
 module.exports = router;
