@@ -270,6 +270,144 @@ function registrarEntrada(idProduto, quantidade, idUsuario) {
     });
 }
 
+function listarParaExpurgo() {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                id_produto,
+                sku,
+                nome,
+                quantidade_estoque
+            FROM produto
+            WHERE quantidade_estoque > 0
+            ORDER BY nome ASC
+        `;
+
+        connection.query(sql, (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados);
+        });
+    });
+}
+
+async function registrarExpurgo(idProduto, quantidade, justificativa, idUsuario) {
+    const idProd = Number(idProduto);
+    const qtd = Number(quantidade);
+    const idUser = Number(idUsuario);
+    const motivo = String(justificativa || '').trim();
+
+    if (!Number.isInteger(idProd) || idProd <= 0) {
+        const erro = new Error('Identificador de produto inválido.');
+        erro.code = 'PRODUCT_ID_INVALID';
+        throw erro;
+    }
+
+    if (!Number.isInteger(qtd) || qtd <= 0) {
+        const erro = new Error('Informe uma quantidade inteira maior que zero.');
+        erro.code = 'QUANTITY_INVALID';
+        throw erro;
+    }
+
+    if (!motivo) {
+        const erro = new Error('A justificativa é obrigatória.');
+        erro.code = 'JUSTIFICATION_REQUIRED';
+        throw erro;
+    }
+
+    if (!Number.isInteger(idUser) || idUser <= 0) {
+        const erro = new Error('Usuário inválido.');
+        erro.code = 'USER_ID_INVALID';
+        throw erro;
+    }
+
+    await new Promise((resolve, reject) => {
+        connection.beginTransaction((erro) => {
+            if (erro) return reject(erro);
+            resolve();
+        });
+    });
+
+    try {
+        const query = (sql, parametros = []) => {
+            return new Promise((resolve, reject) => {
+                connection.query(sql, parametros, (erro, resultado) => {
+                    if (erro) return reject(erro);
+                    resolve(resultado);
+                });
+            });
+        };
+
+        const produtos = await query(
+            `SELECT id_produto, sku, nome, quantidade_estoque
+             FROM produto
+             WHERE id_produto = ?
+             FOR UPDATE`,
+            [idProd]
+        );
+
+        if (!produtos.length) {
+            const erro = new Error('Produto não encontrado.');
+            erro.code = 'PRODUCT_NOT_FOUND';
+            throw erro;
+        }
+
+        const produto = produtos[0];
+        const saldoAnterior = Number(produto.quantidade_estoque);
+
+        if (qtd > saldoAnterior) {
+            const erro = new Error('Quantidade de expurgo maior que o saldo disponível.');
+            erro.code = 'INSUFFICIENT_STOCK';
+            throw erro;
+        }
+
+        const saldoNovo = saldoAnterior - qtd;
+
+        await query(
+            `UPDATE produto
+             SET quantidade_estoque = ?
+             WHERE id_produto = ?`,
+            [saldoNovo, idProd]
+        );
+
+        const movimentacao = await query(
+            `INSERT INTO movimentacao (
+                tipo_movimentacao,
+                quantidade,
+                justificativa,
+                id_produto,
+                id_usuario
+            ) VALUES (?, ?, ?, ?, ?)`,
+            ['EXPURGO', qtd, motivo, idProd, idUser]
+        );
+
+        await new Promise((resolve, reject) => {
+            connection.commit((erro) => {
+                if (erro) return reject(erro);
+                resolve();
+            });
+        });
+
+        return {
+            idMovimentacao: movimentacao.insertId,
+            idProduto: idProd,
+            sku: produto.sku,
+            nome: produto.nome,
+            quantidade: qtd,
+            saldoAnterior,
+            saldoNovo,
+            justificativa: motivo,
+            idUsuario: idUser
+        };
+
+    } catch (erro) {
+        await new Promise((resolve) => {
+            connection.rollback(() => resolve());
+        });
+
+        throw erro;
+    }
+}
+
 module.exports = {
     cadastrarProduto,
     verificarSKU,
@@ -278,6 +416,8 @@ module.exports = {
     verificarSaldo,
     verificarMovimentacoes,
     listarParaEntrada,
+    listarParaExpurgo,
     registrarEntrada,
+    registrarExpurgo,
     excluir
 };
