@@ -99,15 +99,19 @@
             Exportar PDF
         </button>
 
-        <button id="btnExportarExcel" class="btn btn-secondary">
+        <button type="button" id="btnExportarExcel" class="btn btn-secondary" hidden aria-describedby="statusExportarExcel">
             Exportar Excel
         </button>
     </div>
 
-    <table class="tabela-padrao">
-        <thead id="relatorioCabecalho"></thead>
-        <tbody id="relatorioCorpo"></tbody>
-    </table>
+    <p id="statusExportarExcel" role="status" aria-atomic="true"></p>
+
+    <div class="table-wrapper" tabindex="0" role="region" aria-labelledby="relatorioTitulo">
+        <table class="tabela-padrao">
+            <thead id="relatorioCabecalho"></thead>
+            <tbody id="relatorioCorpo"></tbody>
+        </table>
+    </div>
 
 </section>
             </section>

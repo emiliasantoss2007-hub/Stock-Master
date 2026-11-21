@@ -35,6 +35,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tbody = document.querySelector("#relatorioCorpo");
     const mensagemArea = document.querySelector("#mensagemArea");
 
+    const btnPdf = document.querySelector("#btnExportarPdf");
+    const btnExcel = document.querySelector("#btnExportarExcel");
+
 
     // ========================================
     // PRODUTOS FICTÍCIOS
@@ -393,4 +396,111 @@ if (tipo === "estoque") {
             `).join("");
     }
 
+    // ========================================
+    // EXPORTAR PDF
+    // ========================================
+
+    btnPdf.addEventListener("click", () => {
+
+        window.print();
+    });
+
+
+    // ========================================
+    // EXPORTAR EXCEL
+    // ========================================
+
+    const statusExcel = document.querySelector("#statusExportarExcel");
+
+    btnExcel.hidden = tipo !== "movimentacoes";
+    if (!btnExcel.hidden && categoria) {
+        btnExcel.disabled = true;
+        statusExcel.className = "mensagem-erro";
+        statusExcel.textContent = "A exporta??o Excel n?o aceita filtro por categoria. Fa?a uma nova consulta com a op??o Todas.";
+    }
+
+    async function baixarExcel(filtros) {
+        const query = new URLSearchParams(filtros);
+        const resposta = await fetch(`/api/relatorio/movimentacoes/excel?${query}`, {
+            credentials: "same-origin"
+        });
+        if (!resposta.ok) {
+            const erro = await resposta.json().catch(() => null);
+            return { mensagem: erro?.mensagem || erro?.message ||
+                (resposta.status === 404 ? "A exporta??o Excel ainda n?o est? dispon?vel." : "") };
+        }
+
+        const tipoArquivo = resposta.headers.get("content-type")?.split(";")[0];
+        const disposicao = resposta.headers.get("content-disposition");
+        if (tipoArquivo !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+            !/^attachment(?:;|$)/i.test(disposicao || "")) {
+            return false;
+        }
+
+        const arquivo = await resposta.blob();
+        if (!arquivo.size) return false;
+
+        const url = URL.createObjectURL(arquivo);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "relatorio-movimentacoes.xlsx";
+        document.body.append(link);
+        try {
+            link.click();
+            return true;
+        } finally {
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+    }
+
+    btnExcel.addEventListener("relatorio:exportar-excel", ({ detail }) => {
+        detail.responderCom(baixarExcel(detail.filtros));
+    });
+
+    btnExcel.addEventListener("click", async () => {
+        if (btnExcel.disabled || btnExcel.hidden) return;
+
+        btnExcel.disabled = true;
+        btnExcel.setAttribute("aria-busy", "true");
+        statusExcel.className = "mensagem-processamento";
+        statusExcel.textContent = "Preparando arquivo Excel...";
+
+        try {
+            let resposta;
+            btnExcel.dispatchEvent(new CustomEvent("relatorio:exportar-excel", {
+                bubbles: true,
+                detail: {
+                    filtros: { dataInicio, dataFim },
+                    // O integrador registra uma Promise durante o evento e a resolve
+                    // com true apenas ap?s iniciar o download do XLSX recebido do Controller.
+                    responderCom(operacao) {
+                        resposta ??= Promise.resolve(operacao);
+                    }
+                }
+            }));
+
+            if (!resposta) {
+                statusExcel.className = "mensagem-erro";
+                statusExcel.textContent = "A exporta??o Excel ainda n?o est? dispon?vel.";
+                return;
+            }
+
+            const resultado = await resposta;
+            if (resultado !== true) {
+                statusExcel.className = "mensagem-erro";
+                statusExcel.textContent = resultado?.mensagem ||
+                    "N?o foi poss?vel exportar o arquivo Excel. Tente novamente.";
+                return;
+            }
+            statusExcel.className = "mensagem-sucesso";
+            statusExcel.textContent = "Download do arquivo Excel iniciado.";
+        } catch {
+            statusExcel.className = "mensagem-erro";
+            statusExcel.textContent = "N?o foi poss?vel exportar o arquivo Excel. Tente novamente.";
+        } finally {
+            btnExcel.removeAttribute("aria-busy");
+            btnExcel.disabled = false;
+        }
+    });
 });
