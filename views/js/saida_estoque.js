@@ -1,3 +1,6 @@
+
+"use strict";
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ========================================
@@ -84,126 +87,252 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================
-    // CÓDIGO ESPECÍFICO DA PÁGINA
+    // ELEMENTOS DA PÁGINA
     // ========================================
 
     const select = document.querySelector("#produtoSelect");
     const infoEstoque = document.querySelector("#infoEstoque");
     const mensagemArea = document.querySelector("#mensagemArea");
+    const formSaida = document.querySelector("#formSaida");
+    const quantidadeInput = document.querySelector("#quantidade");
+    const justificativaInput = document.querySelector("#justificativa");
 
-    const produtos = [
-    {
-        id: 1,
-        nome: "Display LCD 6.1",
-        sku: "SKU-001",
-        quantidade: 32
-    },
-    {
-        id: 2,
-        nome: "Bateria modelo A20",
-        sku: "SKU-002",
-        quantidade: 45
-    },
-    {
-        id: 3,
-        nome: "Conector USB-C",
-        sku: "SKU-003",
-        quantidade: 3
+    const token = sessionStorage.getItem("stockmaster.accessToken");
+
+    let produtos = [];
+
+
+    // ========================================
+    // MENSAGENS
+    // ========================================
+
+    function exibirMensagem(texto, classe) {
+        const mensagem = document.createElement("p");
+
+        mensagem.className = classe;
+        mensagem.textContent = texto;
+
+        mensagemArea.appendChild(mensagem);
     }
-];
 
-produtos.forEach((p) => {
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.nome} (SKU: ${p.sku})`;
-    select.appendChild(opt);
-});
+
+    // ========================================
+    // CONSULTAR PRODUTOS NO BANCO
+    // ========================================
+
+    async function carregarProdutos() {
+
+        try {
+
+            if (!token) {
+                exibirMensagem(
+                    "Sessão não encontrada. Faça login novamente.",
+                    "mensagem-erro"
+                );
+                return;
+            }
+
+            const resposta = await fetch(
+                "http://localhost:3001/api/produtos/consulta",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.success) {
+                throw new Error(
+                    resultado.message || "Não foi possível consultar os produtos."
+                );
+            }
+
+            produtos = resultado.data.produtos;
+
+            // Preserva a opção inicial do seletor
+            const opcaoInicial = select.querySelector('option[value=""]');
+
+            select.innerHTML = "";
+
+            if (opcaoInicial) {
+                select.appendChild(opcaoInicial);
+            } else {
+                const opcao = document.createElement("option");
+                opcao.value = "";
+                opcao.textContent = "Selecione um produto";
+                select.appendChild(opcao);
+            }
+
+            produtos.forEach((produto) => {
+
+                const opcao = document.createElement("option");
+
+                opcao.value = produto.idProduto;
+                opcao.textContent =
+                    `${produto.nome} (SKU: ${produto.sku})`;
+
+                select.appendChild(opcao);
+            });
+
+        } catch (erro) {
+
+            console.error("[SaidaEstoque] Erro ao carregar produtos:", erro);
+
+            exibirMensagem(
+                erro.message || "Erro ao carregar produtos.",
+                "mensagem-erro"
+            );
+        }
+    }
+
+
+    // ========================================
+    // ATUALIZAR ESTOQUE DISPONÍVEL
+    // ========================================
 
     select.addEventListener("change", () => {
-        const produto = smGetProdutoPorId(select.value);
-        infoEstoque.textContent = produto ? `Estoque disponível: ${produto.quantidade} unidade(s).` : "";
+
+        const produto = produtos.find(
+            (p) => String(p.idProduto) === String(select.value)
+        );
+
+        infoEstoque.textContent = produto
+            ? `Estoque disponível: ${produto.quantidadeEstoque} unidade(s).`
+            : "";
     });
 
-    select.addEventListener("change", () => {
-    const produto = produtos.find(
-        (p) => String(p.id) === String(select.value)
-    );
 
-    infoEstoque.textContent = produto
-        ? `Estoque disponível: ${produto.quantidade} unidade(s).`
-        : "";
-});
+    // ========================================
+    // REGISTRAR SAÍDA DE ESTOQUE
+    // ========================================
+
+    formSaida.addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+
+        mensagemArea.innerHTML = "";
+
+        const produtoId = Number(select.value);
+        const quantidade = Number(quantidadeInput.value);
+
+        const justificativa = justificativaInput
+            ? justificativaInput.value.trim()
+            : null;
+
+        // Validação do produto
+        if (!produtoId) {
+            exibirMensagem(
+                "Selecione um produto para continuar.",
+                "mensagem-erro"
+            );
+            return;
+        }
+
+        // Validação da quantidade
+        if (!Number.isInteger(quantidade) || quantidade <= 0) {
+            exibirMensagem(
+                "Informe uma quantidade inteira maior que zero.",
+                "mensagem-erro"
+            );
+            return;
+        }
+
+        const produto = produtos.find(
+            (p) => Number(p.idProduto) === produtoId
+        );
+
+        if (!produto) {
+            exibirMensagem(
+                "Produto não encontrado.",
+                "mensagem-erro"
+            );
+            return;
+        }
+
+        // RN10: não permitir saída maior que o estoque disponível
+        if (quantidade > Number(produto.quantidadeEstoque)) {
+            exibirMensagem(
+                `Estoque insuficiente. Disponível: ${produto.quantidadeEstoque} unidade(s).`,
+                "mensagem-alerta"
+            );
+            return;
+        }
+
+        try {
+
+            const resposta = await fetch(
+                "http://localhost:3001/api/estoque/saida",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        idProduto: produtoId,
+                        quantidade,
+                        justificativa
+                    })
+                }
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.success) {
+
+                exibirMensagem(
+                    resultado.message || "Não foi possível registrar a saída.",
+                    resposta.status === 409
+                        ? "mensagem-alerta"
+                        : "mensagem-erro"
+                );
+
+                return;
+            }
+
+            // Atualiza o saldo com o valor confirmado pelo backend
+            produto.quantidadeEstoque = resultado.data.estoqueAtual;
+
+            infoEstoque.textContent =
+                `Estoque disponível: ${produto.quantidadeEstoque} unidade(s).`;
+
+            exibirMensagem(
+                `Saída de ${quantidade} unidade(s) de "${produto.nome}" registrada com sucesso!`,
+                "mensagem-sucesso"
+            );
+
+            // RN: alerta de estoque crítico
+            if (Number(produto.quantidadeEstoque) <= Number(produto.estoqueMinimo ?? 5)) {
+
+                exibirMensagem(
+                    `Atenção: "${produto.nome}" está com estoque crítico (${produto.quantidadeEstoque} unidade(s)).`,
+                    "mensagem-alerta"
+                );
+            }
+
+            formSaida.reset();
+
+            infoEstoque.textContent = "";
+
+        } catch (erro) {
+
+            console.error("[SaidaEstoque] Erro ao registrar saída:", erro);
+
+            exibirMensagem(
+                "Não foi possível registrar a saída. Verifique sua conexão e tente novamente.",
+                "mensagem-erro"
+            );
+        }
+    });
 
 
-document.querySelector("#formSaida").addEventListener("submit", (e) => {
-    e.preventDefault();
+    // ========================================
+    // INICIALIZAÇÃO
+    // ========================================
 
-    mensagemArea.innerHTML = "";
-
-    const produtoId = select.value;
-
-    const quantidade = Number(
-        document.querySelector("#quantidade").value
-    );
-
-    if (!produtoId) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-erro">
-                Selecione um produto para continuar.
-            </p>`;
-        return;
-    }
-
-    if (!quantidade || quantidade <= 0) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-erro">
-                Informe uma quantidade maior que zero.
-            </p>`;
-        return;
-    }
-
-    const produto = produtos.find(
-        (p) => String(p.id) === String(produtoId)
-    );
-
-    if (!produto) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-erro">
-                Produto não encontrado.
-            </p>`;
-        return;
-    }
-
-    // RN10: não permitir saída maior que o estoque disponível
-    if (quantidade > produto.quantidade) {
-        mensagemArea.innerHTML =
-            `<p class="mensagem-alerta">
-                Estoque insuficiente. Disponível:
-                ${produto.quantidade} unidade(s).
-            </p>`;
-        return;
-    }
-
-    produto.quantidade -= quantidade;
-
-    let html =
-        `<p class="mensagem-sucesso">
-            Saída de ${quantidade} unidade(s) de
-            "${produto.nome}" registrada com sucesso!
-        </p>`;
-
-    if (produto.quantidade <= 5) {
-        html +=
-            `<p class="mensagem-alerta">
-                Atenção: "${produto.nome}" está com estoque crítico
-                (${produto.quantidade} unidade(s)).
-            </p>`;
-    }
-
-    mensagemArea.innerHTML = html;
-
-    document.querySelector("#formSaida").reset();
-    infoEstoque.textContent = "";
-});
+    carregarProdutos();
 
 });
