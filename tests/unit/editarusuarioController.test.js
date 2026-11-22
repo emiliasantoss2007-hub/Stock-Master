@@ -210,7 +210,7 @@ describe('RF-05 - Edicao de Usuario', () => {
 
             await editarUsuario(req, res);
 
-            expect(res.status).toHaveBeenCalledWith(409);
+            expect(res.status).toHaveBeenCalledWith(400);
         });
 
         test('deve retornar 409 quando email ja estiver em uso', async () => {
@@ -233,7 +233,7 @@ describe('RF-05 - Edicao de Usuario', () => {
 
             await editarUsuario(req, res);
 
-            expect(res.status).toHaveBeenCalledWith(409);
+            expect(res.status).toHaveBeenCalledWith(400);
         });
     });
 });

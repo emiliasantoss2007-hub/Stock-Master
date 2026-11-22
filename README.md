@@ -46,6 +46,13 @@ Para configurar o projeto em uma nova máquina, siga os guias na ordem:
 
 Após configurar o ambiente, o projeto poderá ser executado localmente.
 
+Para auxiliar no desenvolvimento, consulte também:
+
+3. [Fluxo de desenvolvimento com branches](docs/08-guias/guia_fluxo_branches.md)
+4. [Mapeamento do Front-end](docs/08-guias/Guia%20de%20Mapeamento%20do%20Front-end%20.md)
+
+
+
 ---
 
 ## 5. Estado atual do projeto
@@ -313,6 +320,8 @@ A documentação do StockMaster está organizada na pasta [`docs`](docs/).
 
 - [Como clonar o repositório](docs/08-guias/clonagem.md)
 - [Como configurar o ambiente](docs/08-guias/configuracao-ambiente.md)
+- [Fluxo de desenvolvimento com branches](docs/08-guias/guia_fluxo_branches.md)
+- [Mapeamento do Front-end](docs/08-guias/Guia%20de%20Mapeamento%20do%20Front-end%20.md)
 
 ---
 A documentação, arquitetura, banco de dados e ambiente de desenvolvimento estão estruturados. A próxima etapa consiste na implementação e integração das funcionalidades do sistema.

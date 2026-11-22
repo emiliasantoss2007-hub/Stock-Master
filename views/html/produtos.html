@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,17 +7,16 @@
     <meta name="description" content="Consulta de produtos StockMaster">
     <title>StockMaster | Consultar produtos</title>
 
-    <!-- CONEXÃO CSS: layout geral -->
+    <!-- CSS -->
     <link rel="stylesheet" href="../css/dashboard.css">
-
-    <!-- CONEXÃO CSS: tabela e filtros de produtos -->
     <link rel="stylesheet" href="../css/produtos.css">
 
-    <!-- CONEXÃO JS: busca e filtros -->
+    <!-- JavaScript -->
     <script src="../js/produtos.js" defer></script>
 </head>
 <body>
     <div class="dashboard-layout">
+
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark">SM</div>
@@ -27,45 +27,61 @@
             </div>
 
             <p class="nav-title">Menu principal</p>
+
             <nav class="sidebar-nav" aria-label="Navegação">
-                
+
                 <a href="dashboard_adm.html" id="dashboardLink">
-                    <span class="nav-icon">⌂</span>Dashboard</a>
-                    
+                    <span class="nav-icon">⌂</span>Dashboard
+                </a>
+
                 <a href="usuarios.html" id="usuariosLink">
-                    <span class="nav-icon">♙</span>Usuários</a>
-                    
+                    <span class="nav-icon">♙</span>Usuários
+                </a>
+
                 <a href="produtos.html" class="active">
-                    <span class="nav-icon">▣</span>
-                    <span id="produtosMenuText">Produtos</span></a>
-                    
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20"
+                            fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M12 3 21 8 12 13 3 8 12 3Z"/>
+                            <path d="M3 8v9l9 5 9-5V8"/>
+                            <path d="M12 13v9"/>
+                        </svg>
+                    </span>
+                    <span id="produtosMenuText">Produtos</span>
+                </a>
+
                 <a href="entrada_estoque.html" id="entradaLink">
-                    <span class="nav-icon">＋</span>Entrada de estoque</a>
-                    
+                    <span class="nav-icon">＋</span>Entrada de estoque
+                </a>
+
                 <a href="saída_estoque.html" id="saidaLink">
-                    <span class="nav-icon">−</span>Saída de estoque</a>
-                    
+                    <span class="nav-icon">−</span>Saída de estoque
+                </a>
+
                 <a href="expurgo_estoque.html" id="expurgoLink">
-                    <span class="nav-icon">⌫</span>Expurgo</a>
-                    
+                    <span class="nav-icon">⌫</span>Expurgo
+                </a>
+
                 <a href="historico_movimentacao.html" id="historicoLink">
-                    <span class="nav-icon">◷</span>Histórico</a>
-                    
+                    <span class="nav-icon">◷</span>Histórico
+                </a>
+
                 <a href="relatorios.html" id="relatoriosLink">
-                    <span class="nav-icon">▤</span>Relatórios</a>
-                
+                    <span class="nav-icon">▤</span>Relatórios
+                </a>
+
             </nav>
 
             <div class="sidebar-bottom">
-                <!-- HREF DESTINO FUTURO -->
                 <a href="perfil.html" id="perfilLink">⚙ Meu perfil</a>
-
-                <!-- HREF: produtos.html -> login.html -->
                 <a href="login.html">↪ Sair</a>
             </div>
         </aside>
 
         <main class="main-area">
+
             <header class="topbar">
                 <div class="topbar-context">
                     <small>Área autenticada</small>
@@ -82,10 +98,11 @@
             </header>
 
             <section class="content">
-                <div class="breadcrumb">    
-                    <!-- HREF: produtos.html -> dashboard-admin.html -->
+
+                <div class="breadcrumb">
                     <a href="dashboard_adm.html" id="breadcrumbLink">Início</a> /
                     <span id="breadcrumbPage">Produtos</span>
+                </div>
 
                 <header class="page-header">
                     <div>
@@ -93,12 +110,15 @@
                         <p>Consulte os produtos cadastrados e sua situação atual no estoque.</p>
                     </div>
 
-                    <!-- HREF: produtos.html -> cadastro-produto.html -->
-                    <a href="cadastrar_produto.html?origem=adm" id="cadastrarProdutoLink" class="button button-primary">
-                        + Cadastrar produto </a>
+                    <a href="cadastrar_produto.html?origem=adm"
+                       id="cadastrarProdutoLink"
+                       class="button button-primary">
+                        + Cadastrar produto
+                    </a>
                 </header>
 
                 <section class="product-toolbar" aria-label="Filtros de produtos">
+
                     <div class="product-toolbar-field">
                         <label for="searchProduct">Buscar produto</label>
                         <input
@@ -115,6 +135,7 @@
                             <option value="Telas">Telas</option>
                             <option value="Baterias">Baterias</option>
                             <option value="Conectores">Conectores</option>
+                            <option value="Outros">Outros</option>
                         </select>
                     </div>
 
@@ -126,9 +147,11 @@
                             <option value="Crítico">Estoque crítico</option>
                         </select>
                     </div>
+
                 </section>
 
                 <section class="panel">
+
                     <div class="panel-header">
                         <h2>Produtos cadastrados</h2>
                         <span id="productsCount">3 produtos</span>
@@ -136,6 +159,7 @@
 
                     <div class="table-wrapper">
                         <table class="product-table">
+
                             <thead>
                                 <tr>
                                     <th>Produto</th>
@@ -148,7 +172,11 @@
                             </thead>
 
                             <tbody id="productsTableBody">
-                                <tr data-search="display lcd 6.1 sku-001 telas" data-category="Telas" data-situation="Normal">
+
+                                <tr data-product-id="1"
+                                    data-search="display lcd 6.1 sku-001 telas"
+                                    data-category="Telas"
+                                    data-situation="Normal">
                                     <td>
                                         <div class="product-cell">
                                             <span class="product-thumb">▣</span>
@@ -164,15 +192,28 @@
                                     <td><span class="status status-success">Normal</span></td>
                                     <td>
                                         <div class="product-table-actions">
-                                            <!-- HREF FUTURO: produtos.html -> editar-produto.html -->
-                                            <a href="editar_produto.html?id=1" class="product-action product-action-edit">Editar</a>
-                                            <!-- HREF FUTURO: produtos.html -> produto-detalhes.html -->
-                                            <a href="produto_detalhes.html" class="product-action product-action-view">Detalhes</a>
+                                            <a href="editar_produto.html?id=1"
+                                               class="product-action product-action-edit">
+                                                Editar
+                                            </a>
+
+                                            <a href="produto_detalhes.html?id=1"
+                                               class="product-action product-action-view">
+                                                Detalhes
+                                            </a>
+
+                                            <button type="button"
+                                                class="product-action product-action-delete">
+                                                Excluir
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
 
-                                <tr data-search="bateria modelo a20 sku-002 baterias" data-category="Baterias" data-situation="Normal">
+                                <tr data-product-id="2"
+                                    data-search="bateria modelo a20 sku-002 baterias"
+                                    data-category="Baterias"
+                                    data-situation="Normal">
                                     <td>
                                         <div class="product-cell">
                                             <span class="product-thumb">▣</span>
@@ -188,15 +229,28 @@
                                     <td><span class="status status-success">Normal</span></td>
                                     <td>
                                         <div class="product-table-actions">
-                                            <!-- HREF FUTURO -->
-                                            <a href="editar_produto.html?id=2" class="product-action product-action-edit">Editar</a>
-                                            <!-- HREF FUTURO -->
-                                            <a href="produto_detalhes.html?id=2" class="product-action product-action-view">Detalhes</a>
+                                            <a href="editar_produto.html?id=2"
+                                               class="product-action product-action-edit">
+                                                Editar
+                                            </a>
+
+                                            <a href="produto_detalhes.html?id=2"
+                                               class="product-action product-action-view">
+                                                Detalhes
+                                            </a>
+
+                                            <button type="button"
+                                                class="product-action product-action-delete">
+                                                Excluir
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
 
-                                <tr data-search="conector usb-c sku-003 conectores" data-category="Conectores" data-situation="Crítico">
+                                <tr data-product-id="3"
+                                    data-search="conector usb-c sku-003 conectores"
+                                    data-category="Conectores"
+                                    data-situation="Crítico">
                                     <td>
                                         <div class="product-cell">
                                             <span class="product-thumb">▣</span>
@@ -212,21 +266,85 @@
                                     <td><span class="status status-warning">Estoque crítico</span></td>
                                     <td>
                                         <div class="product-table-actions">
-                                            <!-- HREF FUTURO -->
-                                            <a href="editar_produto.html?id=3" class="product-action product-action-edit">Editar</a>
-                                            <!-- HREF FUTURO -->
-                                            <a href="produto_detalhes.html?id=3" class="product-action product-action-view">Detalhes</a>
+                                            <a href="editar_produto.html?id=3"
+                                               class="product-action product-action-edit">
+                                                Editar
+                                            </a>
+
+                                            <a href="produto_detalhes.html?id=3"
+                                               class="product-action product-action-view">
+                                                Detalhes
+                                            </a>
+
+                                            <button type="button"
+                                                class="product-action product-action-delete">
+                                                Excluir
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
+
                             </tbody>
                         </table>
                     </div>
 
-                    <p id="productsMessage" class="product-form-message" aria-live="polite"></p>
+                    <p id="productsMessage"
+                       class="product-form-message"
+                       aria-live="polite"></p>
+
                 </section>
             </section>
+
+            <!-- MODAL DE EXCLUSÃO DE PRODUTO -->
+            <div id="deleteProductModal"
+                 class="product-modal-backdrop"
+                 hidden>
+
+                <div class="product-confirm-modal"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="deleteProductTitle">
+
+                    <div class="product-confirm-icon" aria-hidden="true">!</div>
+
+                    <h2 id="deleteProductTitle">Excluir produto</h2>
+
+                    <p>Tem certeza de que deseja excluir este produto?</p>
+
+                    <div class="product-confirm-identity">
+                        <strong id="deleteProductName"></strong>
+                        <span id="deleteProductSku"></span>
+                        <small id="deleteProductId"></small>
+                    </div>
+
+                    <p class="product-confirm-warning">
+                        A exclusão não poderá ser desfeita.
+                    </p>
+
+                    <p id="deleteProductFeedback"
+                       class="product-feedback"
+                       aria-live="polite"></p>
+
+                    <div class="product-confirm-actions">
+                        <button type="button"
+                                id="cancelDeleteProduct"
+                                class="product-button-secondary">
+                            Cancelar
+                        </button>
+
+                        <button type="button"
+                                id="confirmDeleteProduct"
+                                class="product-button-danger">
+                            Excluir produto
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
         </main>
     </div>
+
+    <script src="../js/logout.js" defer></script>
 </body>
 </html>

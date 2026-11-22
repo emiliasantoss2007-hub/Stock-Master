@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     // ========================================
     // PARÂMETROS DA URL
@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tipo = params.get("tipo");
     const categoria = params.get("categoria") || "";
     const dataInicio = params.get("inicio") || "";
+    const busca = params.get("busca") || "";
+    const apenasZerados = params.get("apenasZerados") === "true";
     const dataFim = params.get("fim") || "";
 
 
@@ -32,9 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const thead = document.querySelector("#relatorioCabecalho");
     const tbody = document.querySelector("#relatorioCorpo");
     const mensagemArea = document.querySelector("#mensagemArea");
-
-    const btnPdf = document.querySelector("#btnExportarPdf");
-    const btnExcel = document.querySelector("#btnExportarExcel");
 
 
     // ========================================
@@ -233,34 +232,72 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================
     // ESTOQUE ATUAL
     // ========================================
+else if (tipo === "estoque") {
 
-    else if (tipo === "estoque") {
+    const parametros = new URLSearchParams();
 
-        dados = produtos
-            .filter((produto) => {
-
-                if (!categoria) return true;
-
-                return produto.categoria === categoria;
-            })
-            .map((produto) => ({
-
-                SKU: produto.sku,
-
-                Produto: produto.nome,
-
-                Categoria: produto.categoria,
-
-                "Quantidade em estoque":
-                    produto.quantidade,
-
-                "Valor unitário":
-                    `R$ ${produto.valor
-                        .toFixed(2)
-                        .replace(".", ",")}`
-            }));
+    if (busca) {
+        parametros.append("busca", busca);
     }
 
+    if (categoria) {
+        parametros.append("categoria", categoria);
+    }
+
+    if (apenasZerados) {
+        parametros.append("apenasZerados", "true");
+    }
+
+    try {
+        const resposta = await fetch(
+            `/api/relatorios/estoque?${parametros.toString()}`,
+            {
+                method: "GET",
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            }
+        );
+
+        if (!resposta.ok) {
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">
+                    Não foi possível consultar o relatório de estoque.
+                </p>
+            `;
+            return;
+        }
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso || !resultado.dados) {
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">
+                    Não foi possível obter os dados do estoque.
+                </p>
+            `;
+            return;
+        }
+
+        dados = resultado.dados.itens.map((produto) => ({
+            SKU: produto.sku,
+            Produto: produto.nome,
+            Categoria: produto.categoria,
+            "Quantidade em estoque": produto.quantidadeEstoque,
+            "Valor unitário": `R$ ${Number(produto.valorUnitario).toFixed(2).replace(".", ",")}`,
+            "Valor total em estoque": `R$ ${Number(produto.valorEstoque).toFixed(2).replace(".", ",")}`
+        }));
+
+    } catch (erro) {
+        console.error("Erro ao consultar relatório de estoque:", erro);
+
+        mensagemArea.innerHTML = `
+            <p class="mensagem-erro">
+                Não foi possível conectar ao serviço de relatórios.
+            </p>
+        `;
+        return;
+    }
+}
 
     // ========================================
     // PRODUTOS CADASTRADOS
@@ -304,11 +341,18 @@ document.addEventListener("DOMContentLoaded", () => {
             ${new Date(dataFim + "T00:00:00")
                 .toLocaleDateString("pt-BR")}`;
     }
-
+if (tipo === "estoque") {
+    meta.textContent =
+        `Gerado por admin.stockmaster | ` +
+        `Categoria: ${categoria || "Todas"} | ` +
+        `Busca: ${busca || "Todos os produtos"} | ` +
+        `Somente zerados: ${apenasZerados ? "Sim" : "Não"}`;
+} else {
     meta.textContent =
         `Gerado por admin.stockmaster | ` +
         `Categoria: ${categoria || "Todas"} | ` +
         `Período: ${periodo}`;
+}
 
 
     // ========================================
@@ -348,73 +392,5 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `).join("");
     }
-
-
-    // ========================================
-    // EXPORTAR PDF
-    // ========================================
-
-    btnPdf.addEventListener("click", () => {
-
-        window.print();
-
-    });
-
-
-    // ========================================
-    // EXPORTAR EXCEL
-    // ========================================
-
-    btnExcel.addEventListener("click", () => {
-
-        if (!dados.length) {
-
-            mensagemArea.innerHTML = `
-                <p class="mensagem-erro">
-                    Não há dados para exportar.
-                </p>
-            `;
-
-            return;
-        }
-
-        const colunas = Object.keys(dados[0]);
-
-        const linhas = [
-            colunas.join(";"),
-
-            ...dados.map((linha) =>
-                colunas
-                    .map((coluna) =>
-                        `"${String(linha[coluna])
-                            .replace(/"/g, '""')}"`
-                    )
-                    .join(";")
-            )
-        ];
-
-        const csv = linhas.join("\n");
-
-        const blob = new Blob(
-            ["\ufeff" + csv],
-            {
-                type: "text/csv;charset=utf-8;"
-            }
-        );
-
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-
-        link.href = url;
-        link.download = `relatorio-${tipo}.csv`;
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        URL.revokeObjectURL(url);
-
-    });
 
 });

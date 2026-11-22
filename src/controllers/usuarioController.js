@@ -115,7 +115,7 @@ const editarUsuario = async (req, res) => {
         const loginEmUso = await UsuarioModel.verificarLogin(login.trim(), id);
 
         if (loginEmUso) {
-            return res.status(409).json({
+            return res.status(400).json({
                 sucesso: false,
                 mensagem: 'O login informado já está em uso.'
             });
@@ -124,7 +124,7 @@ const editarUsuario = async (req, res) => {
         const emailEmUso = await UsuarioModel.verificarEmail(email.trim(), id);
 
         if (emailEmUso) {
-            return res.status(409).json({
+            return res.status(400).json({
                 sucesso: false,
                 mensagem: 'O e-mail informado já está em uso.'
             });
@@ -164,8 +164,7 @@ const editarUsuario = async (req, res) => {
 
 
 
-
-// RF-05 - Buscar usuario por ID
+// RF-05 - Buscar usuário por ID
 const buscarUsuarioPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -174,14 +173,14 @@ const buscarUsuarioPorId = async (req, res) => {
         if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
             return res.status(403).json({
                 sucesso: false,
-                mensagem: 'Acesso negado. Apenas administradores podem consultar usu\u00e1rios.'
+                mensagem: 'Acesso negado. Apenas administradores podem consultar usuários.'
             });
         }
 
         if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
             return res.status(400).json({
                 sucesso: false,
-                mensagem: 'ID de usu\u00e1rio inv\u00e1lido.'
+                mensagem: 'ID de usuário inválido.'
             });
         }
 
@@ -190,14 +189,14 @@ const buscarUsuarioPorId = async (req, res) => {
         if (!usuario) {
             return res.status(404).json({
                 sucesso: false,
-                mensagem: 'Usu\u00e1rio n\u00e3o encontrado.'
+                mensagem: 'Usuário não encontrado.'
             });
         }
 
         return res.status(200).json(usuario);
 
     } catch (error) {
-        console.error('Erro ao buscar usu\u00e1rio por ID:', error);
+        console.error('Erro ao buscar usuário por ID:', error);
 
         return res.status(500).json({
             sucesso: false,
