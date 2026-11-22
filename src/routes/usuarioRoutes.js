@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 
@@ -6,6 +7,9 @@ const auth = require('../middlewares/auth');
 
 // RF-04 — Cadastro de usuário
 router.post('/usuarios', usuarioController.cadastrarUsuario);
+
+// RF-05 — Consulta de usuário por ID
+router.get('/usuarios/:id', auth, usuarioController.buscarUsuarioPorId);
 
 // RF-05 — Edição de usuário
 router.put('/usuarios/:id', auth, usuarioController.editarUsuario);
