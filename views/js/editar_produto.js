@@ -81,190 +81,186 @@ document.addEventListener("DOMContentLoaded", () => {
         relatoriosLink.style.display = "none";
     }
 
+    // ========================================
+// ELEMENTOS DO FORMULÁRIO
+// ========================================
+
+const form = document.querySelector("#formEditarProduto");
+const formMessage = document.querySelector("#formMessage");
+const btnExcluir = document.querySelector("#btnExcluir");
+
 
     // ========================================
-    // DADOS FICTÍCIOS DO PROTÓTIPO
-    // ========================================
+// CARREGAR PRODUTO DO BANCO DE DADOS
+// ========================================
 
-    const produtos = {
+async function carregarProduto() {
 
-        "1": {
-            nome: "Tela LCD 6.5",
-            categoria: "Tela",
-            sku: "SM-TEL-001",
-            codigoBarras: "7891234560012",
-            valor: "289.90",
-            quantidade: "12",
-            descricao: "Tela LCD para smartphones compatíveis."
-        },
+    if (!idProduto || !/^\d+$/.test(idProduto)) {
+        formMessage.textContent = "ID do produto inválido.";
+        formMessage.className =
+            "product-form-message product-form-message-error";
+        return;
+    }
 
-        "2": {
-            nome: "Bateria 5000mAh",
-            categoria: "Bateria",
-            sku: "SM-BAT-002",
-            codigoBarras: "7891234560029",
-            valor: "119.90",
-            quantidade: "25",
-            descricao: "Bateria de reposição para aparelhos compatíveis."
-        },
+    try {
 
-        "3": {
-            nome: "Conector USB-C",
-            categoria: "Conector",
-            sku: "SM-CON-003",
-            codigoBarras: "7891234560036",
-            valor: "39.90",
-            quantidade: "8",
-            descricao: "Conector USB-C para manutenção de dispositivos."
+        const token = sessionStorage.getItem("stockmaster.accessToken");
+        const resposta = await fetch(`/api/produtos/${idProduto}`, {method: "GET", headers: {
+            "Accept": "application/json", "Authorization": `Bearer ${token}`}});
+
+        if (!resposta.ok) {const erro = await resposta.text();
+            console.error("Resposta da API:", erro);
+            throw new Error(`Erro ${resposta.status} ao buscar produto.`);}
+        
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.success) {
+            throw new Error(resultado.message || "Produto não encontrado.");
         }
 
-    };
+        const produto = resultado.data;
 
+        document.querySelector("#nome").value = produto.nome || "";
+        document.querySelector("#categoria").value = produto.categoria || "";
+        document.querySelector("#sku").value = produto.sku || "";
+        document.querySelector("#codigoBarras").value = produto.codigo_barras || "";
+        document.querySelector("#valor").value = produto.valor ?? "";
+        document.querySelector("#quantidade").value = produto.quantidade_estoque ?? "";
+        document.querySelector("#descricao").value = produto.descricao || "";
 
-    // ========================================
-    // CARREGAR PRODUTO
-    // ========================================
+    } catch (erro) {
 
-    const produto = produtos[idProduto] || produtos["1"];
+        console.error("Erro ao carregar produto:", erro);
 
-    document.querySelector("#nome").value = produto.nome;
-    document.querySelector("#categoria").value = produto.categoria;
-    document.querySelector("#sku").value = produto.sku;
-    document.querySelector("#codigoBarras").value = produto.codigoBarras;
-    document.querySelector("#valor").value = produto.valor;
-    document.querySelector("#quantidade").value = produto.quantidade;
-    document.querySelector("#descricao").value = produto.descricao;
+        formMessage.textContent = erro.message ||
+            "Não foi possível carregar os dados do produto.";
 
+        formMessage.className =
+            "product-form-message product-form-message-error";
+    }
+}
 
-    // ========================================
-    // FORMULÁRIO
-    // ========================================
+carregarProduto();
 
-    const form = document.querySelector("#formEditarProduto");
-    const formMessage = document.querySelector("#formMessage");
+// ========================================
+// FORMULÁRIO DE EDIÇÃO
+// ========================================
 
+form.addEventListener("submit", async (event) => {
 
-    form.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-        event.preventDefault();
+    const nome = document.querySelector("#nome");
+    const categoria = document.querySelector("#categoria");
+    const valor = document.querySelector("#valor");
 
-        const nome = document.querySelector("#nome");
-        const categoria = document.querySelector("#categoria");
-        const valor = document.querySelector("#valor");
+    const codigoBarras = document.querySelector("#codigoBarras");
+    const descricao = document.querySelector("#descricao");
 
-        let formValid = true;
+    let formValid = true;
 
+    // Limpa erros anteriores
+    document.querySelector("#nomeError").textContent = "";
+    document.querySelector("#categoriaError").textContent = "";
+    document.querySelector("#valorError").textContent = "";
 
-        // Limpa erros
+    nome.classList.remove("field-invalid");
+    categoria.classList.remove("field-invalid");
+    valor.classList.remove("field-invalid");
 
-        document.querySelector("#nomeError").textContent = "";
-        document.querySelector("#categoriaError").textContent = "";
-        document.querySelector("#valorError").textContent = "";
+    // Validação do nome
+    if (!nome.value.trim()) {
+        document.querySelector("#nomeError").textContent =
+            "Informe o nome do produto.";
 
-        nome.classList.remove("field-invalid");
-        categoria.classList.remove("field-invalid");
-        valor.classList.remove("field-invalid");
+        nome.classList.add("field-invalid");
+        formValid = false;
+    }
 
+    // Validação da categoria
+    if (!categoria.value) {
+        document.querySelector("#categoriaError").textContent =
+            "Selecione uma categoria.";
 
-        // Validação do nome
+        categoria.classList.add("field-invalid");
+        formValid = false;
+    }
 
-        if (!nome.value.trim()) {
+    // Validação do valor
+    if (!valor.value || !Number.isFinite(Number(valor.value)) || Number(valor.value) < 0) {
+        document.querySelector("#valorError").textContent =
+            "Informe um valor válido.";
 
-            document.querySelector("#nomeError").textContent =
-                "Informe o nome do produto.";
+        valor.classList.add("field-invalid");
+        formValid = false;
+    }
 
-            nome.classList.add("field-invalid");
-
-            formValid = false;
-        }
-
-
-        // Validação da categoria
-
-        if (!categoria.value) {
-
-            document.querySelector("#categoriaError").textContent =
-                "Selecione uma categoria.";
-
-            categoria.classList.add("field-invalid");
-
-            formValid = false;
-        }
-
-
-        // Validação do valor
-
-        if (!valor.value || Number(valor.value) < 0) {
-
-            document.querySelector("#valorError").textContent =
-                "Informe um valor válido.";
-
-            valor.classList.add("field-invalid");
-
-            formValid = false;
-        }
-
-
-        if (!formValid) {
-
-            formMessage.textContent =
-                "Corrija os campos destacados antes de continuar.";
-
-            formMessage.className =
-                "product-form-message product-form-message-error";
-
-            return;
-        }
-
-
-        // ========================================
-        // SUCESSO VISUAL
-        // ========================================
-
+    if (!formValid) {
         formMessage.textContent =
-            "Produto atualizado com sucesso!";
+            "Corrija os campos destacados antes de continuar.";
+
+        formMessage.className =
+            "product-form-message product-form-message-error";
+
+        return;
+    }
+
+    // Verifica o ID
+    if (!idProduto || !/^\d+$/.test(idProduto)) {
+        formMessage.textContent = "ID do produto inválido.";
+
+        formMessage.className =
+            "product-form-message product-form-message-error";
+
+        return;
+    }
+
+    // Envia alterações ao backend
+    try {
+
+        const token = sessionStorage.getItem("stockmaster.accessToken");
+
+        const resposta = await fetch(`/api/produtos/${idProduto}`, {
+            method: "PUT",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                nome: nome.value.trim(),
+                categoria: categoria.value,
+                codigoBarras: codigoBarras.value.trim(),
+                valor: Number(valor.value),
+                descricao: descricao.value.trim()
+            })
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.success) {
+            throw new Error(resultado.message || "Não foi possível atualizar o produto.");
+        }
+
+        formMessage.textContent = "Produto atualizado com sucesso!";
 
         formMessage.className =
             "product-form-message product-form-message-success";
+        
+        setTimeout(() => {window.location.href = `produtos.html?origem=${origem || "adm"}`;}, 1000);
 
-    });
+    } catch (erro) {
 
+        console.error("Erro ao atualizar produto:", erro);
 
-    // ========================================
-    // EXCLUIR — SOMENTE VISUAL
-    // ========================================
+        formMessage.textContent = erro.message ||
+            "Erro ao salvar as alterações.";
 
-    const btnExcluir = document.querySelector("#btnExcluir");
+        formMessage.className =
+            "product-form-message product-form-message-error";
+    }
 
-    btnExcluir.addEventListener("click", () => {
-
-        if (origem === "tecnico") {
-
-            formMessage.textContent =
-                "Apenas o Administrador pode excluir produtos.";
-
-            formMessage.className =
-                "product-form-message product-form-message-error";
-
-            return;
-        }
-
-
-        const confirmar = window.confirm(
-            "Deseja realmente excluir este produto?"
-        );
-
-
-        if (confirmar) {
-
-            formMessage.textContent =
-                "Produto excluído com sucesso.";
-
-            formMessage.className =
-                "product-form-message product-form-message-success";
-
-        }
-
-    });
+});
 
 });
