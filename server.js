@@ -9,6 +9,7 @@ const passRoutes = require('./src/routes/passRoutes');
 const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
 const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
+const relatorioRoutes = require('./src/routes/relatorioRoutes');
 const prodEditRoutes = require('./src/routes/prodEditRoutes');
 const saidaEstoqueRoutes = require('./src/routes/saidaEstoqueRoutes');
 
@@ -82,6 +83,7 @@ app.use('/api/auth', passRoutes);
 app.use('/api', relatorioProdutoRoutes);
 app.use('/api', movimentacaoRoutes);
 app.use('/api', produtoRoutes);
+app.use('/api/relatorios', relatorioRoutes);
 app.use('/api/produtos', prodEditRoutes);
 app.use('/api/estoque/saida', saidaEstoqueRoutes);
 

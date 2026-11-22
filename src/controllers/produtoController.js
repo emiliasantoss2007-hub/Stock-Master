@@ -327,6 +327,37 @@ async function registrarExpurgo(req, res) {
     }
 }
 
+// RF-17 — Relatório de estoque
+async function relatorioEstoque(req, res) {
+    try {
+        const { busca, categoria, apenasZerados } = req.query;
+
+        const filtros = {
+            busca: typeof busca === 'string' ? busca.trim() : '',
+            categoria: typeof categoria === 'string' ? categoria.trim() : '',
+            apenasZerados:
+                apenasZerados === 'true' || apenasZerados === '1'
+        };
+
+        const inicio = Date.now();
+        const relatorio = await produtoModel.listarRelatorioEstoque(filtros);
+        const tempoMs = Date.now() - inicio;
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Relatório de estoque gerado com sucesso.',
+            desempenho: { tempoMs },
+            dados: relatorio
+        });
+    } catch (erro) {
+        console.error('Erro no RF-17 (relatório de estoque):', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao gerar relatório de estoque.'
+        });
+    }
+}
 // ========================================
 // CONSULTA DE PRODUTOS
 // ========================================
@@ -364,5 +395,6 @@ module.exports = {
     listarParaExpurgo,
     registrarEntrada,
     registrarExpurgo,
+    relatorioEstoque,
     consultarProdutos
 };

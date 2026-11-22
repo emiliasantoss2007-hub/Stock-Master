@@ -408,10 +408,89 @@ async function registrarExpurgo(idProduto, quantidade, justificativa, idUsuario)
     }
 }
 
-// ========================================
-// CONSULTA DE PRODUTOS
-// ========================================
 
+
+// RF-17 — Relatório de estoque
+async function listarRelatorioEstoque(filtros = {}) {
+    const {
+        busca = '',
+        categoria = '',
+        apenasZerados = false
+    } = filtros;
+
+    return new Promise((resolve, reject) => {
+        let sql = `
+            SELECT
+                id_produto,
+                sku,
+                nome,
+                categoria,
+                quantidade_estoque,
+                valor,
+                (quantidade_estoque * IFNULL(valor, 0)) AS valor_estoque
+            FROM produto
+            WHERE 1 = 1
+        `;
+
+        const parametros = [];
+
+        if (busca) {
+            sql += ' AND (nome LIKE ? OR sku LIKE ?)';
+            parametros.push(`%${busca}%`, `%${busca}%`);
+        }
+
+        if (categoria) {
+            sql += ' AND categoria = ?';
+            parametros.push(categoria);
+        }
+
+        if (apenasZerados) {
+            sql += ' AND quantidade_estoque = 0';
+        }
+
+        sql += ' ORDER BY nome ASC';
+
+        connection.query(sql, parametros, (erro, resultados) => {
+            if (erro) return reject(erro);
+
+            const itens = resultados.map((produto) => ({
+                idProduto: produto.id_produto,
+                sku: produto.sku,
+                nome: produto.nome,
+                categoria: produto.categoria,
+                quantidadeEstoque: Number(produto.quantidade_estoque) || 0,
+                valorUnitario: Number(produto.valor) || 0,
+                valorEstoque: Number(produto.valor_estoque) || 0
+            }));
+
+            const resumo = {
+                totalProdutos: itens.length,
+                totalUnidades: itens.reduce(
+                    (total, item) => total + item.quantidadeEstoque, 0
+                ),
+                valorTotalEstoque: itens.reduce(
+                    (total, item) => total + item.valorEstoque, 0
+                ),
+                produtosZerados: itens.filter(
+                    (item) => item.quantidadeEstoque === 0
+                ).length
+            };
+
+            resolve({
+                geradoEm: new Date(),
+                filtrosAplicados: {
+                    busca,
+                    categoria,
+                    apenasZerados
+                },
+                resumo,
+                itens
+            });
+        });
+    });
+}
+
+// CONSULTA DE PRODUTOS
 function consultarProdutos(filtros = {}) {
     return new Promise((resolve, reject) => {
         let sql = `
@@ -433,13 +512,14 @@ function consultarProdutos(filtros = {}) {
 
         if (filtros.busca) {
             sql += ` AND (
-            nome LIKE ?
-            OR sku LIKE ?
-            OR categoria LIKE ?)`;
-            
-        const termo = `%${filtros.busca}%`;
-        parametros.push(termo, termo, termo);
-}
+                nome LIKE ?
+                OR sku LIKE ?
+                OR categoria LIKE ?
+            )`;
+
+            const termo = `%${filtros.busca}%`;
+            parametros.push(termo, termo, termo);
+        }
 
         if (filtros.nome) {
             sql += ' AND nome LIKE ?';
@@ -480,5 +560,6 @@ module.exports = {
     registrarEntrada,
     registrarExpurgo,
     excluir,
+    listarRelatorioEstoque,
     consultarProdutos
 };

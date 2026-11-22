@@ -86,10 +86,6 @@
                 <section class="panel">
 
                     <div id="mensagemArea"></div>
-                    <div id="visualizarRelatorioArea" style="display: none; margin-top: 15px;">
-                        <a href="#" id="btnVisualizarRelatorio" class="btn btn-primary">
-                            Visualizar relatório </a> 
-                        </div>
 
                     <form id="formRelatorio">
 
@@ -109,6 +105,27 @@
                             </div>
                         </div>
 
+                        <div id="filtrosEstoque" style="display: none;">
+
+    <div class="nome-da-secao">
+        <div class="campo-especifico">
+            <label for="filtroBuscaEstoque">Buscar produto</label>
+            <input
+                type="text"
+                id="filtroBuscaEstoque"
+                placeholder="Digite o nome ou SKU"
+            >
+        </div>
+
+        <div class="campo-especifico">
+            <label for="apenasZerados">
+                <input type="checkbox" id="apenasZerados">
+                Somente produtos com estoque zerado
+            </label>
+        </div>
+    </div>
+
+</div>
                         <div class="nome-da-secao">
                             <div class="campo-especifico">
                                 <label for="dataInicio">Data inicial</label>
