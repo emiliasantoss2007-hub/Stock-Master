@@ -340,17 +340,13 @@ async function relatorioEstoque(req, res) {
         };
 
         const inicio = Date.now();
-
         const relatorio = await produtoModel.listarRelatorioEstoque(filtros);
-
         const tempoMs = Date.now() - inicio;
 
         return res.status(200).json({
             sucesso: true,
             mensagem: 'Relatório de estoque gerado com sucesso.',
-            desempenho: {
-                tempoMs
-            },
+            desempenho: { tempoMs },
             dados: relatorio
         });
     } catch (erro) {
@@ -359,6 +355,9 @@ async function relatorioEstoque(req, res) {
         return res.status(500).json({
             sucesso: false,
             mensagem: 'Erro ao gerar relatório de estoque.'
+        });
+    }
+}
 // ========================================
 // CONSULTA DE PRODUTOS
 // ========================================
@@ -396,6 +395,6 @@ module.exports = {
     listarParaExpurgo,
     registrarEntrada,
     registrarExpurgo,
-    relatorioEstoque
+    relatorioEstoque,
     consultarProdutos
 };

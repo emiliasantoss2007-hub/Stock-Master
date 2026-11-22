@@ -409,6 +409,8 @@ async function registrarExpurgo(idProduto, quantidade, justificativa, idUsuario)
 }
 
 
+
+// RF-17 — Relatório de estoque
 async function listarRelatorioEstoque(filtros = {}) {
     const {
         busca = '',
@@ -426,23 +428,6 @@ async function listarRelatorioEstoque(filtros = {}) {
                 quantidade_estoque,
                 valor,
                 (quantidade_estoque * IFNULL(valor, 0)) AS valor_estoque
-// ========================================
-// CONSULTA DE PRODUTOS
-// ========================================
-
-function consultarProdutos(filtros = {}) {
-    return new Promise((resolve, reject) => {
-        let sql = `
-            SELECT
-                id_produto AS idProduto,
-                sku,
-                codigo_barras AS codigoBarras,
-                nome,
-                categoria,
-                descricao,
-                quantidade_estoque AS quantidadeEstoque,
-                estoque_minimo AS estoqueMinimo,
-                valor
             FROM produto
             WHERE 1 = 1
         `;
@@ -450,20 +435,20 @@ function consultarProdutos(filtros = {}) {
         const parametros = [];
 
         if (busca) {
-            sql += ` AND (nome LIKE ? OR sku LIKE ?)`;
+            sql += ' AND (nome LIKE ? OR sku LIKE ?)';
             parametros.push(`%${busca}%`, `%${busca}%`);
         }
 
         if (categoria) {
-            sql += ` AND categoria = ?`;
+            sql += ' AND categoria = ?';
             parametros.push(categoria);
         }
 
         if (apenasZerados) {
-            sql += ` AND quantidade_estoque = 0`;
+            sql += ' AND quantidade_estoque = 0';
         }
 
-        sql += ` ORDER BY nome ASC`;
+        sql += ' ORDER BY nome ASC';
 
         connection.query(sql, parametros, (erro, resultados) => {
             if (erro) return reject(erro);
@@ -501,15 +486,40 @@ function consultarProdutos(filtros = {}) {
                 resumo,
                 itens
             });
+        });
+    });
+}
+
+// CONSULTA DE PRODUTOS
+function consultarProdutos(filtros = {}) {
+    return new Promise((resolve, reject) => {
+        let sql = `
+            SELECT
+                id_produto AS idProduto,
+                sku,
+                codigo_barras AS codigoBarras,
+                nome,
+                categoria,
+                descricao,
+                quantidade_estoque AS quantidadeEstoque,
+                estoque_minimo AS estoqueMinimo,
+                valor
+            FROM produto
+            WHERE 1 = 1
+        `;
+
+        const parametros = [];
+
         if (filtros.busca) {
             sql += ` AND (
-            nome LIKE ?
-            OR sku LIKE ?
-            OR categoria LIKE ?)`;
-            
-        const termo = `%${filtros.busca}%`;
-        parametros.push(termo, termo, termo);
-}
+                nome LIKE ?
+                OR sku LIKE ?
+                OR categoria LIKE ?
+            )`;
+
+            const termo = `%${filtros.busca}%`;
+            parametros.push(termo, termo, termo);
+        }
 
         if (filtros.nome) {
             sql += ' AND nome LIKE ?';
