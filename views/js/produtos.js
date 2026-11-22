@@ -1,62 +1,8 @@
 
-document.addEventListener("DOMContentLoaded", () => {
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
-
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
-    const ehTecnico = origem === "tecnico";
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-    const cadastrarProdutoLink = document.querySelector("#cadastrarProdutoLink");
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-    const entradaLink = document.querySelector("#entradaLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-    const breadcrumbPage = document.querySelector("#breadcrumbPage");
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-
-    // ========================================
-    // CONFIGURAÇÃO POR PERFIL
-    // ========================================
-
-    if (!ehTecnico) {
-        if (dashboardLink) dashboardLink.href = "dashboard_adm.html";
-        if (breadcrumbLink) breadcrumbLink.href = "dashboard_adm.html";
-        if (cadastrarProdutoLink) cadastrarProdutoLink.href = "cadastrar_produto.html?origem=adm";
-        if (entradaLink) entradaLink.href = "entrada_estoque.html?origem=adm";
-        if (userRole) userRole.textContent = "Administrador";
-        if (username) username.textContent = "admin.stockmaster";
-        if (produtosMenuText) produtosMenuText.textContent = "Produtos";
-        if (breadcrumbPage) breadcrumbPage.textContent = "Produtos";
-        if (usuariosLink) usuariosLink.style.display = "";
-        if (expurgoLink) expurgoLink.style.display = "";
-        if (relatoriosLink) relatoriosLink.style.display = "";
-    } else {
-        if (dashboardLink) dashboardLink.href = "dashboard_tec.html";
-        if (breadcrumbLink) breadcrumbLink.href = "dashboard_tec.html";
-        if (cadastrarProdutoLink) cadastrarProdutoLink.href = "cadastrar_produto.html?origem=tecnico";
-        if (entradaLink) entradaLink.href = "entrada_estoque.html?origem=tecnico";
-        if (userRole) userRole.textContent = "Técnico";
-        if (username) username.textContent = "tecnico.stockmaster";
-        if (produtosMenuText) produtosMenuText.textContent = "Consultar produtos";
-        if (breadcrumbPage) breadcrumbPage.textContent = "Produtos";
-        if (usuariosLink) usuariosLink.style.display = "none";
-        if (expurgoLink) expurgoLink.style.display = "none";
-        if (relatoriosLink) relatoriosLink.style.display = "none";
-    }
-
-    // ========================================
-    // ELEMENTOS DA CONSULTA E FILTROS
-    // ========================================
+document.addEventListener("DOMContentLoaded", async () => {
+    const sessao = await configurarNavegacaoDaSessao();
+    if (!sessao) return;
+    const { ehTecnico } = sessao;
 
     const searchInput = document.querySelector("#searchProduct");
     const categoryFilter = document.querySelector("#filterCategory");
@@ -280,17 +226,13 @@ document.addEventListener("DOMContentLoaded", () => {
             editar.className = "product-action product-action-edit";
             editar.textContent = "Editar";
 
-            editar.href = ehTecnico
-                ? `editar_produto.html?id=${encodeURIComponent(produto.idProduto)}&origem=tecnico`
-                : `editar_produto.html?id=${encodeURIComponent(produto.idProduto)}&origem=adm`;
+            editar.href = `editar_produto.html?id=${encodeURIComponent(produto.idProduto)}`;
 
             const visualizar = document.createElement("a");
             visualizar.className = "product-action product-action-view";
             visualizar.textContent = "Detalhes";
 
-            visualizar.href = ehTecnico
-                ? `produto_detalhes.html?id=${encodeURIComponent(produto.idProduto)}&origem=tecnico`
-                : `produto_detalhes.html?id=${encodeURIComponent(produto.idProduto)}&origem=adm`;
+            visualizar.href = `produto_detalhes.html?id=${encodeURIComponent(produto.idProduto)}`;
 
             acoes.append(editar, visualizar);
 

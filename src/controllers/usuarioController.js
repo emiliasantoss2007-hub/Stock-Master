@@ -282,8 +282,27 @@ const listarUsuarios = async (req, res) => {
 };
 
 
+const consultarMeuPerfil = async (req, res) => {
+    const id = Number(req.usuario.id_usuario);
+    if (!Number.isSafeInteger(id) || id < 1) {
+        return res.status(401).json({ mensagem: 'Sessão inválida.' });
+    }
+    try {
+        const usuario = await UsuarioModel.buscarPorId(id);
+        if (!usuario || Number(usuario.status) !== 1) {
+            return res.status(404).json({ mensagem: 'Perfil ativo não encontrado.' });
+        }
+        const { nome, login } = usuario;
+        const nivel = Number(req.usuario.id_nivel_acesso);
+        return res.set('Cache-Control', 'no-store').json({ nome, login, nivel });
+    } catch {
+        return res.status(500).json({ mensagem: 'Não foi possível consultar o perfil.' });
+    }
+};
+
 // Exporta os Controllers para serem utilizados pelas rotas
 module.exports = {
+    consultarMeuPerfil,
     cadastrarUsuario,
     editarUsuario,
     buscarUsuarioPorId,

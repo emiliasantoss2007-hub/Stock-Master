@@ -1,93 +1,12 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    const sessao = await configurarNavegacaoDaSessao();
+    if (!sessao) return;
+    const idProduto = new URLSearchParams(window.location.search).get("id");
 
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
-
-    const params = new URLSearchParams(window.location.search);
-
-    const origem = params.get("origem");
-    const idProduto = params.get("id");
-
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-
-    const produtosLink = document.querySelector("#produtosLink");
-    const cancelarProdutoLink = document.querySelector("#cancelarProdutoLink");
-
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-    const breadcrumbProdutosLink = document.querySelector("#breadcrumbProdutosLink");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-
-    // ========================================
-    // CONFIGURAÇÃO DO ADMINISTRADOR
-    // ========================================
-
-    if (origem !== "tecnico") {
-
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-
-        produtosLink.href = "produtos.html?origem=adm";
-        breadcrumbProdutosLink.href = "produtos.html?origem=adm";
-        cancelarProdutoLink.href = "produtos.html?origem=adm";
-
-        produtosMenuText.textContent = "Produtos";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-
-    // ========================================
-    // CONFIGURAÇÃO DO TÉCNICO
-    // ========================================
-
-    if (origem === "tecnico") {
-
-        dashboardLink.href = "dashboard_tec.html";
-        breadcrumbLink.href = "dashboard_tec.html";
-
-        produtosLink.href = "produtos.html?origem=tecnico";
-        breadcrumbProdutosLink.href = "produtos.html?origem=tecnico";
-        cancelarProdutoLink.href = "produtos.html?origem=tecnico";
-
-        produtosMenuText.textContent = "Consultar produtos";
-
-        userRole.textContent = "Técnico";
-        username.textContent = "tecnico.stockmaster";
-        userAvatar.textContent = "TC";
-
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
-    }
-
-    // ========================================
-// ELEMENTOS DO FORMULÁRIO
-// ========================================
-
-const form = document.querySelector("#formEditarProduto");
-const formMessage = document.querySelector("#formMessage");
-const btnExcluir = document.querySelector("#btnExcluir");
+    const form = document.querySelector("#formEditarProduto");
+    const formMessage = document.querySelector("#formMessage");
+    const btnExcluir = document.querySelector("#btnExcluir");
+    if (sessao.ehTecnico && btnExcluir) btnExcluir.style.display = "none";
 
 
     // ========================================
@@ -248,7 +167,7 @@ form.addEventListener("submit", async (event) => {
         formMessage.className =
             "product-form-message product-form-message-success";
         
-        setTimeout(() => {window.location.href = `produtos.html?origem=${origem || "adm"}`;}, 1000);
+        setTimeout(() => {window.location.href = "produtos.html";}, 1000);
 
     } catch (erro) {
 

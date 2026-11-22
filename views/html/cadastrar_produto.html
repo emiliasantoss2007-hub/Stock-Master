@@ -13,9 +13,10 @@
     <link rel="stylesheet" href="../css/produtos.css">
 
     <!-- CONEXÃO JS: validação do cadastro -->
+    <script src="../js/navegacao-sessao.js" defer></script>
     <script src="../js/cadastrar_produto.js" defer></script>
 </head>
-<body>
+<body style="visibility: hidden">
     <div class="dashboard-layout">
         <aside class="sidebar">
             <div class="brand">
@@ -96,8 +97,8 @@
 
                 <div class="user-area">
                     <div>
-                        <strong>Administrador</strong>
-                        <small>admin.stockmaster</small>
+                        <strong id="userRole"></strong>
+                        <small id="username"></small>
                     </div>
                     <span class="avatar">AD</span>
                 </div>
