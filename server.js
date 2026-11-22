@@ -10,6 +10,8 @@ const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
 const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
 const relatorioRoutes = require('./src/routes/relatorioRoutes');
+const prodEditRoutes = require('./src/routes/prodEditRoutes');
+const saidaEstoqueRoutes = require('./src/routes/saidaEstoqueRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -82,6 +84,8 @@ app.use('/api', relatorioProdutoRoutes);
 app.use('/api', movimentacaoRoutes);
 app.use('/api', produtoRoutes);
 app.use('/api/relatorios', relatorioRoutes);
+app.use('/api/produtos', prodEditRoutes);
+app.use('/api/estoque/saida', saidaEstoqueRoutes);
 
 // Rotas de usuários
 app.use(usuarioRoutes);
