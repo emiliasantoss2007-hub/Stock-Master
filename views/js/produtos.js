@@ -355,11 +355,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================
 
     async function consultarProdutos() {
-        const nome = searchInput.value.trim();
+        const busca = searchInput.value.trim();
         const categoria = categoryFilter.value;
         const parametros = new URLSearchParams();
-
-        if (nome) parametros.set("nome", nome);
+        
+        if (busca) parametros.set("busca", busca);
         if (categoria) parametros.set("categoria", categoria);
 
         productsMessage.textContent = "Consultando produtos...";

@@ -431,6 +431,16 @@ function consultarProdutos(filtros = {}) {
 
         const parametros = [];
 
+        if (filtros.busca) {
+            sql += ` AND (
+            nome LIKE ?
+            OR sku LIKE ?
+            OR categoria LIKE ?)`;
+            
+        const termo = `%${filtros.busca}%`;
+        parametros.push(termo, termo, termo);
+}
+
         if (filtros.nome) {
             sql += ' AND nome LIKE ?';
             parametros.push(`%${filtros.nome}%`);

@@ -334,10 +334,9 @@ async function registrarExpurgo(req, res) {
 async function consultarProdutos(req, res) {
     try {
         const filtros = {
-            nome: String(req.query.nome || '').trim(),
-            categoria: String(req.query.categoria || '').trim(),
-            sku: String(req.query.sku || '').trim()
-        };
+    busca: String(req.query.busca || '').trim(),
+    categoria: String(req.query.categoria || '').trim()
+};
 
         const produtos = await produtoModel.consultarProdutos(filtros);
 
