@@ -7,6 +7,14 @@ const produtoAccess = require('../middlewares/produtoAccess');
 
 const router = express.Router();
 
+// RF - Consulta de produtos
+router.get(
+    '/produtos/consulta',
+    auth,
+    produtoAccess,
+    produtoController.consultarProdutos
+);
+
 router.post('/produtos', produtoAuth, produtoCsrf, produtoAccess, produtoController.cadastrarProduto);
 
 router.delete('/produtos/:id', auth, produtoController.excluirProduto);

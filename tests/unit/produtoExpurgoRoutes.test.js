@@ -1,4 +1,5 @@
 jest.mock('../../src/controllers/produtoController', () => ({
+    consultarProdutos: jest.fn(),
     cadastrarProduto: jest.fn(),
     excluirProduto: jest.fn(),
     listarParaEntrada: jest.fn(),

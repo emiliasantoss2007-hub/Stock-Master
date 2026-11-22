@@ -426,6 +426,23 @@ async function listarRelatorioEstoque(filtros = {}) {
                 quantidade_estoque,
                 valor,
                 (quantidade_estoque * IFNULL(valor, 0)) AS valor_estoque
+// ========================================
+// CONSULTA DE PRODUTOS
+// ========================================
+
+function consultarProdutos(filtros = {}) {
+    return new Promise((resolve, reject) => {
+        let sql = `
+            SELECT
+                id_produto AS idProduto,
+                sku,
+                codigo_barras AS codigoBarras,
+                nome,
+                categoria,
+                descricao,
+                quantidade_estoque AS quantidadeEstoque,
+                estoque_minimo AS estoqueMinimo,
+                valor
             FROM produto
             WHERE 1 = 1
         `;
@@ -484,6 +501,39 @@ async function listarRelatorioEstoque(filtros = {}) {
                 resumo,
                 itens
             });
+        if (filtros.busca) {
+            sql += ` AND (
+            nome LIKE ?
+            OR sku LIKE ?
+            OR categoria LIKE ?)`;
+            
+        const termo = `%${filtros.busca}%`;
+        parametros.push(termo, termo, termo);
+}
+
+        if (filtros.nome) {
+            sql += ' AND nome LIKE ?';
+            parametros.push(`%${filtros.nome}%`);
+        }
+
+        if (filtros.categoria) {
+            sql += ' AND categoria LIKE ?';
+            parametros.push(`%${filtros.categoria}%`);
+        }
+
+        if (filtros.sku) {
+            sql += ' AND sku = ?';
+            parametros.push(filtros.sku);
+        }
+
+        sql += ' ORDER BY nome ASC';
+
+        connection.query(sql, parametros, (erro, resultados) => {
+            if (erro) {
+                return reject(erro);
+            }
+
+            resolve(resultados);
         });
     });
 }
@@ -500,5 +550,6 @@ module.exports = {
     registrarEntrada,
     registrarExpurgo,
     excluir,
-    listarRelatorioEstoque
+    listarRelatorioEstoque,
+    consultarProdutos
 };

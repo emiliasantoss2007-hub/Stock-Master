@@ -359,6 +359,32 @@ async function relatorioEstoque(req, res) {
         return res.status(500).json({
             sucesso: false,
             mensagem: 'Erro ao gerar relatório de estoque.'
+// ========================================
+// CONSULTA DE PRODUTOS
+// ========================================
+
+async function consultarProdutos(req, res) {
+    try {
+        const filtros = {
+    busca: String(req.query.busca || '').trim(),
+    categoria: String(req.query.categoria || '').trim()
+};
+
+        const produtos = await produtoModel.consultarProdutos(filtros);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                produtos
+            }
+        });
+
+    } catch (erro) {
+        console.error('Erro ao consultar produtos:', erro);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Erro interno ao consultar produtos.'
         });
     }
 }
@@ -371,4 +397,5 @@ module.exports = {
     registrarEntrada,
     registrarExpurgo,
     relatorioEstoque
+    consultarProdutos
 };
