@@ -7,28 +7,29 @@ const UsuarioModel = usuarioModel;
 const cadastrarUsuario = async (req, res) => {
 
     // Recebe os dados enviados pelo Front-end
-    const { nome, email, login, senha, perfil } = req.body;
+    const { nome, email, login, senha, perfil } = req.body ?? {};
+    const textoPreenchido = valor => typeof valor === 'string' && Boolean(valor.trim());
 
     // Validação dos campos obrigatórios
-    if (!nome) {
+    if (!textoPreenchido(nome)) {
         return res.status(400).json({
             message: "Nome é obrigatório"
         });
     }
 
-    if (!email) {
+    if (!textoPreenchido(email)) {
         return res.status(400).json({
             message: "Email é obrigatório"
         });
     }
 
-    if (!login) {
+    if (!textoPreenchido(login)) {
         return res.status(400).json({
             message: "Login é obrigatório"
         });
     }
 
-    if (!senha) {
+    if (!textoPreenchido(senha)) {
         return res.status(400).json({
             message: "Senha é obrigatória"
         });
@@ -47,10 +48,20 @@ const cadastrarUsuario = async (req, res) => {
         });
     }
 
+    if (nome.trim().length > 100 || email.trim().length > 100 || login.trim().length > 50) {
+        return res.status(400).json({ message: "Nome, e-mail ou login excede o tamanho permitido." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        return res.status(400).json({ message: "Informe um e-mail válido." });
+    }
+    if (senha.length < 8 || Buffer.byteLength(senha, 'utf8') > 72) {
+        return res.status(400).json({ message: "Informe uma senha com pelo menos 8 caracteres e no máximo 72 bytes." });
+    }
+
     const dados = {
-        nome,
-        email,
-        login,
+        nome: nome.trim(),
+        email: email.trim(),
+        login: login.trim(),
         senha,
         perfil
     };
@@ -60,14 +71,16 @@ const cadastrarUsuario = async (req, res) => {
 
         if (err) {
 
-            if (err.code === "ER_DUP_ENTRY" && err.message.includes("usuario.email")) {
+            if (err.code === "ER_DUP_ENTRY") {
                 return res.status(400).json({
-                    message: "E-mail já cadastrado."
+                    message: err.message?.includes("usuario.email")
+                        ? "E-mail já cadastrado."
+                        : "E-mail ou login já cadastrado."
                 });
             }
 
             return res.status(500).json({
-                message: err.message
+                message: "Não foi possível cadastrar o usuário."
             });
         }
 

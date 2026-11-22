@@ -15,7 +15,7 @@ describe('RF-04 - Cadastrar Usuário', () => {
             body: {
                 email: 'teste@email.com',
                 login: 'teste',
-                senha: '123456',
+                senha: '12345678',
                 perfil: 'Técnico'
             }
         };
@@ -42,7 +42,7 @@ test('deve retornar erro quando o email não for informado', async () => {
         body: {
             nome: 'Usuário Teste',
             login: 'teste',
-            senha: '123456',
+            senha: '12345678',
             perfil: 'Técnico'
         }
     };
@@ -67,7 +67,7 @@ test('deve retornar erro quando o login não for informado', async () => {
         body: {
             nome: 'Usuário Teste',
             email: 'teste@email.com',
-            senha: '123456',
+            senha: '12345678',
             perfil: 'Técnico'
         }
     };
@@ -118,7 +118,7 @@ test('deve retornar erro quando o perfil não for informado', async () => {
             nome: 'Usuário Teste',
             email: 'teste@email.com',
             login: 'teste',
-            senha: '123456'
+            senha: '12345678'
         }
     };
 
@@ -143,7 +143,7 @@ test('deve retornar erro quando o perfil for inválido', async () => {
             nome: 'Usuário Teste',
             email: 'teste@email.com',
             login: 'teste',
-            senha: '123456',
+            senha: '12345678',
             perfil: 'Gerente'
         }
     };
@@ -175,7 +175,7 @@ test('deve cadastrar usuário quando os dados forem válidos', async () => {
             nome: 'Usuário Teste',
             email: 'teste@email.com',
             login: 'teste',
-            senha: '123456',
+            senha: '12345678',
             perfil: 'Técnico'
         }
     };
@@ -192,7 +192,7 @@ test('deve cadastrar usuário quando os dados forem válidos', async () => {
             nome: 'Usuário Teste',
             email: 'teste@email.com',
             login: 'teste',
-            senha: '123456',
+            senha: '12345678',
             perfil: 'Técnico'
         },
         expect.any(Function)
