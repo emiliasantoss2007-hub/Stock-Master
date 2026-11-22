@@ -1,11 +1,14 @@
+
 /* StockMaster — estilos complementares do módulo de usuários */
 
+/* Ações do cabeçalho */
 .page-actions {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
+/* Barra de filtros */
 .toolbar {
     display: flex;
     align-items: flex-end;
@@ -21,6 +24,7 @@
 
 .toolbar-field {
     flex: 1;
+    min-width: 0;
 }
 
 .toolbar-field label,
@@ -55,10 +59,101 @@
     box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
+/* Botão de limpar filtros */
+.toolbar-actions .button-secondary {
+    width: 100%;
+    background: #ffffff;
+    color: var(--primary-dark) !important;
+    border: 1px solid var(--border);
+}
+
+.toolbar-actions .button-secondary:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark) !important;
+}
+
+/* Painel da listagem */
+.users-panel {
+    overflow: hidden;
+}
+
+.panel-subtitle {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.users-count {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Tabela de usuários */
+.users-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.users-table th {
+    white-space: nowrap;
+}
+
+.users-table td {
+    vertical-align: middle;
+}
+
 .users-table td:first-child {
     font-weight: 700;
 }
 
+.users-table tbody tr:hover {
+    background: var(--background);
+}
+
+/* Ordenação das colunas */
+.sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sort-button:hover {
+    color: #ffffff;
+}
+
+.sort-button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+    border-radius: 3px;
+}
+
+.sort-indicator {
+    color: #ffd166;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+/* Coluna de ações */
+.actions-column {
+    width: 150px;
+    text-align: center;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}
+
+/* Identificação do usuário */
 .user-cell {
     display: flex;
     align-items: center;
@@ -90,8 +185,10 @@
     font-weight: 400;
 }
 
+/* Ações por usuário */
 .table-actions {
     display: flex;
+    justify-content: center;
     gap: 8px;
 }
 
@@ -115,6 +212,64 @@
     cursor: pointer;
 }
 
+.table-action-delete:hover {
+    filter: brightness(0.96);
+}
+
+/* Carregamento e estado vazio */
+.table-loading {
+    padding: 28px 16px;
+    color: var(--text-muted);
+    text-align: center;
+    font-size: 13px;
+}
+
+.empty-state {
+    padding: 36px 20px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.empty-state[hidden] {
+    display: none !important;
+}
+
+.empty-state-icon {
+    margin-bottom: 12px;
+    font-size: 30px;
+}
+
+.empty-state strong {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Mensagens */
+.form-message-info {
+    color: var(--text-muted);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Formulários de cadastro e edição */
 .form-panel {
     max-width: 850px;
     margin: 0 auto;
@@ -169,6 +324,7 @@
     border-top: 1px solid var(--border);
 }
 
+/* Botão secundário */
 .button-secondary {
     display: inline-flex;
     align-items: center;
@@ -178,17 +334,28 @@
     border: 1px solid var(--border);
     border-radius: 9px;
     background: #ffffff;
-    color: var(--primary-dark);
+    color: var(--primary-dark) !important;
     font-size: 12px;
     font-weight: 700;
     text-decoration: none;
+    cursor: pointer;
 }
 
+.button-secondary:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark) !important;
+}
+
+/* Responsividade */
 @media (max-width: 760px) {
     .toolbar,
     .page-actions {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .toolbar-field {
+        width: 100%;
     }
 
     .page-actions .button,
@@ -202,5 +369,14 @@
 
     .form-field-full {
         grid-column: auto;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions .button,
+    .form-actions .button-secondary {
+        width: 100%;
     }
 }

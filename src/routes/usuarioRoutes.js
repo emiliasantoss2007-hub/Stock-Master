@@ -8,6 +8,9 @@ const auth = require('../middlewares/auth');
 // RF-04 — Cadastro de usuário
 router.post('/usuarios', usuarioController.cadastrarUsuario);
 
+// RF - Consulta geral de usuários
+router.get('/usuarios', auth, usuarioController.listarUsuarios);
+
 // RF-05 — Consulta de usuário por ID
 router.get('/usuarios/:id', auth, usuarioController.buscarUsuarioPorId);
 
