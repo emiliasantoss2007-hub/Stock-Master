@@ -33,5 +33,8 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Testar geração, conteúdo e paginação dos PDFs
+        run: npm test -- --runTestsByPath tests/unit/relatorioPdfController.test.js
+
       - name: Executar testes automatizados
         run: npm test

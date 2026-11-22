@@ -1,5 +1,9 @@
 const ProdutoModel = require('../models/produtoModel');
 
+const LINHAS_POR_PAGINA = 35;
+const LINHAS_CABECALHO = 8;
+const LINHAS_DADOS_POR_PAGINA = LINHAS_POR_PAGINA - LINHAS_CABECALHO;
+
 function textoPdf(valor) {
     const texto = String(valor ?? '-').replace(/[\r\n]+/g, ' ');
     return Buffer.from(texto, 'latin1').toString('hex').toUpperCase();
@@ -12,37 +16,43 @@ function formatarMoeda(valor) {
     });
 }
 
-function gerarDocumentoPdf(relatorio) {
-    const linhas = [
+function criarCabecalho(relatorio, paginaAtual, totalPaginas) {
+    return [
         'STOCKMASTER - RELATORIO DE ESTOQUE',
         `Gerado em: ${new Date(relatorio.geradoEm).toLocaleString('pt-BR')}`,
         `Produtos: ${relatorio.resumo.totalItens} | Unidades: ${relatorio.resumo.totalUnidades}`,
         `Produtos zerados: ${relatorio.resumo.produtosZerados} | Valor em estoque: ${formatarMoeda(relatorio.resumo.valorTotalEstoque)}`,
+        `Pagina ${paginaAtual} de ${totalPaginas}`,
         '',
         'SKU | PRODUTO | CATEGORIA | QTD. | VALOR UNIT. | VALOR ESTOQUE',
         '--------------------------------------------------------------------------------'
     ];
+}
 
-    if (relatorio.itens.length === 0) {
-        linhas.push('Nenhum produto encontrado para os filtros informados.');
-    } else {
-        relatorio.itens.forEach((item) => {
-            linhas.push([
-                item.sku,
-                item.nome,
-                item.categoria,
-                item.quantidadeEstoque,
-                item.valorUnitario == null ? '-' : formatarMoeda(item.valorUnitario),
-                formatarMoeda(item.valorEstoque)
-            ].join(' | '));
-        });
+function gerarDocumentoPdf(relatorio) {
+    const linhasDados = relatorio.itens.length === 0
+        ? ['Nenhum produto encontrado para os filtros informados.']
+        : relatorio.itens.map((item) => [
+            item.sku,
+            item.nome,
+            item.categoria,
+            item.quantidadeEstoque,
+            item.valorUnitario == null ? '-' : formatarMoeda(item.valorUnitario),
+            formatarMoeda(item.valorEstoque)
+        ].join(' | '));
+
+    const blocosDados = [];
+
+    for (let i = 0; i < linhasDados.length; i += LINHAS_DADOS_POR_PAGINA) {
+        blocosDados.push(linhasDados.slice(i, i + LINHAS_DADOS_POR_PAGINA));
     }
 
-    const paginas = [];
+    const totalPaginas = Math.max(1, blocosDados.length);
 
-    for (let i = 0; i < linhas.length; i += 35) {
-        paginas.push(linhas.slice(i, i + 35));
-    }
+    const paginas = blocosDados.map((bloco, indice) => [
+        ...criarCabecalho(relatorio, indice + 1, totalPaginas),
+        ...bloco
+    ]);
 
     const objetos = [];
     const paginasIds = paginas.map((_, indice) => 4 + indice * 2);
@@ -140,4 +150,7 @@ async function exportarRelatorioEstoquePdf(req, res) {
     }
 }
 
-module.exports = { exportarRelatorioEstoquePdf };
+module.exports = { 
+    exportarRelatorioEstoquePdf,
+    gerarDocumentoPdf
+};
