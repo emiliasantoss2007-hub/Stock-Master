@@ -327,11 +327,42 @@ async function registrarExpurgo(req, res) {
     }
 }
 
+// ========================================
+// CONSULTA DE PRODUTOS
+// ========================================
+
+async function consultarProdutos(req, res) {
+    try {
+        const filtros = {
+    busca: String(req.query.busca || '').trim(),
+    categoria: String(req.query.categoria || '').trim()
+};
+
+        const produtos = await produtoModel.consultarProdutos(filtros);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                produtos
+            }
+        });
+
+    } catch (erro) {
+        console.error('Erro ao consultar produtos:', erro);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Erro interno ao consultar produtos.'
+        });
+    }
+}
+
 module.exports = {
     cadastrarProduto,
     excluirProduto,
     listarParaEntrada,
     listarParaExpurgo,
     registrarEntrada,
-    registrarExpurgo
+    registrarExpurgo,
+    consultarProdutos
 };
