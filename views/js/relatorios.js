@@ -145,12 +145,80 @@ document.addEventListener("DOMContentLoaded", () => {
     const formulario = document.querySelector("#formRelatorio");
     const tipoRelatorio = document.querySelector("#tipoRelatorio");
     const filtroCategoria = document.querySelector("#filtroCategoria");
+    const filtrosEstoque = document.querySelector("#filtrosEstoque");
+    const filtroBuscaEstoque = document.querySelector("#filtroBuscaEstoque");
+    const apenasZerados = document.querySelector("#apenasZerados");
     const dataInicio = document.querySelector("#dataInicio");
     const dataFim = document.querySelector("#dataFim");
     const mensagemArea = document.querySelector("#mensagemArea");
     
     const visualizarRelatorioArea = document.querySelector("#visualizarRelatorioArea");
     const btnVisualizarRelatorio = document.querySelector("#btnVisualizarRelatorio");
+
+    // ========================================
+   // EXIBIR FILTROS CONFORME O TIPO DE RELATÓRIO
+  // ========================================
+
+function atualizarFiltros() {
+    const estoqueSelecionado = tipoRelatorio.value === "estoque";
+
+    filtrosEstoque.style.display = estoqueSelecionado ? "block" : "none";
+
+    if (estoqueSelecionado) {
+    carregarCategoriasEstoque();
+   }
+}
+
+tipoRelatorio.addEventListener("change", atualizarFiltros);
+
+atualizarFiltros();
+
+async function carregarCategoriasEstoque() {
+    try {
+        const resposta = await fetch("/api/relatorios/estoque", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        });
+
+        if (!resposta.ok) {
+            return;
+        }
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso || !resultado.dados) {
+            return;
+        }
+
+        const categorias = [
+            ...new Set(
+                resultado.dados.itens
+                    .map((produto) => produto.categoria)
+                    .filter((categoria) => categoria)
+            )
+        ];
+
+        const categoriaSelecionada = filtroCategoria.value;
+
+        const opcoes = [new Option("Todas", "")];
+
+        categorias.sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+        categorias.forEach((categoria) => {
+            opcoes.push(new Option(categoria, categoria));
+        });
+
+        filtroCategoria.replaceChildren(...opcoes);
+
+        if (categorias.includes(categoriaSelecionada)) {
+            filtroCategoria.value = categoriaSelecionada;
+        }
+
+    } catch (erro) {
+        console.error("Erro ao carregar categorias do estoque:", erro);
+    }
+}
 
     // ========================================
     // PREENCHER CATEGORIAS
@@ -174,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // GERAR RELATÓRIO
     // ========================================
 
-    formulario.addEventListener("submit", (e) => {
+    formulario.addEventListener("submit", async (e) => {
 
         e.preventDefault();
 
@@ -315,35 +383,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
         else if (tipo === "estoque") {
 
-            dados = produtos
+    const busca = filtroBuscaEstoque.value.trim();
+    const somenteZerados = apenasZerados.checked;
 
-                .filter((produto) => {
+    const parametros = new URLSearchParams();
 
-                    if (!categoria) {
-                        return true;
-                    }
+    if (busca) {
+        parametros.append("busca", busca);
+    }
 
-                    return produto.categoria === categoria;
-                })
+    if (categoria) {
+        parametros.append("categoria", categoria);
+    }
 
-                .map((produto) => ({
+    if (somenteZerados) {
+        parametros.append("apenasZerados", "true");
+    }
 
-                    SKU: produto.sku,
+    try {
+        const resposta = await fetch(
+            `/api/relatorios/estoque?${parametros.toString()}`,
+            {
+                method: "GET",
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            }
+        );
 
-                    Produto: produto.nome,
+        if (!resposta.ok) {
+            const mensagem = resposta.status === 401
+                ? "Acesso não autenticado. Faça login novamente."
+                : resposta.status === 403
+                    ? "Acesso negado. Apenas administradores podem consultar relatórios."
+                    : "Não foi possível gerar o relatório de estoque.";
 
-                    Categoria: produto.categoria,
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">${mensagem}</p>
+            `;
 
-                    "Quantidade em estoque":
-                        produto.quantidade,
-
-                    "Valor unitário":
-                        `R$ ${produto.valor
-                            .toFixed(2)
-                            .replace(".", ",")}`
-                }));
+            return;
         }
 
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso || !resultado.dados) {
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">
+                    Não foi possível obter os dados do estoque.
+                </p>
+            `;
+
+            return;
+        }
+
+        dados = resultado.dados.itens.map((produto) => ({
+            SKU: produto.sku,
+            Produto: produto.nome,
+            Categoria: produto.categoria,
+            "Quantidade em estoque": produto.quantidadeEstoque,
+            "Valor unitário": `R$ ${produto.valorUnitario.toFixed(2).replace(".", ",")}`,
+            "Valor total em estoque": `R$ ${produto.valorEstoque.toFixed(2).replace(".", ",")}`
+        }));
+
+    } catch (erro) {
+        console.error("Erro ao consultar relatório de estoque:", erro);
+
+        mensagemArea.innerHTML = `
+            <p class="mensagem-erro">
+                Não foi possível conectar ao serviço de relatórios.
+            </p>
+        `;
+
+        return;
+    }
+}
         // ========================================
         // RELATÓRIO DE PRODUTOS CADASTRADOS
         // ========================================
@@ -407,8 +520,24 @@ document.addEventListener("DOMContentLoaded", () => {
         // BOTÃO VISUALIZAR RELATÓRIO
         // ========================================
 
-        btnVisualizarRelatorio.href =
-            `visualizar_relatorios.html?tipo=${encodeURIComponent(tipo)}&categoria=${encodeURIComponent(categoria)}&inicio=${encodeURIComponent(inicio)}&fim=${encodeURIComponent(fim)}&origem=adm`;
+        const parametrosVisualizacao = new URLSearchParams({
+    tipo,
+    categoria,
+    inicio,
+    fim,
+    origem: "adm"
+});
+
+if (tipo === "estoque") {
+    parametrosVisualizacao.set("busca", filtroBuscaEstoque.value.trim());
+    parametrosVisualizacao.set(
+        "apenasZerados",
+        String(apenasZerados.checked)
+    );
+}
+
+btnVisualizarRelatorio.href =
+    `visualizar_relatorios.html?${parametrosVisualizacao.toString()}`;
 
         visualizarRelatorioArea.style.display = "block";
 
