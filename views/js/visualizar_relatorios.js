@@ -397,14 +397,86 @@ if (tipo === "estoque") {
     }
 
     // ========================================
-    // EXPORTAR PDF
-    // ========================================
+// EXPORTAR PDF
+// ========================================
 
-    btnPdf.addEventListener("click", () => {
+btnPdf.addEventListener("click", async () => {
+    if (btnPdf.disabled) return;
 
-        window.print();
-    });
+    btnPdf.disabled = true;
+    btnPdf.setAttribute("aria-busy", "true");
 
+    mensagemArea.className = "mensagem-processamento";
+    mensagemArea.textContent = "Preparando arquivo PDF...";
+
+    try {
+        const filtros = {};
+
+        if (tipo === "movimentacoes") {
+            if (dataInicio) filtros.dataInicio = dataInicio;
+            if (dataFim) filtros.dataFim = dataFim;
+        }
+
+        if (tipo === "estoque") {
+            if (busca) filtros.busca = busca;
+            if (categoria) filtros.categoria = categoria;
+            filtros.apenasZerados = String(apenasZerados);
+        }
+
+        const query = new URLSearchParams(filtros);
+        const resposta = await fetch(
+            `/api/relatorio/${tipo}/pdf?${query}`,
+            { credentials: "same-origin" }
+        );
+
+        if (!resposta.ok) {
+            const erro = await resposta.json().catch(() => null);
+            throw new Error(
+                erro?.mensagem || "Não foi possível exportar o relatório PDF."
+            );
+        }
+
+        const tipoArquivo = resposta.headers.get("content-type")?.split(";")[0];
+        const disposicao = resposta.headers.get("content-disposition");
+
+        if (
+            tipoArquivo !== "application/pdf" ||
+            !/^attachment(?:;|$)/i.test(disposicao || "")
+        ) {
+            throw new Error("O servidor não retornou um arquivo PDF válido.");
+        }
+
+        const arquivo = await resposta.blob();
+
+        if (!arquivo.size) {
+            throw new Error("O arquivo PDF está vazio.");
+        }
+
+        const url = URL.createObjectURL(arquivo);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = `relatorio-${tipo}.pdf`;
+        document.body.append(link);
+
+        try {
+            link.click();
+        } finally {
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        mensagemArea.className = "mensagem-sucesso";
+        mensagemArea.textContent = "Download do arquivo PDF iniciado.";
+    } catch (erro) {
+        mensagemArea.className = "mensagem-erro";
+        mensagemArea.textContent =
+            erro.message || "Não foi possível exportar o arquivo PDF.";
+    } finally {
+        btnPdf.removeAttribute("aria-busy");
+        btnPdf.disabled = false;
+    }
+});
 
     // ========================================
     // EXPORTAR EXCEL
