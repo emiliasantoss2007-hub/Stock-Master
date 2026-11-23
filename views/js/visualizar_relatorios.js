@@ -70,53 +70,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     ];
 
 
-    // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
-
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        }
-    ];
-
 
     // ========================================
     // TÍTULOS
@@ -160,6 +113,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================
 
     let dados = [];
+    const filtrosMovimentacoes = {};
+    if (dataInicio) filtrosMovimentacoes.dataInicio = dataInicio;
+    if (dataFim) filtrosMovimentacoes.dataFim = dataFim;
 
 
     // ========================================
@@ -167,66 +123,52 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================
 
     if (tipo === "movimentacoes") {
+        btnExcel.disabled = true;
+        btnPdf.disabled = true;
+        mensagemArea.setAttribute("role", "status");
+        mensagemArea.className = "mensagem-processamento";
+        mensagemArea.textContent = "Carregando movimentações...";
 
-        dados = movimentacoes
-            .filter((movimentacao) => {
+        try {
+            const query = new URLSearchParams(filtrosMovimentacoes);
+            const resposta = await fetch("/api/relatorios/movimentacoes/previa?" + query, {
+                credentials: "same-origin"
+            });
+            if (resposta.status === 401) throw new Error("Sessão expirada. Faça login novamente.");
+            if (resposta.status === 403) throw new Error("Apenas administradores podem consultar movimentações.");
+            if (resposta.status === 400) throw new Error("Informe um período válido.");
 
-                if (!dataInicio) return true;
+            const resultado = resposta.ok ? await resposta.json() : null;
+            if (!Array.isArray(resultado?.registros)) throw new Error("Não foi possível consultar as movimentações.");
 
-                return new Date(movimentacao.data) >=
-                    new Date(dataInicio + "T00:00:00");
-            })
-            .filter((movimentacao) => {
-
-                if (!dataFim) return true;
-
-                return new Date(movimentacao.data) <=
-                    new Date(dataFim + "T23:59:59");
-            })
-            .filter((movimentacao) => {
-
-                if (!categoria) return true;
-
-                const produto = produtos.find(
-                    (p) => p.id === movimentacao.produtoId
-                );
-
-                return produto &&
-                    produto.categoria === categoria;
-            })
-            .map((movimentacao) => {
-
-                const produto = produtos.find(
-                    (p) => p.id === movimentacao.produtoId
-                );
-
-                const data = new Date(movimentacao.data);
-
+            const formatarData = new Intl.DateTimeFormat("pt-BR", {
+                dateStyle: "short", timeStyle: "medium", timeZone: "UTC"
+            });
+            dados = resultado.registros.map(movimentacao => {
+                const data = movimentacao.data_movimentacao && new Date(movimentacao.data_movimentacao);
                 return {
-                    Data:
-                        data.toLocaleDateString("pt-BR") +
-                        " " +
-                        data.toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                        }),
-
-                    Produto: produto
-                        ? produto.nome
-                        : "Produto removido",
-
-                    Tipo: movimentacao.tipo,
-
+                    "Código": movimentacao.id_movimentacao,
+                    Produto: movimentacao.nome_produto,
+                    SKU: movimentacao.sku_produto,
+                    "Tipo de movimentação": movimentacao.tipo_movimentacao,
                     Quantidade: movimentacao.quantidade,
-
-                    Responsável: movimentacao.usuario,
-
-                    Justificativa:
-                        movimentacao.justificativa || "-"
+                    Data: data && Number.isFinite(data.getTime()) ? formatarData.format(data) : null,
+                    "Responsável": movimentacao.nome_responsavel,
+                    Justificativa: movimentacao.justificativa
                 };
             });
+            mensagemArea.className = "";
+            mensagemArea.textContent = "";
+            btnExcel.disabled = false;
+            btnPdf.disabled = false;
+        } catch (erro) {
+            mensagemArea.className = "mensagem-erro";
+            mensagemArea.textContent = erro instanceof TypeError || erro instanceof SyntaxError
+                ? "Não foi possível consultar as movimentações."
+                : erro.message;
+            return;
+        }
     }
-
 
     // ========================================
     // ESTOQUE ATUAL
@@ -340,7 +282,12 @@ else if (tipo === "estoque") {
             ${new Date(dataFim + "T00:00:00")
                 .toLocaleDateString("pt-BR")}`;
     }
-if (tipo === "estoque") {
+if (tipo === "movimentacoes") {
+    if (dataInicio && !dataFim) periodo = "A partir de " + dataInicio.split("-").reverse().join("/");
+    if (!dataInicio && dataFim) periodo = "Até " + dataFim.split("-").reverse().join("/");
+    const total = new Intl.NumberFormat("pt-BR").format(dados.length);
+    meta.textContent = `Período: ${periodo} | Datas em UTC | Registros: ${total}`;
+} else if (tipo === "estoque") {
     meta.textContent =
         `Gerado por admin.stockmaster | ` +
         `Categoria: ${categoria || "Todas"} | ` +
@@ -362,7 +309,7 @@ if (tipo === "estoque") {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align:center; padding:30px;">
+                <td colspan="${tipo === "movimentacoes" ? 8 : 6}" style="text-align:center; padding:30px;">
                     Nenhum dado encontrado para os filtros selecionados.
                 </td>
             </tr>
@@ -380,16 +327,10 @@ if (tipo === "estoque") {
             </tr>
         `;
 
-        tbody.innerHTML =
-            dados.map((linha) => `
-                <tr>
-                    ${colunas
-                        .map((coluna) =>
-                            `<td>${linha[coluna]}</td>`
-                        )
-                        .join("")}
-                </tr>
-            `).join("");
+        for (const linha of dados) {
+            const tr = tbody.insertRow();
+            for (const coluna of colunas) tr.insertCell().textContent = linha[coluna] ?? "—";
+        }
     }
 
     // ========================================
@@ -408,10 +349,7 @@ btnPdf.addEventListener("click", async () => {
     try {
         const filtros = {};
 
-        if (tipo === "movimentacoes") {
-            if (dataInicio) filtros.dataInicio = dataInicio;
-            if (dataFim) filtros.dataFim = dataFim;
-        }
+        if (tipo === "movimentacoes") Object.assign(filtros, filtrosMovimentacoes);
 
         if (tipo === "estoque") {
             if (busca) filtros.busca = busca;
@@ -544,10 +482,7 @@ btnPdf.addEventListener("click", async () => {
 
             const filtros = {};
 
-            if (tipo === "movimentacoes") {
-                if (dataInicio) filtros.dataInicio = dataInicio;
-                if (dataFim) filtros.dataFim = dataFim;
-            }
+            if (tipo === "movimentacoes") Object.assign(filtros, filtrosMovimentacoes);
 
             if (tipo === "estoque") {
                 if (busca) filtros.busca = busca;

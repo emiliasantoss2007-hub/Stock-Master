@@ -75,6 +75,77 @@ function retornarRegistros(registros) {
     connection.query.mockImplementationOnce((sql, parametros, callback) => callback(null, registros));
 }
 
+const ROTA_PREVIA = '/api/relatorios/movimentacoes/previa';
+
+function solicitarPrevia(query = '', token = admin) {
+    return fetch(origem + ROTA_PREVIA + query, {
+        headers: token ? { cookie: 'stockmaster_session=' + token } : {}
+    });
+}
+
+test.each([
+    ['', []],
+    ['?dataInicio=2026-09-01', ['2026-09-01 00:00:00']],
+    ['?dataFim=2026-09-30', ['2026-09-30']],
+    ['?dataInicio=2026-09-01&dataFim=2026-09-30', ['2026-09-01 00:00:00', '2026-09-30']]
+])('prévia aceita filtros opcionais %s e lista vazia', async (query, parametros) => {
+    retornarRegistros([]);
+    const resposta = await solicitarPrevia(query);
+    expect(resposta.status).toBe(200);
+    expect(await resposta.json()).toEqual({ registros: [] });
+    expect(connection.query).toHaveBeenCalledWith(
+        expect.stringContaining('FROM movimentacao m'), parametros, expect.any(Function)
+    );
+});
+
+test('prévia protege a sessão e rejeita filtros inválidos antes da consulta', async () => {
+    expect((await solicitarPrevia('', null)).status).toBe(401);
+    expect((await solicitarPrevia('', tecnico)).status).toBe(403);
+    for (const query of [
+        '?dataInicio=2026-02-31', '?dataInicio=2026-10-01&dataFim=2026-09-30',
+        '?dataFim=2026-01-01&dataFim=2026-01-02', '?categoria=Telas'
+    ]) {
+        expect((await solicitarPrevia(query)).status).toBe(400);
+    }
+    expect(connection.query).not.toHaveBeenCalled();
+});
+
+test('prévia trata falha sem expor mensagem do banco', async () => {
+    connection.query.mockImplementationOnce((_sql, _params, cb) => cb(new Error('Detalhe de teste')));
+    const resposta = await solicitarPrevia();
+    expect(resposta.status).toBe(500);
+    expect(await resposta.json()).toEqual({ message: 'Não foi possível consultar as movimentações.' });
+});
+
+test('prévia, XLSX e PDF consultam o mesmo período e registros', async () => {
+    const registro = {
+        id_movimentacao: 21, nome_produto: 'Tela teste', sku_produto: '00021',
+        tipo_movimentacao: 'entrada', quantidade: 3, data_movimentacao: new Date('2026-09-08T14:30:00Z'),
+        nome_responsavel: 'Pessoa teste', justificativa: 'Conferência'
+    };
+    const query = '?dataInicio=2026-09-01&dataFim=2026-09-30';
+    for (let i = 0; i < 3; i++) retornarRegistros([{ ...registro, login_responsavel: 'interno' }]);
+
+    const previa = await solicitarPrevia(query);
+    expect(previa.status).toBe(200);
+    expect(previa.headers.get('cache-control')).toBe('no-store');
+    expect(await previa.json()).toEqual({
+        registros: [{ ...registro, data_movimentacao: registro.data_movimentacao.toISOString() }]
+    });
+
+    const aba = await lerExcel(await solicitar(query));
+    expect(aba.getRow(2).values.slice(1)).toEqual(Object.values(registro));
+
+    const pdf = await fetch(origem + '/api/relatorio/movimentacoes/pdf' + query, {
+        headers: { cookie: 'stockmaster_session=' + admin }
+    });
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers.get('content-type')).toContain('application/pdf');
+    expect(Buffer.from(await pdf.arrayBuffer()).subarray(0, 5).toString()).toBe('%PDF-');
+    const consultas = connection.query.mock.calls.map(([sql, parametros]) => [sql, parametros]);
+    expect(consultas).toEqual([consultas[0], consultas[0], consultas[0]]);
+});
+
 async function lerExcel(resposta) {
     expect(resposta.status).toBe(200);
     expect(resposta.headers.get('content-type')).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
