@@ -647,6 +647,7 @@ function resumirEstoque() {
     return new Promise((resolve, reject) => {
         connection.query(`
             SELECT COUNT(*) AS cadastrados,
+                   COUNT(CASE WHEN quantidade_estoque > 0 THEN 1 END) AS disponiveis,
                    COALESCE(SUM(quantidade_estoque), 0) AS unidades,
                    COUNT(CASE WHEN quantidade_estoque <= estoque_minimo THEN 1 END) AS criticos
             FROM produto

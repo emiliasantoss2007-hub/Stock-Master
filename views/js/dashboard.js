@@ -1,5 +1,6 @@
 "use strict";
 
+const painelTecnico = document.body.dataset.dashboard === "tecnico";
 const indicadoresDashboard = document.querySelectorAll("[data-indicador]");
 const movimentacoesDashboard = document.querySelector("#movimentacoesDashboard");
 const alertaEstoque = document.querySelector("#alertaEstoque");
@@ -10,7 +11,7 @@ const tiposDashboard = { ENTRADA: "Entrada", SAIDA: "Saída", "SAÍDA": "Saída"
 function informarMovimentacoes(mensagem) {
     movimentacoesDashboard.replaceChildren();
     const celula = movimentacoesDashboard.insertRow().insertCell();
-    celula.colSpan = 5;
+    celula.colSpan = painelTecnico ? 4 : 5;
     celula.setAttribute("role", "status");
     celula.textContent = mensagem;
 }
@@ -20,14 +21,14 @@ async function carregarDashboard() {
     informarMovimentacoes("Carregando movimentações...");
     alertaEstoque.textContent = "Carregando dados do estoque...";
     try {
-        const resposta = await fetch("/api/dashboard");
+        const resposta = await fetch(painelTecnico ? "/api/dashboard/tecnico" : "/api/dashboard");
         if (resposta.status === 401) {
             window.location.replace("login.html");
             return;
         }
         if (resposta.status === 403) {
-            alertaEstoque.textContent = "Acesso restrito a administradores.";
-            informarMovimentacoes("Acesso restrito a administradores.");
+            alertaEstoque.textContent = "Acesso restrito a este perfil.";
+            informarMovimentacoes("Acesso restrito a este perfil.");
             return;
         }
         if (!resposta.ok) throw new Error();
@@ -49,7 +50,7 @@ async function carregarDashboard() {
             const tipo = tiposDashboard[String(item.tipo).toUpperCase()] ?? item.tipo;
             for (const valor of [item.produto, tipo, item.quantidade,
                 data && Number.isFinite(data.getTime()) ? datasDashboard.format(data) : null,
-                item.responsavel]) {
+                ...(!painelTecnico ? [item.responsavel] : [])]) {
                 linha.insertCell().textContent = valor ?? "—";
             }
         }

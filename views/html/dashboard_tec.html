@@ -11,7 +11,7 @@
     <script src="../js/menu-lateral.js" defer></script>
     <script src="../js/navegacao-sessao.js" defer></script>
 </head>
-<body>
+<body data-dashboard="tecnico">
     <div class="dashboard-layout">
         <aside class="sidebar">
             <div class="brand">
@@ -101,26 +101,26 @@
                 <section class="dashboard-grid" aria-label="Indicadores do Técnico">
                     <article class="metric-card">
                         <small>Produtos disponíveis</small>
-                        <strong>248</strong>
-                        <span>Consulta atualizada</span>
+                        <strong data-indicador="disponiveis">&mdash;</strong>
+                        <span>Produtos com saldo positivo</span>
                     </article>
 
                     <article class="metric-card">
                         <small>Entradas hoje</small>
-                        <strong>12</strong>
+                        <strong data-indicador="entradas">&mdash;</strong>
                         <span>Registros realizados</span>
                     </article>
 
                     <article class="metric-card">
                         <small>Saídas hoje</small>
-                        <strong>08</strong>
+                        <strong data-indicador="saidas">&mdash;</strong>
                         <span>Registros realizados</span>
                     </article>
 
                     <article class="metric-card">
                         <small>Itens críticos</small>
-                        <strong>07</strong>
-                        <span class="status-warning">Requer atenção</span>
+                        <strong data-indicador="criticos">&mdash;</strong>
+                        <span>No limite mínimo ou abaixo</span>
                     </article>
                 </section>
 
@@ -140,29 +140,10 @@
                                         <th>Produto</th>
                                         <th>Tipo</th>
                                         <th>Quantidade</th>
-                                        <th>Status</th>
+                                        <th>Data</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Display LCD 6.1</td>
-                                        <td>Saída</td>
-                                        <td>02</td>
-                                        <td><span class="status status-success">Registrada</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Bateria modelo A20</td>
-                                        <td>Entrada</td>
-                                        <td>10</td>
-                                        <td><span class="status status-success">Registrada</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Conector USB-C</td>
-                                        <td>Saída</td>
-                                        <td>18</td>
-                                        <td><span class="status status-warning">Estoque crítico</span></td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="movimentacoesDashboard"></tbody>
                             </table>
                         </div>
                     </article>
@@ -173,6 +154,7 @@
                         </div>
 
                         <div class="alert-list">
+                            <p id="alertaEstoque" role="status">Carregando dados do estoque...</p>
                             <!-- HREF DESTINO FUTURO: views/html/entrada-estoque.html -->
                             <a href="entrada_estoque.html?origem=tecnico" class="alert alert-info">
                                 <strong>Registrar entrada</strong>
@@ -191,5 +173,6 @@
         </main>
     </div>
     <script src='../js/logout.js' defer></script>
+    <script src='../js/dashboard.js' defer></script>
 </body>
 </html>

@@ -59,7 +59,7 @@ function normalizarTipo(valor) {
     return tipo;
 }
 
-async function consultarHistorico(filtros = {}, { limite } = {}) {
+async function consultarHistorico(filtros = {}, { limite, idUsuario } = {}) {
     if (!filtros || typeof filtros !== 'object' || Array.isArray(filtros)) {
         throw erroFiltro('Os filtros devem ser informados em um objeto.');
     }
@@ -75,6 +75,11 @@ async function consultarHistorico(filtros = {}, { limite } = {}) {
 
     const condicoes = [];
     const valores = [];
+    if (idUsuario !== undefined) {
+        if (!Number.isSafeInteger(idUsuario) || idUsuario < 1) throw erroFiltro('Usuário inválido.');
+        condicoes.push('m.id_usuario = ?');
+        valores.push(idUsuario);
+    }
 
     if (idProduto !== null) {
         condicoes.push('m.id_produto = ?');
@@ -130,4 +135,20 @@ async function consultarHistorico(filtros = {}, { limite } = {}) {
     });
 }
 
-module.exports = { consultarHistorico };
+function contarMovimentacoesDeHoje(idUsuario) {
+    return new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT COUNT(CASE WHEN UPPER(TRIM(tipo_movimentacao)) = 'ENTRADA' THEN 1 END) AS entradas,
+                   COUNT(CASE WHEN UPPER(TRIM(tipo_movimentacao)) IN ('SAIDA', 'SAÍDA') THEN 1 END) AS saidas
+            FROM movimentacao
+            WHERE id_usuario = ?
+              AND data_movimentacao >= CURRENT_DATE
+              AND data_movimentacao < CURRENT_DATE + INTERVAL 1 DAY
+        `, [idUsuario], (erro, registros) => {
+            if (erro) return reject(erro);
+            resolve(registros[0]);
+        });
+    });
+}
+
+module.exports = { consultarHistorico, contarMovimentacoesDeHoje };
