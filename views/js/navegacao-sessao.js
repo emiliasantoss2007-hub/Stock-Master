@@ -1,6 +1,16 @@
 "use strict";
 
-async function configurarNavegacaoDaSessao() {
+let navegacaoDaSessao;
+const paginasComMenuAdministrativo = new Set([
+    "usuarios.html", "cadastrar_usuarios.html", "editar_usuario.html", "expurgo_estoque.html",
+    "relatorios.html", "visualizar_relatorios.html", "relatorio_produtos.html"
+]);
+
+function configurarNavegacaoDaSessao() {
+    return navegacaoDaSessao ??= carregarNavegacaoDaSessao();
+}
+
+async function carregarNavegacaoDaSessao() {
     try {
         const resposta = await fetch("/usuarios/me", { headers: { Accept: "application/json" } });
         if (resposta.status === 401) {
@@ -12,6 +22,11 @@ async function configurarNavegacaoDaSessao() {
         if (nivel !== 1 && nivel !== 2) throw new Error("Perfil não reconhecido");
 
         const ehTecnico = nivel === 2;
+        const pagina = window.location.pathname.split("/").at(-1);
+        if (ehTecnico && paginasComMenuAdministrativo.has(pagina)) {
+            window.location.replace("dashboard_tec.html");
+            return null;
+        }
         const painel = ehTecnico ? "dashboard_tec.html" : "dashboard_adm.html";
         for (const link of document.querySelectorAll('a[href^="dashboard_adm.html"], a[href^="dashboard_tec.html"]')) {
             link.href = painel;
@@ -19,11 +34,7 @@ async function configurarNavegacaoDaSessao() {
         for (const link of document.querySelectorAll('a[href^="perfil.html"]')) {
             link.href = "perfil.html?origem=" + (ehTecnico ? "tecnico" : "adm");
         }
-        if (ehTecnico) {
-            for (const link of document.querySelectorAll("#usuariosLink, #expurgoLink, #relatoriosLink")) {
-                link.style.display = "none";
-            }
-        }
+        padronizarMenuLateral(ehTecnico);
 
         const textos = {
             "#userRole": ehTecnico ? "Técnico" : "Administrador",
@@ -46,3 +57,5 @@ async function configurarNavegacaoDaSessao() {
         return null;
     }
 }
+
+document.addEventListener("DOMContentLoaded", configurarNavegacaoDaSessao);

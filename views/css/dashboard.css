@@ -153,15 +153,19 @@ body {
     text-decoration: none;
 }
 
-.sidebar-admin {
+.sidebar:not(.sidebar-padronizado) {
+    visibility: hidden;
+}
+
+.sidebar-padronizado {
     overflow-y: auto;
 }
 
-.sidebar-admin .brand {
+.sidebar-padronizado .brand {
     margin-bottom: 24px;
 }
 
-.sidebar-admin .admin-brand-logo {
+.sidebar-padronizado .admin-brand-logo {
     display: block;
     width: 100%;
     max-width: 200px;
@@ -170,23 +174,23 @@ body {
     margin-inline: auto;
 }
 
-.sidebar-admin .sidebar-nav {
+.sidebar-padronizado .sidebar-nav {
     display: flex;
     gap: 12px;
     flex-shrink: 0;
 }
 
-.sidebar-admin .nav-title {
+.sidebar-padronizado .nav-title {
     margin-bottom: 4px;
 }
 
-.sidebar-admin .sidebar-bottom {
+.sidebar-padronizado .sidebar-bottom {
     flex-shrink: 0;
     margin-top: 12px;
     padding-top: 8px;
 }
 
-.sidebar-admin .sidebar-bottom a {
+.sidebar-padronizado .sidebar-bottom a {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -194,7 +198,7 @@ body {
     font-size: 13px;
 }
 
-.sidebar-admin .nav-icon {
+.sidebar-padronizado .nav-icon {
     display: block;
     flex: 0 0 22px;
     width: 22px;
@@ -202,7 +206,7 @@ body {
     color: #ffffff;
 }
 
-.sidebar-admin + .main-area .dashboard-columns > .panel {
+.sidebar-padronizado + .main-area .dashboard-columns > .panel {
     min-width: 0;
 }
 
