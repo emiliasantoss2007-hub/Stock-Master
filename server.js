@@ -6,12 +6,19 @@ const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
+const { criarRelatorioExcelRoutes } = require('./src/routes/relatorioExcelRoutes');
+const { consultarHistorico } = require('./src/models/movimentacaoModel');
+const { listarRelatorioEstoque } = require('./src/models/produtoModel');
+const { consultarRelatorioProdutos } = require('./src/models/relatorioProdutoModel');
+const autenticarRelatorio = require('./src/middlewares/produtoAuth');
+const autorizarRelatorio = require('./src/middlewares/adminOnly');
 const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
 const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
 const relatorioRoutes = require('./src/routes/relatorioRoutes');
 const prodEditRoutes = require('./src/routes/prodEditRoutes');
 const saidaEstoqueRoutes = require('./src/routes/saidaEstoqueRoutes');
+const relatorioMovimentacaoRoutes = require('./src/routes/relatorioMovimentacaoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -88,12 +95,20 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
+app.use(criarRelatorioExcelRoutes({
+    autenticar: autenticarRelatorio,
+    autorizar: autorizarRelatorio,
+    consultarHistorico,
+    listarRelatorioEstoque,
+    consultarRelatorioProdutos
+}));
 app.use('/api', relatorioProdutoRoutes);
 app.use('/api', movimentacaoRoutes);
 app.use('/api', produtoRoutes);
 app.use('/api/relatorios', relatorioRoutes);
 app.use('/api/produtos', prodEditRoutes);
 app.use('/api/estoque/saida', saidaEstoqueRoutes);
+app.use('/api', relatorioMovimentacaoRoutes);
 
 // Rotas de usuários
 app.use(usuarioRoutes);

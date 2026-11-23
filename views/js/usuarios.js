@@ -65,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 : [];
 
             renderizarTabela();
-
             atualizarIndicadoresOrdenacao();
 
             usersMessage.textContent = "";
@@ -199,9 +198,9 @@ document.addEventListener("DOMContentLoaded", () => {
         botaoExcluir.textContent = "Excluir";
         botaoExcluir.dataset.user = nome;
 
-        // Mantém o comportamento de exclusão exclusivamente visual
+        // Executa a exclusão real no banco de dados
         botaoExcluir.addEventListener("click", () => {
-            excluirVisualmente(linha, nome);
+            excluirUsuario(linha, usuario, botaoExcluir);
         });
 
         acoes.appendChild(botaoEditar);
@@ -235,32 +234,75 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("");
     }
 
-    // Mantém a exclusão visual já existente
-    function excluirVisualmente(linha, nome) {
+    // Exclui o usuário no banco de dados
+    async function excluirUsuario(linha, usuario, botao) {
+
+        const nome = usuario.nome || "este usuário";
+        const id = usuario.id_usuario;
 
         const confirmado = window.confirm(
-            `Deseja excluir o usuário ${nome}?`
+            `Tem certeza que deseja excluir o usuário ${nome}? Esta ação não poderá ser desfeita.`
         );
 
         if (!confirmado) {
             return;
         }
 
-        linha.remove();
+        const token = sessionStorage.getItem("stockmaster.accessToken");
 
-        usuarios = usuarios.filter(
-            (usuario) => String(usuario.id_usuario) !==
-                String(linha.dataset.id)
-        );
-
-        atualizarContador();
-
-        if (tableBody.children.length === 0) {
-            mostrarEstadoVazio();
+        if (!token) {
+            usersMessage.textContent =
+                "Sessão não encontrada. Faça login novamente.";
+            return;
         }
 
-        usersMessage.textContent =
-            `Usuário ${nome} excluído visualmente.`;
+        // Impede múltiplos cliques durante a requisição
+        botao.disabled = true;
+        botao.textContent = "Excluindo...";
+
+        try {
+
+            const resposta = await fetch(`/usuarios/${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const resultado = await obterRespostaJson(resposta);
+
+            if (!resposta.ok) {
+                throw new Error(
+                    resultado.mensagem || "Não foi possível excluir o usuário."
+                );
+            }
+
+            // Remove da interface somente após confirmação do backend
+            usuarios = usuarios.filter(
+                (item) => String(item.id_usuario) !== String(id)
+            );
+
+            linha.remove();
+
+            atualizarContador();
+
+            if (usuarios.length === 0) {
+                mostrarEstadoVazio();
+            }
+
+            usersMessage.textContent =
+                resultado.mensagem || `Usuário ${nome} excluído com sucesso.`;
+
+        } catch (erro) {
+
+            console.error("Erro ao excluir usuário:", erro);
+
+            usersMessage.textContent = erro.message;
+
+            // Restaura o botão caso a exclusão não tenha sido concluída
+            botao.disabled = false;
+            botao.textContent = "Excluir";
+        }
     }
 
     // Exibe o estado vazio da tabela
@@ -323,7 +365,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 indicador.textContent =
                     sortDirection === "asc" ? " ↑" : " ↓";
 
-                botao.setAttribute("aria-sort",
+                botao.setAttribute(
+                    "aria-sort",
                     sortDirection === "asc"
                         ? "ascending"
                         : "descending"

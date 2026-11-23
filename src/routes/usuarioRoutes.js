@@ -20,4 +20,7 @@ router.get('/usuarios/:id', auth, usuarioController.buscarUsuarioPorId);
 // RF-05 — Edição de usuário
 router.put('/usuarios/:id', auth, usuarioController.editarUsuario);
 
+// RF - Exclusão de usuário
+router.delete('/usuarios/:id', auth, usuarioController.excluirUsuario);
+
 module.exports = router;

@@ -153,6 +153,101 @@ function excluir(idProduto) {
     });
 }
 
+
+async function excluirComVerificacao(idProduto) {
+    if (!Number.isInteger(Number(idProduto)) || Number(idProduto) <= 0) {
+        const erro = new Error('ID do produto inválido.');
+        erro.code = 'PRODUCT_ID_INVALID';
+        throw erro;
+    }
+
+    await new Promise((resolve, reject) => {
+        connection.beginTransaction((erro) => {
+            if (erro) return reject(erro);
+            resolve();
+        });
+    });
+
+    try {
+        const query = (sql, parametros = []) => {
+            return new Promise((resolve, reject) => {
+                connection.query(sql, parametros, (erro, resultado) => {
+                    if (erro) return reject(erro);
+                    resolve(resultado);
+                });
+            });
+        };
+
+        // Bloqueia o produto durante a operação
+        const produtos = await query(
+            `SELECT id_produto, quantidade_estoque
+             FROM produto
+             WHERE id_produto = ?
+             FOR UPDATE`,
+            [idProduto]
+        );
+
+        if (!produtos.length) {
+            const erro = new Error('Produto não encontrado.');
+            erro.code = 'PRODUCT_NOT_FOUND';
+            throw erro;
+        }
+
+        const saldo = Number(produtos[0].quantidade_estoque);
+
+        if (saldo !== 0) {
+            const erro = new Error(
+                'Não é possível excluir um produto com saldo diferente de zero.'
+            );
+            erro.code = 'PRODUCT_HAS_STOCK';
+            throw erro;
+        }
+
+        const movimentacoes = await query(
+            `SELECT id_movimentacao
+             FROM movimentacao
+             WHERE id_produto = ?
+             LIMIT 1`,
+            [idProduto]
+        );
+
+        if (movimentacoes.length > 0) {
+            const erro = new Error(
+                'Não é possível excluir um produto com movimentações registradas.'
+            );
+            erro.code = 'PRODUCT_HAS_MOVEMENTS';
+            throw erro;
+        }
+
+        const resultado = await query(
+            `DELETE FROM produto WHERE id_produto = ?`,
+            [idProduto]
+        );
+
+        if (resultado.affectedRows !== 1) {
+            const erro = new Error('Não foi possível confirmar a exclusão.');
+            erro.code = 'PRODUCT_DELETE_NOT_CONFIRMED';
+            throw erro;
+        }
+
+        await new Promise((resolve, reject) => {
+            connection.commit((erro) => {
+                if (erro) return reject(erro);
+                resolve();
+            });
+        });
+
+        return true;
+
+    } catch (erro) {
+        await new Promise((resolve) => {
+            connection.rollback(() => resolve());
+        });
+
+        throw erro;
+    }
+}
+
 function listarParaEntrada() {
     return new Promise((resolve, reject) => {
         const sql = `
@@ -560,6 +655,7 @@ module.exports = {
     registrarEntrada,
     registrarExpurgo,
     excluir,
+    excluirComVerificacao,
     listarRelatorioEstoque,
     consultarProdutos
 };

@@ -19,44 +19,144 @@ function falha(code, message) {
     return Object.assign(new Error(message), { code });
 }
 
-function validarContrato(dados) {
-    if (!dados || !Array.isArray(dados.cabecalhos) ||
-        dados.cabecalhos.length !== CABECALHOS.length ||
-        !CABECALHOS.every((titulo, i) => dados.cabecalhos[i] === titulo) ||
+
+
+function validarContrato(dados, opcoes = {}) {
+    const cabecalhosEsperados = opcoes.cabecalhos || CABECALHOS;
+
+    if (
+        !dados ||
+        !Array.isArray(dados.cabecalhos) ||
+        dados.cabecalhos.length === 0 ||
+        dados.cabecalhos.length > 50 ||
+        dados.cabecalhos.some(
+            titulo => typeof titulo !== 'string' || !titulo.trim()
+        ) ||
+        new Set(dados.cabecalhos).size !== dados.cabecalhos.length ||
+        dados.cabecalhos.length !== cabecalhosEsperados.length ||
+        dados.cabecalhos.some(
+            (titulo, indice) => titulo !== cabecalhosEsperados[indice]
+        ) ||
         !Array.isArray(dados.linhas) ||
         !Number.isSafeInteger(dados.totalRegistros) ||
-        dados.totalRegistros !== dados.linhas.length) {
-        throw falha('INVALID_DATA', 'Esperado { cabecalhos, linhas, totalRegistros } com oito colunas na ordem oficial.');
+        dados.totalRegistros !== dados.linhas.length
+    ) {
+        throw falha('INVALID_DATA', 'Contrato de dados do relatório Excel inválido.');
+    }
+
+    for (const linha of dados.linhas) {
+        if (!Array.isArray(linha) || linha.length !== dados.cabecalhos.length) {
+            throw falha('INVALID_DATA', 'Cada linha deve corresponder à quantidade de cabeçalhos.');
+        }
     }
 }
 
-function validarLinha(linha) {
-    if (!Array.isArray(linha) || linha.length !== 8) {
-        throw falha('INVALID_DATA', 'Cada linha deve conter exatamente oito células.');
+function dataValida(valor) {
+    if (valor instanceof Date) {
+        return Number.isFinite(valor.getTime());
     }
-    for (const [i, valor] of linha.entries()) {
+
+    if (
+        typeof valor !== 'string' ||
+        !/^\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})?)?$/.test(valor)
+    ) {
+        return false;
+    }
+
+    const dia = valor.slice(0, 10);
+    const dataDia = new Date(`${dia}T00:00:00.000Z`);
+
+    if (
+        !Number.isFinite(dataDia.getTime()) ||
+        dataDia.toISOString().slice(0, 10) !== dia
+    ) {
+        return false;
+    }
+
+    if (valor.length === 10) return true;
+
+    const normalizada = valor.includes(' ')
+        ? valor.replace(' ', 'T')
+        : valor;
+
+    const comFuso = /Z$|[+-]\d{2}:\d{2}$/.test(normalizada)
+        ? normalizada
+        : `${normalizada}Z`;
+
+    return Number.isFinite(new Date(comFuso).getTime());
+}
+
+function validarLinha(linha, opcoes = {}) {
+    if (!Array.isArray(linha) || linha.length === 0 || linha.length > 50) {
+        throw falha('INVALID_DATA', 'Quantidade de células inválida.');
+    }
+
+    const colunasData = opcoes.colunasData ?? [5];
+    const colunasInteiras = opcoes.colunasInteiras ?? [0, 4];
+    const colunasMoeda = opcoes.colunasMoeda ?? [];
+
+    for (const indice of [...colunasData, ...colunasInteiras, ...colunasMoeda]) {
+        if (!Number.isInteger(indice) || indice < 0 || indice >= linha.length) {
+            throw falha('INVALID_DATA', 'Configuração de coluna inválida.');
+        }
+    }
+
+    for (let indice = 0; indice < linha.length; indice++) {
+        const valor = linha[indice];
+
         if (valor === '') continue;
-        if (i === 5) {
-            // Strings ISO sem fuso são tratadas como UTC, sem depender do fuso do host.
-            if (valor instanceof Date && !Number.isFinite(valor.getTime())) throw falha('INVALID_DATA', 'Data inválida.');
-            const texto = valor instanceof Date ? valor.toISOString() : valor;
-            if (typeof texto !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})?)?$/.test(texto)) {
-                throw falha('INVALID_DATA', 'Data deve ser Date válido ou string ISO.');
-            }
-            const data = new Date(texto.length === 10 ? `${texto}T00:00:00Z` : /Z$|[+-]\d{2}:\d{2}$/.test(texto) ? texto : `${texto.replace(' ', 'T')}Z`);
-            const dia = texto.slice(0, 10);
-            const calendario = new Date(`${dia}T00:00:00Z`);
-            if (!Number.isFinite(data.getTime()) || !Number.isFinite(calendario.getTime()) || calendario.toISOString().slice(0, 10) !== dia) {
+
+        if (colunasData.includes(indice)) {
+            if (!dataValida(valor)) {
                 throw falha('INVALID_DATA', 'Data inválida.');
             }
-        } else if (i === 4) {
-            if (typeof valor !== 'number' || !Number.isSafeInteger(valor) || valor < 0 || valor > 999999999999999) {
-                throw falha('INVALID_DATA', 'Quantidade deve ser inteiro numérico não negativo ou campo vazio.');
+            continue;
+        }
+
+        if (colunasInteiras.includes(indice)) {
+            if (
+                typeof valor !== 'number' ||
+                !Number.isSafeInteger(valor) ||
+                valor < 0 ||
+                valor > 999999999999999
+            ) {
+                throw falha('INVALID_DATA', 'Número inteiro inválido.');
             }
-        } else if (i === 0 && typeof valor === 'number') {
-            if (!Number.isSafeInteger(valor) || valor < 0) throw falha('INVALID_DATA', 'Código numérico inválido.');
-        } else if (typeof valor !== 'string' || valor.length > 32767 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(valor)) {
-            throw falha('INVALID_DATA', 'Texto inválido, objeto de fórmula ou texto além do limite XLSX.');
+            continue;
+        }
+
+        if (colunasMoeda.includes(indice)) {
+            if (
+                typeof valor !== 'number' ||
+                !Number.isFinite(valor) ||
+                valor < 0 ||
+                valor > 999999999999999
+            ) {
+                throw falha('INVALID_DATA', 'Valor monetário inválido.');
+            }
+            continue;
+        }
+
+        if (valor instanceof Date) {
+            if (!Number.isFinite(valor.getTime())) {
+                throw falha('INVALID_DATA', 'Data inválida.');
+            }
+            continue;
+        }
+
+        if (typeof valor === 'number') {
+            if (!Number.isFinite(valor) || Math.abs(valor) > 999999999999999) {
+                throw falha('INVALID_DATA', 'Número inválido.');
+            }
+            continue;
+        }
+
+        if (
+            typeof valor !== 'string' ||
+            valor.length > 32767 ||
+            /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(valor)
+        ) {
+            throw falha('INVALID_DATA', 'Texto inválido ou além do limite XLSX.');
         }
     }
 }
@@ -70,14 +170,14 @@ async function removerTemporario(diretorio) {
     await fs.rm(diretorio, { recursive: true, force: true });
 }
 
-async function gravarEntrada(dados, arquivo, prazo) {
+async function gravarEntrada(dados, arquivo, prazo, opcoes) {
     const handle = await fs.open(arquivo, 'wx', 0o600);
     let bytes = 0;
     let lote = '';
     try {
         for (let i = 0; i < dados.linhas.length; i++) {
             if (performance.now() > prazo) throw falha('EXPORT_TIMEOUT', 'Tempo limite da exportação excedido.');
-            validarLinha(dados.linhas[i]);
+            validarLinha(dados.linhas[i], opcoes);
             const texto = `${JSON.stringify(dados.linhas[i])}\n`;
             bytes += Buffer.byteLength(texto);
             if (bytes > MAX_ENTRADA_BYTES) throw falha('INPUT_LIMIT', 'Entrada excede 256 MiB; divida o relatório.');
@@ -94,15 +194,29 @@ async function gravarEntrada(dados, arquivo, prazo) {
     }
 }
 
-function executarProcesso(entrada, saida, opcoes, prazo) {
+function executarProcesso(entrada, saida, opcoes, prazo, dados) {
     return new Promise((resolve, reject) => {
         const filho = fork(path.join(__dirname, '../workers/relatorioExcelWorker.js'),
-            [entrada, saida, String(opcoes.linhasPorAba)], {
-                execArgv: ['--max-old-space-size=128'],
-                // Não herda configurações Node nem credenciais do banco de dados.
-                env: { SystemRoot: process.env.SystemRoot, TEMP: os.tmpdir(), TMP: os.tmpdir() },
-                stdio: ['ignore', 'ignore', 'ignore', 'ipc'], windowsHide: true
-            });
+            [
+    entrada,
+    saida,
+    String(opcoes.linhasPorAba),
+    JSON.stringify({
+        cabecalhos: dados.cabecalhos,
+        nomeAba: opcoes.nomeAba || 'Movimentações',
+        larguras: opcoes.larguras || [12, 32, 22, 24, 14, 23, 28, 55],
+        colunasData: opcoes.colunasData || [5],
+        colunasInteiras: opcoes.colunasInteiras || [0, 4],
+        colunasMoeda: opcoes.colunasMoeda || []
+    })
+],
+
+{
+    execArgv: ['--max-old-space-size=128'],
+    // Não herda configurações Node nem credenciais do banco de dados.
+    env: { SystemRoot: process.env.SystemRoot, TEMP: os.tmpdir(), TMP: os.tmpdir() },
+    stdio: ['ignore', 'ignore', 'ignore', 'ipc'], windowsHide: true
+});
         let resultado;
         let erro;
         let finalizado = false;
@@ -142,12 +256,17 @@ function executarProcesso(entrada, saida, opcoes, prazo) {
 async function gerarRelatorioExcel(dados, opcoes = {}) {
     if (!opcoes || typeof opcoes !== 'object' || Array.isArray(opcoes)) throw falha('INVALID_OPTIONS', 'Opções devem ser um objeto.');
     if (ocupada) throw falha('EXPORT_BUSY', 'Já existe uma exportação em andamento neste processo.');
-    validarContrato(dados);
+    validarContrato(dados, opcoes);
     const config = {
-        linhasPorAba: opcoes.linhasPorAba ?? MAX_LINHAS_ABA,
-        timeoutMs: opcoes.timeoutMs ?? 120000,
-        maxRssMB: opcoes.maxRssMB ?? 256
-    };
+    linhasPorAba: opcoes.linhasPorAba ?? MAX_LINHAS_ABA,
+    timeoutMs: opcoes.timeoutMs ?? 120000,
+    maxRssMB: opcoes.maxRssMB ?? 256,
+    nomeAba: opcoes.nomeAba,
+    larguras: opcoes.larguras,
+    colunasData: opcoes.colunasData,
+    colunasInteiras: opcoes.colunasInteiras,
+    colunasMoeda: opcoes.colunasMoeda
+};
     if (!Number.isInteger(config.linhasPorAba) || config.linhasPorAba < 1 || config.linhasPorAba > MAX_LINHAS_ABA ||
         !Number.isInteger(config.timeoutMs) || config.timeoutMs < 1 || config.timeoutMs > 600000 ||
         !Number.isInteger(config.maxRssMB) || config.maxRssMB < 32 || config.maxRssMB > 512) {
@@ -161,8 +280,8 @@ async function gerarRelatorioExcel(dados, opcoes = {}) {
         const entrada = path.join(diretorio, 'entrada.jsonl');
         const caminhoArquivo = path.join(diretorio, 'movimentacoes.xlsx');
         const prazo = inicio + config.timeoutMs;
-        await gravarEntrada(dados, entrada, prazo);
-        const resultado = await executarProcesso(entrada, caminhoArquivo, config, prazo);
+        await gravarEntrada(dados, entrada, prazo, config);
+        const resultado = await executarProcesso(entrada, caminhoArquivo, config, prazo, dados);
         if (resultado.totalRegistros !== dados.totalRegistros) throw falha('WORKER_ERROR', 'Contagem de registros divergente.');
         await fs.unlink(entrada);
         return {
