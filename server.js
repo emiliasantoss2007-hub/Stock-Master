@@ -8,6 +8,8 @@ const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
 const { criarRelatorioExcelRoutes } = require('./src/routes/relatorioExcelRoutes');
 const { consultarHistorico } = require('./src/models/movimentacaoModel');
+const { listarRelatorioEstoque } = require('./src/models/produtoModel');
+const { consultarRelatorioProdutos } = require('./src/models/relatorioProdutoModel');
 const autenticarRelatorio = require('./src/middlewares/produtoAuth');
 const autorizarRelatorio = require('./src/middlewares/adminOnly');
 const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
@@ -87,7 +89,9 @@ app.use('/api/auth', passRoutes);
 app.use(criarRelatorioExcelRoutes({
     autenticar: autenticarRelatorio,
     autorizar: autorizarRelatorio,
-    consultarHistorico
+    consultarHistorico,
+    listarRelatorioEstoque,
+    consultarRelatorioProdutos
 }));
 app.use('/api', relatorioProdutoRoutes);
 app.use('/api', movimentacaoRoutes);
