@@ -8,6 +8,8 @@
 
     <!-- CONEXÃO CSS: views/html -> views/css -->
     <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="../js/menu-lateral.js" defer></script>
+    <script src="../js/navegacao-sessao.js" defer></script>
 </head>
 <body>
     <div class="dashboard-layout">
@@ -19,29 +21,29 @@
             <nav class="sidebar-nav" aria-label="Navegação do Administrador">
                 <div>
                     <p class="nav-title">Menu principal</p>
-                    <a href="dashboard_adm.html" id="dashboardLink"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> <span>Dashboard</span></a>
+                    <a href="dashboard_adm.html" id="dashboardLink"><span>Dashboard</span></a>
                 </div>
                 <div>
                     <p class="nav-title">Gerenciamento</p>
-                    <a href="usuarios.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M2 20v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2m0-16a3 3 0 0 1 0 6m2 3a5 5 0 0 1 4 5v2"/></svg> <span>Usuários</span></a>
-                    <a href="produtos.html?origem=adm"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5m-9 5v10"/></svg> <span>Produtos</span></a>
+                    <a href="usuarios.html"><span>Usuários</span></a>
+                    <a href="produtos.html?origem=adm"><span>Produtos</span></a>
                 </div>
                 <div>
                     <p class="nav-title">Movimentações</p>
-                    <a href="entrada_estoque.html?origem=adm"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7v14"/></svg> <span>Entrada de estoque</span></a>
-                    <a href="saída_estoque.html?origem=adm"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg> <span>Saída de estoque</span></a>
-                    <a href="expurgo_estoque.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3m4 0-1 15H6L5 6m5 4v7m4-7v7"/></svg> <span>Expurgo</span></a>
+                    <a href="entrada_estoque.html?origem=adm"><span>Entrada de estoque</span></a>
+                    <a href="saída_estoque.html?origem=adm"><span>Saída de estoque</span></a>
+                    <a href="expurgo_estoque.html"><span>Expurgo</span></a>
                 </div>
                 <div>
                     <p class="nav-title">Consultas</p>
-                    <a href="historico_movimentacao.html?origem=adm"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 1 2.6 6.4M3 5v7h7m2-5v5l3 2"/></svg> <span>Histórico</span></a>
-                    <a href="relatorios.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18M8 17v-5m5 5V6m5 11V9"/></svg> <span>Relatórios</span></a>
+                    <a href="historico_movimentacao.html?origem=adm"><span>Histórico</span></a>
+                    <a href="relatorios.html"><span>Relatórios</span></a>
                 </div>
             </nav>
 
             <div class="sidebar-bottom">
-                <a href="perfil.html?origem=adm"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg> <span>Meu perfil</span></a>
-                <a href="login.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3H4v18h6m4-14 5 5-5 5m5-5H8"/></svg> <span>Sair</span></a>
+                <a href="perfil.html?origem=adm"><span>Meu perfil</span></a>
+                <a href="login.html"><span>Sair</span></a>
             </div>
         </aside>
 

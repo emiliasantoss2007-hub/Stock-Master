@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
+    if (!await configurarNavegacaoDaSessao()) return;
 
     // ========================================
     // PARÂMETROS DA URL
@@ -6,7 +7,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const params = new URLSearchParams(window.location.search);
 
-    const origem = params.get("origem");
     const tipo = params.get("tipo");
     const categoria = params.get("categoria") || "";
     const dataInicio = params.get("inicio") || "";
@@ -19,10 +19,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ACESSO DO ADMINISTRADOR
     // ========================================
 
-    if (origem === "tecnico") {
-        window.location.href = "dashboard_tec.html";
-        return;
-    }
 
 
     // ========================================

@@ -1,57 +1,5 @@
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    // IDENTIFICAÇÃO DA ORIGEM
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
-
-    // NAVEGAÇÃO
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-    const produtosLink = document.querySelector("#produtosLink");
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const entradaLink = document.querySelector("#entradaLink");
-    const saidaLink = document.querySelector("#saidaLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const historicoLink = document.querySelector("#historicoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-    const perfilLink = document.querySelector("#perfilLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-    // ADMINISTRADOR
-    if (origem !== "tecnico") {
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-        produtosLink.href = "produtos.html?origem=adm";
-        produtosMenuText.textContent = "Produtos";
-
-        entradaLink.href = "entrada_estoque.html?origem=adm";
-        saidaLink.href = "saída_estoque.html?origem=adm";
-        expurgoLink.href = "expurgo_estoque.html?origem=adm";
-        historicoLink.href = "historico_movimentacao.html?origem=adm";
-        relatoriosLink.href = "relatorios.html?origem=adm";
-        perfilLink.href = "perfil.html?origem=adm";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-    // TÉCNICO NÃO TEM ACESSO
-    if (origem === "tecnico") {
-        window.location.href = "dashboard_tec.html";
-        return;
-    }
-
-    // ELEMENTOS DA TELA
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!await configurarNavegacaoDaSessao()) return;
     const select = document.querySelector("#produtoSelect");
     const infoEstoque = document.querySelector("#infoEstoque");
     const mensagemArea = document.querySelector("#mensagemArea");
