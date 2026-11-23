@@ -150,7 +150,7 @@ function atualizar(idUsuario, nome, email, login, idNivelAcesso) {
 }
 
 
-// RF - Consultar usuários
+// RF — Consultar usuários
 function listar(filtros = {}) {
     return new Promise((resolve, reject) => {
 
@@ -228,6 +228,24 @@ function listar(filtros = {}) {
 }
 
 
+// RF — Excluir usuário
+function excluir(idUsuario) {
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            DELETE FROM usuario
+            WHERE id_usuario = ?
+        `;
+
+        connection.query(sql, [idUsuario], (erro, resultado) => {
+            if (erro) return reject(erro);
+
+            resolve(resultado.affectedRows === 1);
+        });
+    });
+}
+
+
 // Exporta as funções utilizadas pelos Controllers
 module.exports = {
     cadastrarUsuario,
@@ -235,5 +253,6 @@ module.exports = {
     verificarLogin,
     verificarEmail,
     atualizar,
-    listar
+    listar,
+    excluir
 };

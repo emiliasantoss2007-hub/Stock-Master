@@ -84,98 +84,76 @@ function cadastrarProduto(req, res) {
     });
 }
 
+
 async function excluirProduto(req, res) {
     const id = Number(req.params.id);
     const usuario = req.usuario;
 
     // Verificar se o usuário é administrador
     if (!usuario || Number(usuario.id_nivel_acesso) !== 1) {
-     return res.status(403).json({
-         sucesso: false,
-         mensagem: 'Apenas administradores podem excluir produtos.'
-});
+        return res.status(403).json({
+            sucesso: false,
+            mensagem: 'Apenas administradores podem excluir produtos.'
+        });
     }
 
     // Validar o ID
     if (!Number.isInteger(id) || id <= 0) {
- return res.status(400).json({
-    sucesso: false,
-    mensagem: 'ID do produto inválido.'
-});
+        return res.status(400).json({
+            sucesso: false,
+            mensagem: 'ID do produto inválido.'
+        });
     }
 
     try {
-        // Verificar se o produto existe
-        const produto = await produtoModel.buscarPorId(id);
-
-        if (!produto) {
-        return res.status(404).json({
-    sucesso: false,
-    mensagem: 'Produto não encontrado.'
-});
-        }
-
-        // Verificar se existe saldo em estoque
-        const saldo = await produtoModel.verificarSaldo(id);
-
-        if (saldo === null) {
-           return res.status(404).json({
-    sucesso: false,
-    mensagem: 'Produto não encontrado.'
-});
-        }
-
-        if (saldo > 0) {
-            return res.status(409).json({
-    sucesso: false,
-    mensagem: 'Não é possível excluir um produto com saldo em estoque.'
-});
-        }
-
-        // Verificar se existem movimentações
-        const movimentacoes = await produtoModel.verificarMovimentacoes(id);
-
-        if (movimentacoes > 0) {
-            return res.status(409).json({
-    sucesso: false,
-    mensagem: 'Não é possível excluir um produto com movimentações registradas.'
-});
-        }
-
-        // Excluir produto
-        const excluido = await produtoModel.excluir(id);
-
-        if (!excluido) {
-           return res.status(409).json({
-    sucesso: false,
-    mensagem: 'Não foi possível excluir o produto.'
-});
-        }
+        await produtoModel.excluirComVerificacao(id);
 
         return res.status(200).json({
-    sucesso: true,
-    mensagem: 'Produto excluído com sucesso.',
-    idProduto: id,
-    operacao: 'exclusao'
-});
+            sucesso: true,
+            mensagem: 'Produto excluído com sucesso.',
+            idProduto: id,
+            operacao: 'exclusao'
+        });
 
     } catch (erro) {
+        if (erro.code === 'PRODUCT_NOT_FOUND') {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Produto não encontrado.'
+            });
+        }
+
+        if (erro.code === 'PRODUCT_HAS_STOCK') {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'Não é possível excluir um produto com saldo em estoque.'
+            });
+        }
+
+        if (erro.code === 'PRODUCT_HAS_MOVEMENTS') {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'Não é possível excluir um produto com movimentações registradas.'
+            });
+        }
+
         if (
+            erro.code === 'PRODUCT_DELETE_NOT_CONFIRMED' ||
             erro.code === 'ER_ROW_IS_REFERENCED_2' ||
             erro.code === 'ER_ROW_IS_REFERENCED'
         ) {
             return res.status(409).json({
-    sucesso: false,
-    mensagem: 'Não é possível excluir um produto vinculado a outras informações.'
-});
+                sucesso: false,
+                mensagem: 'Não foi possível excluir o produto ou ele está vinculado a outras informações.'
+            });
         }
 
         console.error('Erro ao excluir produto:', erro);
 
-       return res.status(500).json({
-    sucesso: false,
-    mensagem: 'Erro interno ao excluir produto.'
-});
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao excluir produto.'
+        });
     }
 }
 

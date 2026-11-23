@@ -1,67 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
-
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
-
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
-
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-
-    const produtosLink = document.querySelector("#produtosLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-    const cancelarProdutoLink = document.querySelector("#cancelarProdutoLink");
-
-
-    // ========================================
-    // CONFIGURAÇÃO DA SIDEBAR
-    // ========================================
-
-    if (origem === "tecnico") {
-
-        // Sidebar do técnico
-        dashboardLink.href = "dashboard_tec.html";
-
-        produtosLink.href = "produtos.html?origem=tecnico";
-
-        cancelarProdutoLink.href = "produtos.html?origem=tecnico";
-
-        produtosMenuText.textContent = "Consultar produtos";
-
-        // Esconde apenas os itens exclusivos do administrador
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
-
-    } else {
-
-        // Sidebar do administrador
-        dashboardLink.href = "dashboard_adm.html";
-
-        produtosLink.href = "produtos.html?origem=adm";
-
-        cancelarProdutoLink.href = "produtos.html?origem=adm";
-
-        produtosMenuText.textContent = "Produtos";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-
-    // ========================================
-    // FORMULÁRIO
-    // ========================================
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!await configurarNavegacaoDaSessao()) return;
 
     const productForm = document.querySelector("#productForm");
     const formMessage = document.querySelector("#formMessage");
@@ -258,9 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formMessage.className = "product-form-message product-form-message-success";
 
             window.setTimeout(() => {
-                const destino = origem === "tecnico"
-                    ? "produtos.html?origem=tecnico&cadastro=sucesso"
-                    : "produtos.html?origem=adm&cadastro=sucesso";
+                const destino = "produtos.html?cadastro=sucesso";
 
                 window.location.href = destino;
             }, 900);
