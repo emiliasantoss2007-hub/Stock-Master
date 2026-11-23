@@ -6,10 +6,8 @@ const UsuarioModel = usuarioModel;
 // Controller responsável pelo cadastro de usuário
 const cadastrarUsuario = async (req, res) => {
 
-    // Recebe os dados enviados pelo Front-end
     const { nome, email, login, senha, perfil } = req.body;
 
-    // Validação dos campos obrigatórios
     if (!nome) {
         return res.status(400).json({
             message: "Nome é obrigatório"
@@ -40,7 +38,6 @@ const cadastrarUsuario = async (req, res) => {
         });
     }
 
-    // Validação do perfil
     if (perfil !== "Administrador" && perfil !== "Técnico") {
         return res.status(400).json({
             message: "Perfil inválido"
@@ -55,7 +52,6 @@ const cadastrarUsuario = async (req, res) => {
         perfil
     };
 
-    // Chama a função do Model para cadastrar o usuário
     usuarioModel.cadastrarUsuario(dados, (err, resultado) => {
 
         if (err) {
@@ -86,7 +82,6 @@ const editarUsuario = async (req, res) => {
         const { nome, email, login, id_nivel_acesso } = req.body;
         const usuarioLogado = req.usuario;
 
-        // Apenas administradores podem editar usuários
         if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
             return res.status(403).json({
                 sucesso: false,
@@ -94,7 +89,6 @@ const editarUsuario = async (req, res) => {
             });
         }
 
-        // Validação dos dados recebidos
         if (!id || !nome || !email || !login || !id_nivel_acesso) {
             return res.status(400).json({
                 sucesso: false,
@@ -102,7 +96,6 @@ const editarUsuario = async (req, res) => {
             });
         }
 
-        // Busca o usuário pelo ID
         const usuarioExistente = await UsuarioModel.buscarPorId(id);
 
         if (!usuarioExistente) {
@@ -112,7 +105,6 @@ const editarUsuario = async (req, res) => {
             });
         }
 
-        // Verifica se o login já está sendo utilizado
         const loginEmUso = await UsuarioModel.verificarLogin(login.trim(), id);
 
         if (loginEmUso) {
@@ -122,7 +114,6 @@ const editarUsuario = async (req, res) => {
             });
         }
 
-        // Verifica se o e-mail já está sendo utilizado
         const emailEmUso = await UsuarioModel.verificarEmail(email.trim(), id);
 
         if (emailEmUso) {
@@ -132,7 +123,6 @@ const editarUsuario = async (req, res) => {
             });
         }
 
-        // Atualiza os dados do usuário
         await UsuarioModel.atualizar(
             id,
             nome.trim(),
@@ -170,7 +160,6 @@ const buscarUsuarioPorId = async (req, res) => {
         const { id } = req.params;
         const usuarioLogado = req.usuario;
 
-        // Apenas administradores podem consultar usuários
         if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
             return res.status(403).json({
                 sucesso: false,
@@ -178,7 +167,6 @@ const buscarUsuarioPorId = async (req, res) => {
             });
         }
 
-        // Valida o ID informado
         if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
             return res.status(400).json({
                 sucesso: false,
@@ -213,7 +201,6 @@ const listarUsuarios = async (req, res) => {
     try {
         const usuarioLogado = req.usuario;
 
-        // Apenas administradores podem consultar a lista de usuários
         if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
             return res.status(403).json({
                 sucesso: false,
@@ -221,7 +208,6 @@ const listarUsuarios = async (req, res) => {
             });
         }
 
-        // Recebe os filtros enviados pela interface
         const {
             busca = '',
             perfil = '',
@@ -230,7 +216,6 @@ const listarUsuarios = async (req, res) => {
             direcao = 'asc'
         } = req.query;
 
-        // Normaliza os parâmetros
         const filtros = {
             busca: typeof busca === 'string' ? busca.trim() : '',
             perfil: typeof perfil === 'string' ? perfil.trim() : '',
@@ -239,7 +224,6 @@ const listarUsuarios = async (req, res) => {
             direcao: typeof direcao === 'string' ? direcao.trim().toLowerCase() : 'asc'
         };
 
-        // Valida o filtro de status
         if (!['', 'Ativo', 'Inativo'].includes(filtros.status)) {
             return res.status(400).json({
                 sucesso: false,
@@ -248,19 +232,16 @@ const listarUsuarios = async (req, res) => {
             });
         }
 
-        // Valida a coluna de ordenação
         const colunasPermitidas = ['nome', 'email', 'login', 'perfil', 'status'];
 
         if (!colunasPermitidas.includes(filtros.ordenarPor)) {
             filtros.ordenarPor = 'nome';
         }
 
-        // Valida a direção da ordenação
         if (!['asc', 'desc'].includes(filtros.direcao)) {
             filtros.direcao = 'asc';
         }
 
-        // Consulta os usuários no Model, aplicando os filtros
         const usuarios = await UsuarioModel.listar(filtros);
 
         return res.status(200).json({
@@ -282,10 +263,81 @@ const listarUsuarios = async (req, res) => {
 };
 
 
+// RF - Excluir usuário
+const excluirUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuarioLogado = req.usuario;
+
+        // Apenas administradores podem excluir usuários
+        if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
+            return res.status(403).json({
+                sucesso: false,
+                mensagem: 'Acesso negado. Apenas administradores podem excluir usuários.'
+            });
+        }
+
+        // Valida o ID informado
+        if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Identificador de usuário inválido.'
+            });
+        }
+
+        // Verifica se o usuário existe
+        const usuarioExistente = await UsuarioModel.buscarPorId(id);
+
+        if (!usuarioExistente) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Usuário não encontrado.'
+            });
+        }
+
+        // Executa a exclusão no banco de dados
+        const excluido = await UsuarioModel.excluir(id);
+
+        if (!excluido) {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'Não foi possível excluir o usuário.'
+            });
+        }
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Usuário excluído com sucesso.',
+            idUsuario: Number(id)
+        });
+
+    } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+
+        // Trata restrições de chave estrangeira
+        if (
+            error.code === 'ER_ROW_IS_REFERENCED_2' ||
+            error.code === 'ER_ROW_IS_REFERENCED'
+        ) {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'O usuário possui registros relacionados e não pode ser excluído.'
+            });
+        }
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao excluir usuário.'
+        });
+    }
+};
+
+
 // Exporta os Controllers para serem utilizados pelas rotas
 module.exports = {
     cadastrarUsuario,
     editarUsuario,
     buscarUsuarioPorId,
-    listarUsuarios
+    listarUsuarios,
+    excluirUsuario
 };
