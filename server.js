@@ -6,6 +6,7 @@ const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const passRoutes = require('./src/routes/passRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const { criarRelatorioExcelRoutes } = require('./src/routes/relatorioExcelRoutes');
 const { criarRelatorioPdfRoutes } = require('./src/routes/relatorioPdfRoutes');
 const { gerarRelatorioPdf } = require('./src/services/relatorioPdfService');
@@ -97,6 +98,7 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passRoutes);
+app.use('/api', dashboardRoutes);
 app.use(criarRelatorioExcelRoutes({
     autenticar: autenticarRelatorio,
     autorizar: autorizarRelatorio,

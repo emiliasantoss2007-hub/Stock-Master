@@ -59,7 +59,7 @@ function normalizarTipo(valor) {
     return tipo;
 }
 
-async function consultarHistorico(filtros = {}) {
+async function consultarHistorico(filtros = {}, { limite } = {}) {
     if (!filtros || typeof filtros !== 'object' || Array.isArray(filtros)) {
         throw erroFiltro('Os filtros devem ser informados em um objeto.');
     }
@@ -96,6 +96,11 @@ async function consultarHistorico(filtros = {}) {
         valores.push(tipo);
     }
 
+    if (limite !== undefined && (!Number.isSafeInteger(limite) || limite < 1)) {
+        throw erroFiltro('Limite de movimentações inválido.');
+    }
+    if (limite !== undefined) valores.push(limite);
+
     const sql = `
         SELECT
             m.id_movimentacao,
@@ -114,6 +119,7 @@ async function consultarHistorico(filtros = {}) {
         INNER JOIN usuario u ON u.id_usuario = m.id_usuario
         ${condicoes.length ? `WHERE ${condicoes.join(' AND ')}` : ''}
         ORDER BY m.data_movimentacao DESC, m.id_movimentacao DESC
+        ${limite === undefined ? '' : 'LIMIT ?'}
     `;
 
     return new Promise((resolve, reject) => {

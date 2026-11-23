@@ -153,6 +153,59 @@ body {
     text-decoration: none;
 }
 
+.sidebar-admin {
+    overflow-y: auto;
+}
+
+.sidebar-admin .brand {
+    margin-bottom: 24px;
+}
+
+.sidebar-admin .admin-brand-logo {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    height: 84px;
+    object-fit: cover;
+    margin-inline: auto;
+}
+
+.sidebar-admin .sidebar-nav {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.sidebar-admin .nav-title {
+    margin-bottom: 4px;
+}
+
+.sidebar-admin .sidebar-bottom {
+    flex-shrink: 0;
+    margin-top: 12px;
+    padding-top: 8px;
+}
+
+.sidebar-admin .sidebar-bottom a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    font-size: 13px;
+}
+
+.sidebar-admin .nav-icon {
+    display: block;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 20px;
+    color: #ffffff;
+}
+
+.sidebar-admin + .main-area .dashboard-columns > .panel {
+    min-width: 0;
+}
+
 /* ÁREA PRINCIPAL */
 
 .main-area {

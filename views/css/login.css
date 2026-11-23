@@ -311,6 +311,10 @@ body {
 
 }
 
+.input-wrapper #senha {
+    padding-left: 20px;
+}
+
 
 .input-wrapper input:focus {
 
