@@ -5,43 +5,83 @@ const UsuarioModel = usuarioModel;
 
 // Controller responsável pelo cadastro de usuário
 const cadastrarUsuario = async (req, res) => {
-    const { nome, email, login, senha, perfil } = req.body;
 
-    if (!nome) {
-        return res.status(400).json({ message: "Nome é obrigatório" });
+    // Recebe os dados enviados pelo Front-end
+    const { nome, email, login, senha, perfil } = req.body ?? {};
+    const textoPreenchido = valor => typeof valor === 'string' && Boolean(valor.trim());
+
+    // Validação dos campos obrigatórios
+    if (!textoPreenchido(nome)) {
+        return res.status(400).json({
+            message: "Nome é obrigatório"
+        });
     }
 
-    if (!email) {
-        return res.status(400).json({ message: "Email é obrigatório" });
+    if (!textoPreenchido(email)) {
+        return res.status(400).json({
+            message: "Email é obrigatório"
+        });
     }
 
-    if (!login) {
-        return res.status(400).json({ message: "Login é obrigatório" });
+    if (!textoPreenchido(login)) {
+        return res.status(400).json({
+            message: "Login é obrigatório"
+        });
     }
 
-    if (!senha) {
-        return res.status(400).json({ message: "Senha é obrigatória" });
+    if (!textoPreenchido(senha)) {
+        return res.status(400).json({
+            message: "Senha é obrigatória"
+        });
     }
 
     if (!perfil) {
-        return res.status(400).json({ message: "Perfil é obrigatório" });
+        return res.status(400).json({
+            message: "Perfil é obrigatório"
+        });
     }
 
+    // Validação do perfil
     if (perfil !== "Administrador" && perfil !== "Técnico") {
-        return res.status(400).json({ message: "Perfil inválido" });
+        return res.status(400).json({
+            message: "Perfil inválido"
+        });
     }
 
-    const dados = { nome, email, login, senha, perfil };
+    if (nome.trim().length > 100 || email.trim().length > 100 || login.trim().length > 50) {
+        return res.status(400).json({ message: "Nome, e-mail ou login excede o tamanho permitido." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        return res.status(400).json({ message: "Informe um e-mail válido." });
+    }
+    if (senha.length < 8 || Buffer.byteLength(senha, 'utf8') > 72) {
+        return res.status(400).json({ message: "Informe uma senha com pelo menos 8 caracteres e no máximo 72 bytes." });
+    }
 
+    const dados = {
+        nome: nome.trim(),
+        email: email.trim(),
+        login: login.trim(),
+        senha,
+        perfil
+    };
+
+    // Chama a função do Model para cadastrar o usuário
     usuarioModel.cadastrarUsuario(dados, (err, resultado) => {
+
         if (err) {
-            if (err.code === "ER_DUP_ENTRY" && err.message.includes("usuario.email")) {
+
+            if (err.code === "ER_DUP_ENTRY") {
                 return res.status(400).json({
-                    message: "E-mail já cadastrado."
+                    message: err.message?.includes("usuario.email")
+                        ? "E-mail já cadastrado."
+                        : "E-mail ou login já cadastrado."
                 });
             }
 
-            return res.status(500).json({ message: err.message });
+            return res.status(500).json({
+                message: "Não foi possível cadastrar o usuário."
+            });
         }
 
         return res.status(201).json({
@@ -50,6 +90,7 @@ const cadastrarUsuario = async (req, res) => {
         });
     });
 };
+
 
 // Controller responsável pela edição de usuário
 const editarUsuario = async (req, res) => {

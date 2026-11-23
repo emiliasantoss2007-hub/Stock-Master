@@ -77,8 +77,9 @@ const dadosUsuario = {
 };
 
 try {
-    const resposta = await fetch("http://localhost:3001/usuarios", {
+    const resposta = await fetch("/usuarios", {
         method: "POST",
+        credentials: "same-origin",
         headers: {
             "Content-Type": "application/json"
         },
@@ -88,7 +89,7 @@ try {
     const resultado = await resposta.json();
 
     if (!resposta.ok) {
-        formMessage.textContent = resultado.message;
+        formMessage.textContent = resultado.message || resultado.mensagem || "Não foi possível cadastrar o usuário.";
         formMessage.className = "form-message form-message-error";
         return;
     }

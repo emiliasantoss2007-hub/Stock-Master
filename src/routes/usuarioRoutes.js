@@ -1,18 +1,20 @@
 
 const express = require('express');
-const autenticarPerfil = require('../middlewares/produtoAuth');
+const autenticarSessao = require('../middlewares/produtoAuth');
 const autorizarPerfil = require('../middlewares/produtoAccess');
+const autorizarCadastro = require('../middlewares/adminOnly');
+const protegerCadastro = require('../middlewares/produtoCsrf');
 const router = express.Router();
 
 const usuarioController = require('../controllers/usuarioController');
 const auth = require('../middlewares/auth');
 
 // RF-04 — Cadastro de usuário
-router.post('/usuarios', usuarioController.cadastrarUsuario);
+router.post('/usuarios', autenticarSessao, autorizarCadastro, protegerCadastro, usuarioController.cadastrarUsuario);
 
 // RF - Consulta geral de usuários
 router.get('/usuarios', auth, usuarioController.listarUsuarios);
-router.get('/usuarios/me', autenticarPerfil, autorizarPerfil, usuarioController.consultarMeuPerfil);
+router.get('/usuarios/me', autenticarSessao, autorizarPerfil, usuarioController.consultarMeuPerfil);
 
 // RF-05 — Consulta de usuário por ID
 router.get('/usuarios/:id', auth, usuarioController.buscarUsuarioPorId);
