@@ -30,52 +30,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     ];
 
-    // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
-
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        }
-    ];
 
     // ========================================
     // ELEMENTOS DO FORMULÁRIO
@@ -216,7 +170,7 @@ async function carregarCategoriasEstoque() {
         // Se uma data for preenchida, a outra também
         // precisa ser preenchida.
 
-        if ((inicio && !fim) || (!inicio && fim)) {
+        if (tipo !== "movimentacoes" && ((inicio && !fim) || (!inicio && fim))) {
 
             mensagemArea.innerHTML = `
                 <p class="mensagem-erro">
@@ -239,89 +193,13 @@ async function carregarCategoriasEstoque() {
         // ========================================
 
         if (tipo === "movimentacoes") {
-
-            dados = movimentacoes
-
-                // Filtro de data inicial
-                .filter((movimentacao) => {
-
-                    if (!inicio) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) >=
-                        new Date(inicio + "T00:00:00");
-                })
-
-                // Filtro de data final
-                .filter((movimentacao) => {
-
-                    if (!fim) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) <=
-                        new Date(fim + "T23:59:59");
-                })
-
-                // Filtro de categoria
-                .filter((movimentacao) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
-                    );
-
-                    return produto &&
-                        produto.categoria === categoria;
-                })
-
-                // Formatação dos dados
-                .map((movimentacao) => {
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
-                    );
-
-                    const data = new Date(movimentacao.data);
-
-                    return {
-
-                        Data:
-                            data.toLocaleDateString("pt-BR") +
-                            " " +
-                            data.toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            }),
-
-                        Produto: produto
-                            ? produto.nome
-                            : "Produto removido",
-
-                        Tipo: movimentacao.tipo,
-
-                        Quantidade:
-                            movimentacao.quantidade,
-
-                        Responsável:
-                            movimentacao.usuario,
-
-                        Justificativa:
-                            movimentacao.justificativa || "-"
-                    };
-                });
+            const filtros = new URLSearchParams({ tipo, inicio, fim });
+            btnVisualizarRelatorio.href = "visualizar_relatorios.html?" + filtros;
+            visualizarRelatorioArea.style.display = "block";
+            return;
         }
 
-        // ========================================
-        // RELATÓRIO DE ESTOQUE ATUAL
-        // ========================================
-
-        else if (tipo === "estoque") {
-
+        if (tipo === "estoque") {
     const busca = filtroBuscaEstoque.value.trim();
     const somenteZerados = apenasZerados.checked;
 
