@@ -5,66 +5,43 @@ const UsuarioModel = usuarioModel;
 
 // Controller responsável pelo cadastro de usuário
 const cadastrarUsuario = async (req, res) => {
-
     const { nome, email, login, senha, perfil } = req.body;
 
     if (!nome) {
-        return res.status(400).json({
-            message: "Nome é obrigatório"
-        });
+        return res.status(400).json({ message: "Nome é obrigatório" });
     }
 
     if (!email) {
-        return res.status(400).json({
-            message: "Email é obrigatório"
-        });
+        return res.status(400).json({ message: "Email é obrigatório" });
     }
 
     if (!login) {
-        return res.status(400).json({
-            message: "Login é obrigatório"
-        });
+        return res.status(400).json({ message: "Login é obrigatório" });
     }
 
     if (!senha) {
-        return res.status(400).json({
-            message: "Senha é obrigatória"
-        });
+        return res.status(400).json({ message: "Senha é obrigatória" });
     }
 
     if (!perfil) {
-        return res.status(400).json({
-            message: "Perfil é obrigatório"
-        });
+        return res.status(400).json({ message: "Perfil é obrigatório" });
     }
 
     if (perfil !== "Administrador" && perfil !== "Técnico") {
-        return res.status(400).json({
-            message: "Perfil inválido"
-        });
+        return res.status(400).json({ message: "Perfil inválido" });
     }
 
-    const dados = {
-        nome,
-        email,
-        login,
-        senha,
-        perfil
-    };
+    const dados = { nome, email, login, senha, perfil };
 
     usuarioModel.cadastrarUsuario(dados, (err, resultado) => {
-
         if (err) {
-
             if (err.code === "ER_DUP_ENTRY" && err.message.includes("usuario.email")) {
                 return res.status(400).json({
                     message: "E-mail já cadastrado."
                 });
             }
 
-            return res.status(500).json({
-                message: err.message
-            });
+            return res.status(500).json({ message: err.message });
         }
 
         return res.status(201).json({
@@ -73,7 +50,6 @@ const cadastrarUsuario = async (req, res) => {
         });
     });
 };
-
 
 // Controller responsável pela edição de usuário
 const editarUsuario = async (req, res) => {
@@ -153,7 +129,6 @@ const editarUsuario = async (req, res) => {
     }
 };
 
-
 // RF-05 - Buscar usuário por ID
 const buscarUsuarioPorId = async (req, res) => {
     try {
@@ -194,7 +169,6 @@ const buscarUsuarioPorId = async (req, res) => {
         });
     }
 };
-
 
 // RF - Consulta geral de usuários
 const listarUsuarios = async (req, res) => {
@@ -262,6 +236,38 @@ const listarUsuarios = async (req, res) => {
     }
 };
 
+// Consulta o perfil do usuário autenticado
+const consultarMeuPerfil = async (req, res) => {
+    const id = Number(req.usuario.id_usuario);
+
+    if (!Number.isSafeInteger(id) || id < 1) {
+        return res.status(401).json({ mensagem: 'Sessão inválida.' });
+    }
+
+    try {
+        const usuario = await UsuarioModel.buscarPorId(id);
+
+        if (!usuario || Number(usuario.status) !== 1) {
+            return res.status(404).json({
+                mensagem: 'Perfil ativo não encontrado.'
+            });
+        }
+
+        const { nome, login } = usuario;
+        const nivel = Number(req.usuario.id_nivel_acesso);
+
+        return res.set('Cache-Control', 'no-store').json({
+            nome,
+            login,
+            nivel
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            mensagem: 'Não foi possível consultar o perfil.'
+        });
+    }
+};
 
 // RF - Excluir usuário
 const excluirUsuario = async (req, res) => {
@@ -269,7 +275,6 @@ const excluirUsuario = async (req, res) => {
         const { id } = req.params;
         const usuarioLogado = req.usuario;
 
-        // Apenas administradores podem excluir usuários
         if (!usuarioLogado || Number(usuarioLogado.id_nivel_acesso) !== 1) {
             return res.status(403).json({
                 sucesso: false,
@@ -277,7 +282,6 @@ const excluirUsuario = async (req, res) => {
             });
         }
 
-        // Valida o ID informado
         if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
             return res.status(400).json({
                 sucesso: false,
@@ -285,7 +289,6 @@ const excluirUsuario = async (req, res) => {
             });
         }
 
-        // Verifica se o usuário existe
         const usuarioExistente = await UsuarioModel.buscarPorId(id);
 
         if (!usuarioExistente) {
@@ -295,7 +298,6 @@ const excluirUsuario = async (req, res) => {
             });
         }
 
-        // Executa a exclusão no banco de dados
         const excluido = await UsuarioModel.excluir(id);
 
         if (!excluido) {
@@ -314,7 +316,6 @@ const excluirUsuario = async (req, res) => {
     } catch (error) {
         console.error('Erro ao excluir usuário:', error);
 
-        // Trata restrições de chave estrangeira
         if (
             error.code === 'ER_ROW_IS_REFERENCED_2' ||
             error.code === 'ER_ROW_IS_REFERENCED'
@@ -332,9 +333,9 @@ const excluirUsuario = async (req, res) => {
     }
 };
 
-
 // Exporta os Controllers para serem utilizados pelas rotas
 module.exports = {
+    consultarMeuPerfil,
     cadastrarUsuario,
     editarUsuario,
     buscarUsuarioPorId,

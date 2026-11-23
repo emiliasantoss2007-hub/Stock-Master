@@ -77,6 +77,14 @@ app.use((req, res, next) => {
         return res.redirect('/html/login.html');
     }
 
+    const nivel = Number(usuario.id_nivel_acesso);
+    if (nivel === 2 && caminho === '/html/dashboard_adm.html') {
+        return res.redirect('/html/dashboard_tec.html');
+    }
+    if (nivel === 1 && caminho === '/html/dashboard_tec.html') {
+        return res.redirect('/html/dashboard_adm.html');
+    }
+
     next();
 });
 

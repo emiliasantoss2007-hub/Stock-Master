@@ -1,5 +1,7 @@
 
 const express = require('express');
+const autenticarPerfil = require('../middlewares/produtoAuth');
+const autorizarPerfil = require('../middlewares/produtoAccess');
 const router = express.Router();
 
 const usuarioController = require('../controllers/usuarioController');
@@ -10,6 +12,7 @@ router.post('/usuarios', usuarioController.cadastrarUsuario);
 
 // RF - Consulta geral de usuários
 router.get('/usuarios', auth, usuarioController.listarUsuarios);
+router.get('/usuarios/me', autenticarPerfil, autorizarPerfil, usuarioController.consultarMeuPerfil);
 
 // RF-05 — Consulta de usuário por ID
 router.get('/usuarios/:id', auth, usuarioController.buscarUsuarioPorId);
