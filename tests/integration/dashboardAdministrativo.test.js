@@ -62,3 +62,38 @@ test('falha na consulta devolve erro genérico, sem dados demonstrativos', async
     banco.query.mockImplementation((_sql, _params, cb) => cb(new Error('Detalhe interno de teste')));
     await consultar(admin).expect(500, { mensagem: 'Não foi possível consultar os dados do painel.' });
 });
+
+const rotaTecnico = '/api/dashboard/tecnico';
+const consultarTecnico = token => request(app).get(rotaTecnico + '?id_usuario=99')
+    .set('Cookie', 'stockmaster_session=' + token);
+
+test('painel técnico só autoriza Técnico e usa o ID da sessão nas duas consultas pessoais', async () => {
+    await request(app).get(rotaTecnico).expect(401);
+    await consultarTecnico(admin).expect(403);
+    expect(banco.query).not.toHaveBeenCalled();
+
+    banco.query.mockImplementationOnce((_sql, _params, cb) => cb(null, [{ disponiveis: 3, criticos: 1 }]))
+        .mockImplementationOnce((_sql, _params, cb) => cb(null, [{ entradas: 4, saidas: 2 }]))
+        .mockImplementationOnce((_sql, _params, cb) => cb(null, [{
+            nome_produto: 'Produto teste', tipo_movimentacao: 'entrada', quantidade: 2
+        }]));
+    const { body } = await consultarTecnico(tecnico).expect('Cache-Control', 'no-store').expect(200);
+    expect(body.indicadores).toEqual({ disponiveis: 3, entradas: 4, saidas: 2, criticos: 1 });
+    expect(body.recentes).toEqual([{ produto: 'Produto teste', tipo: 'entrada', quantidade: 2 }]);
+    expect(banco.query.mock.calls[1][0]).toContain('CURRENT_DATE');
+    expect(banco.query.mock.calls[1][1]).toEqual([2]);
+    expect(banco.query.mock.calls[2][0]).toContain('WHERE m.id_usuario = ?');
+    expect(banco.query.mock.calls[2][1]).toEqual([2, 5]);
+});
+
+test('painel técnico diferencia zero e falha de consulta', async () => {
+    banco.query.mockImplementationOnce((_sql, _params, cb) => cb(null, [{ disponiveis: 0, criticos: 0 }]))
+        .mockImplementationOnce((_sql, _params, cb) => cb(null, [{ entradas: 0, saidas: 0 }]))
+        .mockImplementationOnce((_sql, _params, cb) => cb(null, []));
+    await consultarTecnico(tecnico).expect(200, {
+        indicadores: { disponiveis: 0, entradas: 0, saidas: 0, criticos: 0 }, recentes: []
+    });
+
+    banco.query.mockImplementation((_sql, _params, cb) => cb(new Error('Erro de conexão')));
+    await consultarTecnico(tecnico).expect(500, { mensagem: 'Não foi possível consultar os dados do painel.' });
+});

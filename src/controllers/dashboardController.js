@@ -1,6 +1,16 @@
 const { resumirEstoque } = require('../models/produtoModel');
 const { contarUsuariosAtivos } = require('../models/usuarioModel');
-const { consultarHistorico } = require('../models/movimentacaoModel');
+const { consultarHistorico, contarMovimentacoesDeHoje } = require('../models/movimentacaoModel');
+
+function formatarRecentes(movimentacoes) {
+    return movimentacoes.map(registro => ({
+        produto: registro.nome_produto,
+        tipo: registro.tipo_movimentacao,
+        quantidade: registro.quantidade,
+        data: registro.data_movimentacao,
+        responsavel: registro.nome_responsavel
+    }));
+}
 
 async function consultarDashboard(req, res) {
     res.set('Cache-Control', 'no-store');
@@ -17,17 +27,37 @@ async function consultarDashboard(req, res) {
                 unidades: Number(estoque.unidades),
                 criticos: Number(estoque.criticos)
             },
-            recentes: movimentacoes.map(registro => ({
-                produto: registro.nome_produto,
-                tipo: registro.tipo_movimentacao,
-                quantidade: registro.quantidade,
-                data: registro.data_movimentacao,
-                responsavel: registro.nome_responsavel
-            }))
+            recentes: formatarRecentes(movimentacoes)
         });
     } catch {
         return res.status(500).json({ mensagem: 'Não foi possível consultar os dados do painel.' });
     }
 }
 
-module.exports = { consultarDashboard };
+async function consultarDashboardTecnico(req, res) {
+    const idUsuario = Number(req.usuario.id_usuario);
+    if (Number(req.usuario.id_nivel_acesso) !== 2 || !Number.isSafeInteger(idUsuario) || idUsuario < 1) {
+        return res.status(403).json({ mensagem: 'Acesso restrito ao perfil Técnico.' });
+    }
+    res.set('Cache-Control', 'no-store');
+    try {
+        const [estoque, hoje, recentes] = await Promise.all([
+            resumirEstoque(),
+            contarMovimentacoesDeHoje(idUsuario),
+            consultarHistorico({}, { idUsuario, limite: 5 })
+        ]);
+        return res.json({
+            indicadores: {
+                disponiveis: Number(estoque.disponiveis),
+                entradas: Number(hoje.entradas),
+                saidas: Number(hoje.saidas),
+                criticos: Number(estoque.criticos)
+            },
+            recentes: formatarRecentes(recentes)
+        });
+    } catch {
+        return res.status(500).json({ mensagem: 'Não foi possível consultar os dados do painel.' });
+    }
+}
+
+module.exports = { consultarDashboard, consultarDashboardTecnico };
