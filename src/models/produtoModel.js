@@ -643,7 +643,22 @@ function consultarProdutos(filtros = {}) {
     });
 }
 
+function resumirEstoque() {
+    return new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT COUNT(*) AS cadastrados,
+                   COALESCE(SUM(quantidade_estoque), 0) AS unidades,
+                   COUNT(CASE WHEN quantidade_estoque <= estoque_minimo THEN 1 END) AS criticos
+            FROM produto
+        `, [], (erro, registros) => {
+            if (erro) return reject(erro);
+            resolve(registros[0]);
+        });
+    });
+}
+
 module.exports = {
+    resumirEstoque,
     cadastrarProduto,
     verificarSKU,
     verificarSku,

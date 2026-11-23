@@ -246,8 +246,18 @@ function excluir(idUsuario) {
 }
 
 
+function contarUsuariosAtivos() {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT COUNT(*) AS total FROM usuario WHERE status = TRUE', [], (erro, registros) => {
+            if (erro) return reject(erro);
+            resolve(registros[0].total);
+        });
+    });
+}
+
 // Exporta as funções utilizadas pelos Controllers
 module.exports = {
+    contarUsuariosAtivos,
     cadastrarUsuario,
     buscarPorId,
     verificarLogin,
