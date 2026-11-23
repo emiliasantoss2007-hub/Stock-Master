@@ -1,6 +1,9 @@
 
 jest.mock('../../src/config/database', () => ({
-    query: jest.fn()
+    query: jest.fn(),
+    beginTransaction: jest.fn(),
+    commit: jest.fn(),
+    rollback: jest.fn()
 }));
 
 const connection = require('../../src/config/database');
@@ -9,7 +12,8 @@ const {
     buscarPorId,
     verificarSaldo,
     verificarMovimentacoes,
-    excluir
+    excluir,
+    excluirComVerificacao
 } = require('../../src/models/produtoModel');
 
 describe('RF-10 - Model de Exclusão de Produto', () => {
@@ -158,5 +162,140 @@ describe('RF-10 - Model de Exclusão de Produto', () => {
         });
 
         await expect(excluir(1)).rejects.toBe(erroBanco);
+    });
+
+    // Exclusão segura com transação
+    const configurarTransacao = ({
+        produtos = [{ id_produto: 1, quantidade_estoque: 0 }],
+        movimentacoes = [],
+        affectedRows = 1
+    } = {}) => {
+        connection.beginTransaction.mockImplementation((callback) => {
+            callback(null);
+        });
+
+        connection.commit.mockImplementation((callback) => {
+            callback(null);
+        });
+
+        connection.rollback.mockImplementation((callback) => {
+            callback(null);
+        });
+
+        connection.query.mockImplementation((sql, valores, callback) => {
+            if (sql.includes('SELECT id_produto')) {
+                return callback(null, produtos);
+            }
+
+            if (sql.includes('SELECT id_movimentacao')) {
+                return callback(null, movimentacoes);
+            }
+
+            if (sql.includes('DELETE FROM produto')) {
+                return callback(null, { affectedRows });
+            }
+
+            callback(new Error('Consulta inesperada no teste.'));
+        });
+    };
+
+    test('deve rejeitar um ID inválido sem iniciar transação', async () => {
+        await expect(excluirComVerificacao(0)).rejects.toMatchObject({
+            code: 'PRODUCT_ID_INVALID'
+        });
+
+        expect(connection.beginTransaction).not.toHaveBeenCalled();
+    });
+
+    test('deve retornar erro quando o produto não existir', async () => {
+        configurarTransacao({ produtos: [] });
+
+        await expect(excluirComVerificacao(99)).rejects.toMatchObject({
+            code: 'PRODUCT_NOT_FOUND'
+        });
+
+        expect(connection.rollback).toHaveBeenCalled();
+        expect(connection.commit).not.toHaveBeenCalled();
+    });
+
+    test.each([5, -3])(
+        'deve impedir a exclusão quando o saldo for %i',
+        async (saldo) => {
+            configurarTransacao({
+                produtos: [{
+                    id_produto: 1,
+                    quantidade_estoque: saldo
+                }]
+            });
+
+            await expect(excluirComVerificacao(1)).rejects.toMatchObject({
+                code: 'PRODUCT_HAS_STOCK'
+            });
+
+            expect(connection.rollback).toHaveBeenCalled();
+            expect(connection.commit).not.toHaveBeenCalled();
+        }
+    );
+
+    test('deve impedir a exclusão quando houver movimentações', async () => {
+        configurarTransacao({
+            movimentacoes: [{ id_movimentacao: 10 }]
+        });
+
+        await expect(excluirComVerificacao(1)).rejects.toMatchObject({
+            code: 'PRODUCT_HAS_MOVEMENTS'
+        });
+
+        expect(connection.rollback).toHaveBeenCalled();
+        expect(connection.commit).not.toHaveBeenCalled();
+    });
+
+    test('deve impedir a exclusão quando o DELETE não afetar uma linha', async () => {
+        configurarTransacao({ affectedRows: 0 });
+
+        await expect(excluirComVerificacao(1)).rejects.toMatchObject({
+            code: 'PRODUCT_DELETE_NOT_CONFIRMED'
+        });
+
+        expect(connection.rollback).toHaveBeenCalled();
+        expect(connection.commit).not.toHaveBeenCalled();
+    });
+
+    test('deve excluir o produto e confirmar a transação com sucesso', async () => {
+        configurarTransacao();
+
+        const resultado = await excluirComVerificacao(1);
+
+        expect(resultado).toBe(true);
+        expect(connection.beginTransaction).toHaveBeenCalled();
+        expect(connection.commit).toHaveBeenCalled();
+        expect(connection.rollback).not.toHaveBeenCalled();
+
+        expect(connection.query).toHaveBeenCalledWith(
+            expect.stringContaining('FOR UPDATE'),
+            [1],
+            expect.any(Function)
+        );
+    });
+
+    test('deve realizar rollback quando ocorrer erro em uma consulta', async () => {
+        const erroBanco = new Error('Erro na consulta');
+
+        connection.beginTransaction.mockImplementation((callback) => {
+            callback(null);
+        });
+
+        connection.rollback.mockImplementation((callback) => {
+            callback(null);
+        });
+
+        connection.query.mockImplementation((sql, valores, callback) => {
+            callback(erroBanco);
+        });
+
+        await expect(excluirComVerificacao(1)).rejects.toBe(erroBanco);
+
+        expect(connection.rollback).toHaveBeenCalled();
+        expect(connection.commit).not.toHaveBeenCalled();
     });
 });
