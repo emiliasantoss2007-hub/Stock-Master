@@ -56,7 +56,8 @@ async function entrar(login, nivel) {
         body: JSON.stringify({ login, senha: SENHA_TESTE })
     });
     expect(resposta.status).toBe(200);
-    expect(connection.query).toHaveBeenLastCalledWith(expect.stringContaining('WHERE u.login = ?'), [login], expect.any(Function));
+    expect(connection.query).toHaveBeenLastCalledWith(
+    expect.stringContaining('WHERE u.login = ? OR u.email = ?'),[login, login], expect.any(Function));
     const cookie = resposta.headers.get('set-cookie');
     expect(cookie).toMatch(/^stockmaster_session=[a-f0-9]{64};/);
     expect(cookie).toContain('HttpOnly');

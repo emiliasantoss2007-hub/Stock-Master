@@ -16,6 +16,23 @@ router.post('/usuarios', autenticarSessao, autorizarCadastro, protegerCadastro, 
 router.get('/usuarios', auth, usuarioController.listarUsuarios);
 router.get('/usuarios/me', autenticarSessao, autorizarPerfil, usuarioController.consultarMeuPerfil);
 
+
+router.put(
+    '/usuarios/me',
+    autenticarSessao,
+    autorizarPerfil,
+    protegerCadastro,
+    usuarioController.atualizarMeuPerfil
+);
+
+router.put(
+    '/usuarios/me/senha',
+    autenticarSessao,
+    autorizarPerfil,
+    protegerCadastro,
+    usuarioController.alterarSenhaDoPerfil
+);
+
 // RF-05 — Consulta de usuário por ID
 router.get('/usuarios/:id', auth, usuarioController.buscarUsuarioPorId);
 

@@ -255,6 +255,61 @@ function contarUsuariosAtivos() {
     });
 }
 
+
+async function atualizarMeuPerfil(idUsuario, nome, email) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            UPDATE usuario
+            SET nome = ?, email = ?
+            WHERE id_usuario = ? AND status = TRUE
+        `;
+
+        connection.query(sql, [nome, email, idUsuario], (erro, resultado) => {
+            if (erro) return reject(erro);
+            resolve(resultado);
+        });
+    });
+}
+
+async function alterarSenhaDoPerfil(idUsuario, senhaAtual, novaSenha) {
+    try {
+        const [usuarios] = await connection.promise().query(
+            `SELECT senha_hash, status
+             FROM usuario
+             WHERE id_usuario = ?
+             LIMIT 1`,
+            [idUsuario]
+        );
+
+        if (!usuarios.length || !usuarios[0].status) {
+            return { sucesso: false, motivo: 'USUARIO_NAO_ENCONTRADO' };
+        }
+
+        const senhaValida = await bcrypt.compare(
+            senhaAtual,
+            usuarios[0].senha_hash
+        );
+
+        if (!senhaValida) {
+            return { sucesso: false, motivo: 'SENHA_ATUAL_INCORRETA' };
+        }
+
+        const senhaHash = await bcrypt.hash(novaSenha, 10);
+
+        await connection.promise().query(
+            `UPDATE usuario
+             SET senha_hash = ?
+             WHERE id_usuario = ?`,
+            [senhaHash, idUsuario]
+        );
+
+        return { sucesso: true };
+
+    } catch (erro) {
+        throw erro;
+    }
+}
+
 // Exporta as funções utilizadas pelos Controllers
 module.exports = {
     contarUsuariosAtivos,
@@ -264,5 +319,7 @@ module.exports = {
     verificarEmail,
     atualizar,
     listar,
-    excluir
+    excluir,
+    atualizarMeuPerfil,
+    alterarSenhaDoPerfil
 };
