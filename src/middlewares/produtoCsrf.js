@@ -13,6 +13,14 @@ function produtoCsrf(req, res, next) {
         origemValida = false;
     }
 
+    console.log('[CSRF diagnóstico]', {
+    origem,
+    origemAplicacao,
+    contentType: req.get('content-type'),
+    origemValida,
+    conteudoJson: req.is('application/json')
+});
+
     if (!origemValida || !req.is('application/json')) {
         return res.status(403).json({
             message: 'Origem ou tipo de conteúdo não autorizado.'
