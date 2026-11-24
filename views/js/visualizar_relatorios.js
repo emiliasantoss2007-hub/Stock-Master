@@ -70,52 +70,79 @@ document.addEventListener("DOMContentLoaded", async () => {
     ];
 
 
-    // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
+    const DATA_INICIO_PADRAO_MOVIMENTACOES = "1000-01-01";
+    const DATA_FIM_PADRAO_MOVIMENTACOES = "9999-12-30";
 
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
+    async function consultarMovimentacoes() {
+        try {
+            const parametros = new URLSearchParams({
+                dataInicio: dataInicio || DATA_INICIO_PADRAO_MOVIMENTACOES,
+                dataFim: dataFim || DATA_FIM_PADRAO_MOVIMENTACOES
+            });
+            const resposta = await fetch(
+                `/api/relatorios/movimentacoes?${parametros.toString()}`,
+                {
+                    method: "GET",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin"
+                }
+            );
+            const resultado = await resposta.json();
+            const semResultados = resposta.status === 404 &&
+                resultado.data?.total_registros === 0;
+
+            if ((!resposta.ok && !semResultados) || (!resultado.success && !semResultados)) {
+                throw new Error(resultado.message || "Não foi possível consultar as movimentações.");
+            }
+
+            let registros = resultado.data?.registros || [];
+            if (categoria && registros.length) {
+                const respostaEstoque = await fetch("/api/relatorios/estoque", {
+                    method: "GET",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin"
+                });
+                const resultadoEstoque = await respostaEstoque.json();
+
+                if (!respostaEstoque.ok || !resultadoEstoque.sucesso || !resultadoEstoque.dados?.itens) {
+                    throw new Error("Não foi possível aplicar o filtro de categoria.");
+                }
+
+                const categoriasPorProduto = new Map(
+                    resultadoEstoque.dados.itens.map((produto) => [
+                        Number(produto.idProduto),
+                        produto.categoria
+                    ])
+                );
+                registros = registros.filter((movimentacao) =>
+                    categoriasPorProduto.get(Number(movimentacao.produto?.id_produto)) === categoria
+                );
+            }
+
+            return registros.map((movimentacao) => {
+                const data = new Date(movimentacao.data_movimentacao);
+                const usuario = movimentacao.usuario || {};
+
+                return {
+                    Data: Number.isNaN(data.getTime())
+                        ? "-"
+                        : `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        })}`,
+                    Produto: movimentacao.produto?.nome || "Produto removido",
+                    Tipo: movimentacao.tipo_movimentacao || "-",
+                    Quantidade: movimentacao.quantidade,
+                    Responsável: usuario.nome || usuario.login || "-",
+                    Justificativa: movimentacao.justificativa || "-"
+                };
+            });
+        } catch (erro) {
+            mensagemArea.className = "mensagem-erro";
+            mensagemArea.textContent = erro.message || "Não foi possível consultar as movimentações.";
+            return null;
         }
-    ];
+    }
 
 
     // ========================================
@@ -167,64 +194,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================
 
     if (tipo === "movimentacoes") {
-
-        dados = movimentacoes
-            .filter((movimentacao) => {
-
-                if (!dataInicio) return true;
-
-                return new Date(movimentacao.data) >=
-                    new Date(dataInicio + "T00:00:00");
-            })
-            .filter((movimentacao) => {
-
-                if (!dataFim) return true;
-
-                return new Date(movimentacao.data) <=
-                    new Date(dataFim + "T23:59:59");
-            })
-            .filter((movimentacao) => {
-
-                if (!categoria) return true;
-
-                const produto = produtos.find(
-                    (p) => p.id === movimentacao.produtoId
-                );
-
-                return produto &&
-                    produto.categoria === categoria;
-            })
-            .map((movimentacao) => {
-
-                const produto = produtos.find(
-                    (p) => p.id === movimentacao.produtoId
-                );
-
-                const data = new Date(movimentacao.data);
-
-                return {
-                    Data:
-                        data.toLocaleDateString("pt-BR") +
-                        " " +
-                        data.toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                        }),
-
-                    Produto: produto
-                        ? produto.nome
-                        : "Produto removido",
-
-                    Tipo: movimentacao.tipo,
-
-                    Quantidade: movimentacao.quantidade,
-
-                    Responsável: movimentacao.usuario,
-
-                    Justificativa:
-                        movimentacao.justificativa || "-"
-                };
-            });
+        dados = await consultarMovimentacoes();
+        if (dados === null) return;
     }
 
 

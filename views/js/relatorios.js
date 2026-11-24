@@ -30,52 +30,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     ];
 
-    // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
+    const DATA_INICIO_PADRAO_MOVIMENTACOES = "1000-01-01";
+    const DATA_FIM_PADRAO_MOVIMENTACOES = "9999-12-30";
 
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
+    async function consultarProdutosParaCategorias() {
+        const resposta = await fetch("/api/relatorios/estoque", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.sucesso || !resultado.dados?.itens) {
+            throw new Error("Não foi possível carregar as categorias dos produtos.");
         }
-    ];
+
+        return resultado.dados.itens;
+    }
 
     // ========================================
     // ELEMENTOS DO FORMULÁRIO
@@ -100,10 +71,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function atualizarFiltros() {
     const estoqueSelecionado = tipoRelatorio.value === "estoque";
+    const movimentacoesSelecionadas = tipoRelatorio.value === "movimentacoes";
 
     filtrosEstoque.style.display = estoqueSelecionado ? "block" : "none";
 
-    if (estoqueSelecionado) {
+    if (estoqueSelecionado || movimentacoesSelecionadas) {
     carregarCategoriasEstoque();
    }
 }
@@ -114,25 +86,10 @@ atualizarFiltros();
 
 async function carregarCategoriasEstoque() {
     try {
-        const resposta = await fetch("/api/relatorios/estoque", {
-            method: "GET",
-            headers: { Accept: "application/json" },
-            credentials: "same-origin"
-        });
-
-        if (!resposta.ok) {
-            return;
-        }
-
-        const resultado = await resposta.json();
-
-        if (!resultado.sucesso || !resultado.dados) {
-            return;
-        }
-
+        const produtosEstoque = await consultarProdutosParaCategorias();
         const categorias = [
             ...new Set(
-                resultado.dados.itens
+                produtosEstoque
                     .map((produto) => produto.categoria)
                     .filter((categoria) => categoria)
             )
@@ -228,6 +185,8 @@ async function carregarCategoriasEstoque() {
             return;
         }
 
+        visualizarRelatorioArea.style.display = "none";
+
         // ========================================
         // DADOS DO RELATÓRIO
         // ========================================
@@ -239,81 +198,66 @@ async function carregarCategoriasEstoque() {
         // ========================================
 
         if (tipo === "movimentacoes") {
-
-            dados = movimentacoes
-
-                // Filtro de data inicial
-                .filter((movimentacao) => {
-
-                    if (!inicio) {
-                        return true;
+            try {
+                const parametros = new URLSearchParams({
+                    dataInicio: inicio || DATA_INICIO_PADRAO_MOVIMENTACOES,
+                    dataFim: fim || DATA_FIM_PADRAO_MOVIMENTACOES
+                });
+                const resposta = await fetch(
+                    `/api/relatorios/movimentacoes?${parametros.toString()}`,
+                    {
+                        method: "GET",
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin"
                     }
+                );
+                const resultado = await resposta.json();
+                const semResultados = resposta.status === 404 &&
+                    resultado.data?.total_registros === 0;
 
-                    return new Date(movimentacao.data) >=
-                        new Date(inicio + "T00:00:00");
-                })
+                if ((!resposta.ok && !semResultados) || (!resultado.success && !semResultados)) {
+                    throw new Error(resultado.message || "Não foi possível gerar o relatório de movimentações.");
+                }
 
-                // Filtro de data final
-                .filter((movimentacao) => {
-
-                    if (!fim) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) <=
-                        new Date(fim + "T23:59:59");
-                })
-
-                // Filtro de categoria
-                .filter((movimentacao) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
+                let registros = resultado.data?.registros || [];
+                if (categoria && registros.length) {
+                    const produtosEstoque = await consultarProdutosParaCategorias();
+                    const categoriasPorProduto = new Map(
+                        produtosEstoque.map((produto) => [
+                            Number(produto.idProduto),
+                            produto.categoria
+                        ])
                     );
-
-                    return produto &&
-                        produto.categoria === categoria;
-                })
-
-                // Formatação dos dados
-                .map((movimentacao) => {
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
+                    registros = registros.filter((movimentacao) =>
+                        categoriasPorProduto.get(Number(movimentacao.produto?.id_produto)) === categoria
                     );
+                }
 
-                    const data = new Date(movimentacao.data);
+                dados = registros.map((movimentacao) => {
+                    const data = new Date(movimentacao.data_movimentacao);
+                    const usuario = movimentacao.usuario || {};
 
                     return {
-
-                        Data:
-                            data.toLocaleDateString("pt-BR") +
-                            " " +
-                            data.toLocaleTimeString("pt-BR", {
+                        Data: Number.isNaN(data.getTime())
+                            ? "-"
+                            : `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
                                 hour: "2-digit",
                                 minute: "2-digit"
-                            }),
-
-                        Produto: produto
-                            ? produto.nome
-                            : "Produto removido",
-
-                        Tipo: movimentacao.tipo,
-
-                        Quantidade:
-                            movimentacao.quantidade,
-
-                        Responsável:
-                            movimentacao.usuario,
-
-                        Justificativa:
-                            movimentacao.justificativa || "-"
+                            })}`,
+                        Produto: movimentacao.produto?.nome || "Produto removido",
+                        Tipo: movimentacao.tipo_movimentacao || "-",
+                        Quantidade: movimentacao.quantidade,
+                        Responsável: usuario.nome || usuario.login || "-",
+                        Justificativa: movimentacao.justificativa || "-"
                     };
                 });
+            } catch (erro) {
+                const mensagem = document.createElement("p");
+                mensagem.className = "mensagem-erro";
+                mensagem.textContent = erro.message || "Não foi possível consultar as movimentações.";
+                mensagemArea.replaceChildren(mensagem);
+                return;
+            }
         }
 
         // ========================================
