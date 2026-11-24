@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             const resposta = await fetch(
-                "http://localhost:3001/api/produtos/consulta",
+                "/api/produtos/consulta",
                 {
                     method: "GET",
                     headers: {
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
 
             const resposta = await fetch(
-                "http://localhost:3001/api/estoque/saida",
+                "/api/estoque/saida",
                 {
                     method: "POST",
                     headers: {
