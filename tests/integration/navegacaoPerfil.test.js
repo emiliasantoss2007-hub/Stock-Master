@@ -45,13 +45,13 @@ test.each([
     const token = sessoes.criar({ id_usuario: id, id_nivel_acesso: nivel });
     try {
         banco.query.mockImplementationOnce((_sql, _parametros, callback) => callback(null, [{
-            id_usuario: id, nome: 'Pessoa Teste', login: 'pessoa.teste', email: 'teste@example.test', status: 1
+             id_usuario: id, nome: 'Pessoa Teste', login: 'pessoa.teste', email: 'teste@example.test', status: 1, id_nivel_acesso: nivel, perfil: nivel === 1 ? 'Administrador' : 'Técnico'
         }]));
 
         const perfil = await abrir('/usuarios/me?id=1&origem=adm', token);
         expect(perfil.status).toBe(200);
         expect(perfil.headers.get('cache-control')).toBe('no-store');
-        expect(await perfil.json()).toEqual({ nome: 'Pessoa Teste', login: 'pessoa.teste', nivel });
+        expect(await perfil.json()).toEqual({nome: 'Pessoa Teste', email: 'teste@example.test', login: 'pessoa.teste', nivel, perfil: nivel === 1 ? 'Administrador' : 'Técnico'});
         expect(banco.query).toHaveBeenCalledWith(expect.stringContaining('WHERE u.id_usuario = ?'), [id], expect.any(Function));
 
         const painel = await abrir(errado + '?origem=adm', token);

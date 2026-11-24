@@ -294,14 +294,12 @@ const consultarMeuPerfil = async (req, res) => {
             });
         }
 
-        const { nome, login } = usuario;
-        const nivel = Number(req.usuario.id_nivel_acesso);
-
         return res.set('Cache-Control', 'no-store').json({
-            nome,
-            login,
-            nivel
-        });
+            nome: usuario.nome,
+            email: usuario.email,
+            login: usuario.login,
+            nivel: Number(usuario.id_nivel_acesso),
+            perfil: usuario.perfil});
 
     } catch (error) {
         return res.status(500).json({
@@ -374,6 +372,159 @@ const excluirUsuario = async (req, res) => {
     }
 };
 
+
+const atualizarMeuPerfil = async (req, res) => {
+    try {
+        const id = Number(req.usuario.id_usuario);
+        const { nome, email } = req.body ?? {};
+
+        if (!Number.isSafeInteger(id) || id < 1) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: 'Sessão inválida.'
+            });
+        }
+
+        if (
+            typeof nome !== 'string' ||
+            typeof email !== 'string' ||
+            !nome.trim() ||
+            !email.trim()
+        ) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Nome e e-mail são obrigatórios.'
+            });
+        }
+
+        const nomeLimpo = nome.trim();
+        const emailLimpo = email.trim();
+
+        if (nomeLimpo.length > 100 || emailLimpo.length > 100) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Nome ou e-mail excede o tamanho permitido.'
+            });
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpo)) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Informe um e-mail válido.'
+            });
+        }
+
+        const emailEmUso = await UsuarioModel.verificarEmail(emailLimpo, id);
+
+        if (emailEmUso) {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'Este e-mail já está sendo utilizado.'
+            });
+        }
+
+        await UsuarioModel.atualizarMeuPerfil(id, nomeLimpo, emailLimpo);
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Dados atualizados com sucesso.',
+            dados: {
+                nome: nomeLimpo,
+                email: emailLimpo
+            }
+        });
+
+    } catch (erro) {
+        console.error('Erro ao atualizar perfil:', erro);
+
+        if (erro.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'Este e-mail já está sendo utilizado.'
+            });
+        }
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao atualizar o perfil.'
+        });
+    }
+};
+
+const alterarSenhaDoPerfil = async (req, res) => {
+    try {
+        const id = Number(req.usuario.id_usuario);
+        const { senhaAtual, novaSenha, confirmarSenha } = req.body ?? {};
+
+        if (!Number.isSafeInteger(id) || id < 1) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: 'Sessão inválida.'
+            });
+        }
+
+        if (!senhaAtual || !novaSenha || !confirmarSenha) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Preencha todos os campos de senha.'
+            });
+        }
+
+        if (novaSenha !== confirmarSenha) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'A confirmação da senha não confere.'
+            });
+        }
+
+        const senhaValida =
+            typeof novaSenha === 'string' &&
+            novaSenha.length >= 8 &&
+            Buffer.byteLength(novaSenha, 'utf8') <= 72 &&
+            /[A-Z]/.test(novaSenha) &&
+            /[a-z]/.test(novaSenha) &&
+            /[0-9]/.test(novaSenha) &&
+            /[^A-Za-z0-9]/.test(novaSenha);
+
+        if (!senhaValida) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial.'
+            });
+        }
+
+        const resultado = await UsuarioModel.alterarSenhaDoPerfil(
+            id,
+            senhaAtual,
+            novaSenha
+        );
+
+        if (!resultado.sucesso) {
+            return res.status(
+                resultado.motivo === 'SENHA_ATUAL_INCORRETA' ? 400 : 404
+            ).json({
+                sucesso: false,
+                mensagem: resultado.motivo === 'SENHA_ATUAL_INCORRETA'
+                    ? 'A senha atual está incorreta.'
+                    : 'Usuário não encontrado.'
+            });
+        }
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Senha alterada com sucesso.'
+        });
+
+    } catch (erro) {
+        console.error('Erro ao alterar senha do perfil:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao alterar a senha.'
+        });
+    }
+};
+
 // Exporta os Controllers para serem utilizados pelas rotas
 module.exports = {
     consultarMeuPerfil,
@@ -381,5 +532,7 @@ module.exports = {
     editarUsuario,
     buscarUsuarioPorId,
     listarUsuarios,
-    excluirUsuario
+    excluirUsuario,
+    atualizarMeuPerfil,
+    alterarSenhaDoPerfil
 };

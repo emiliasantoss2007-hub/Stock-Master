@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -13,9 +14,9 @@
     <link rel="stylesheet" href="../css/perfil.css">
 
     <script src="../js/perfil.js" defer></script>
-
     <script src="../js/menu-lateral.js" defer></script>
     <script src="../js/navegacao-sessao.js" defer></script>
+
 </head>
 
 <body>
@@ -59,6 +60,7 @@
                     <small>Área autenticada</small>
                     <strong>Meu Perfil</strong>
                 </div>
+
                 <div class="user-area">
                     <div>
                         <strong id="userRole">Administrador</strong>
@@ -82,66 +84,156 @@
                     </div>
                 </header>
 
+                <!-- DADOS PESSOAIS -->
                 <section class="panel">
+
                     <h2>Dados pessoais</h2>
 
                     <div id="mensagemDados"></div>
 
                     <form id="formDados">
+
                         <div class="nome-da-secao">
+
                             <div class="campo-especifico">
                                 <label for="perfilNome">Nome *</label>
-                                <input type="text" id="perfilNome" required>
+                                <input type="text" id="perfilNome" required maxlength="100">
                             </div>
+
                             <div class="campo-especifico">
                                 <label for="perfilLoginCampo">Login</label>
                                 <input type="text" id="perfilLoginCampo" disabled>
                             </div>
+
                         </div>
 
                         <div class="nome-da-secao">
+
                             <div class="campo-especifico">
                                 <label for="perfilEmail">E-mail *</label>
-                                <input type="email" id="perfilEmail" required>
+                                <input type="email" id="perfilEmail" required maxlength="100">
                             </div>
+
                             <div class="campo-especifico">
                                 <label for="perfilTipo">Perfil de acesso</label>
                                 <input type="text" id="perfilTipo" disabled>
                             </div>
+
                         </div>
 
                         <div class="acoes-pagina">
-                            <button type="submit" class="btn btn-primary">Salvar dados</button>
+                            <button type="submit" class="btn btn-primary">
+                                Salvar dados
+                            </button>
                         </div>
+
                     </form>
+
                 </section>
 
+                <!-- ALTERAÇÃO DE SENHA -->
                 <section class="panel">
+
                     <h2>Alterar senha</h2>
 
                     <div id="mensagemSenha"></div>
 
                     <form id="formSenha">
-                        <div class="campo-especifico" style="max-width:320px; margin-bottom:16px;">
+
+                        <div class="campo-especifico senha-com-toggle" style="max-width:320px; margin-bottom:16px;">
+
                             <label for="senhaAtual">Senha atual *</label>
-                            <input type="password" id="senhaAtual" required>
+
+                            <div class="password-wrapper">
+
+                                <input
+                                    type="password"
+                                    id="senhaAtual"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    aria-label="Mostrar senha"
+                                    aria-pressed="false"
+                                >
+                                    ◉
+                                </button>
+
+                            </div>
+
                         </div>
 
                         <div class="nome-da-secao">
-                            <div class="campo-especifico">
+
+                            <div class="campo-especifico senha-com-toggle">
+
                                 <label for="senhaNova">Nova senha *</label>
-                                <input type="password" id="senhaNova" minlength="6" required>
+
+                                <div class="password-wrapper">
+
+                                    <input
+                                        type="password"
+                                        id="senhaNova"
+                                        minlength="8"
+                                        maxlength="72"
+                                        autocomplete="new-password"
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        aria-label="Mostrar senha"
+                                        aria-pressed="false"
+                                    >
+                                        ◉
+                                    </button>
+
+                                </div>
+
                             </div>
-                            <div class="campo-especifico">
+
+                            <div class="campo-especifico senha-com-toggle">
+
                                 <label for="senhaConfirmar">Confirmar nova senha *</label>
-                                <input type="password" id="senhaConfirmar" required>
+
+                                <div class="password-wrapper">
+
+                                    <input
+                                        type="password"
+                                        id="senhaConfirmar"
+                                        minlength="8"
+                                        maxlength="72"
+                                        autocomplete="new-password"
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        aria-label="Mostrar senha"
+                                        aria-pressed="false"
+                                    >
+                                        ◉
+                                    </button>
+
+                                </div>
+
                             </div>
+
                         </div>
 
                         <div class="acoes-pagina">
-                            <button type="submit" class="btn btn-primary">Alterar senha</button>
+                            <button type="submit" class="btn btn-primary">
+                                Alterar senha
+                            </button>
                         </div>
+
                     </form>
+
                 </section>
 
             </section>
@@ -150,7 +242,7 @@
 
     </div>
 
-    <script src='../js/logout.js' defer></script>
-</body>
+    <script src="../js/logout.js" defer></script>
 
+</body>
 </html>
