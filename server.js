@@ -24,6 +24,7 @@ const saidaEstoqueRoutes = require('./src/routes/saidaEstoqueRoutes');
 const relatorioMovimentacaoRoutes = require('./src/routes/relatorioMovimentacaoRoutes');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 const usuarioRoutes = require('./src/routes/usuarioRoutes');
