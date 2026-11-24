@@ -30,6 +30,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     ];
 
+    async function consultarProdutosParaCategorias() {
+        const resposta = await fetch("/api/relatorios/estoque", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.sucesso || !resultado.dados?.itens) {
+            throw new Error("Não foi possível carregar as categorias dos produtos.");
+        }
+
+        return resultado.dados.itens;
+    }
 
     // ========================================
     // ELEMENTOS DO FORMULÁRIO
@@ -54,10 +68,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function atualizarFiltros() {
     const estoqueSelecionado = tipoRelatorio.value === "estoque";
+    const movimentacoesSelecionadas = tipoRelatorio.value === "movimentacoes";
 
     filtrosEstoque.style.display = estoqueSelecionado ? "block" : "none";
 
-    if (estoqueSelecionado) {
+    if (estoqueSelecionado || movimentacoesSelecionadas) {
     carregarCategoriasEstoque();
    }
 }
@@ -68,25 +83,10 @@ atualizarFiltros();
 
 async function carregarCategoriasEstoque() {
     try {
-        const resposta = await fetch("/api/relatorios/estoque", {
-            method: "GET",
-            headers: { Accept: "application/json" },
-            credentials: "same-origin"
-        });
-
-        if (!resposta.ok) {
-            return;
-        }
-
-        const resultado = await resposta.json();
-
-        if (!resultado.sucesso || !resultado.dados) {
-            return;
-        }
-
+        const produtosEstoque = await consultarProdutosParaCategorias();
         const categorias = [
             ...new Set(
-                resultado.dados.itens
+                produtosEstoque
                     .map((produto) => produto.categoria)
                     .filter((categoria) => categoria)
             )
@@ -182,6 +182,8 @@ async function carregarCategoriasEstoque() {
             return;
         }
 
+        visualizarRelatorioArea.style.display = "none";
+
         // ========================================
         // DADOS DO RELATÓRIO
         // ========================================
@@ -192,7 +194,7 @@ async function carregarCategoriasEstoque() {
         // RELATÓRIO DE MOVIMENTAÇÕES
         // ========================================
 
-        if (tipo === "movimentacoes") {
+                if (tipo === "movimentacoes") {
             const filtros = new URLSearchParams({ tipo, inicio, fim });
             btnVisualizarRelatorio.href = "visualizar_relatorios.html?" + filtros;
             visualizarRelatorioArea.style.display = "block";
@@ -320,7 +322,7 @@ async function carregarCategoriasEstoque() {
                 "Relatório de Produtos Cadastrados"
         };
 
-                // ========================================
+        // ========================================
         // MENSAGEM DE SUCESSO
         // ========================================
 
@@ -383,7 +385,7 @@ btnVisualizarRelatorio.href =
 
     });
 
-         // ========================================
+    // ========================================
     // LIMPAR FILTROS
     // ========================================
 
@@ -395,5 +397,4 @@ btnVisualizarRelatorio.href =
 
         btnVisualizarRelatorio.href = "#";
     });
-
 });

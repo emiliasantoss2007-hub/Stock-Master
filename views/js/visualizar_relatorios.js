@@ -69,8 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     ];
 
-
-
     // ========================================
     // TÍTULOS
     // ========================================
@@ -80,7 +78,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         estoque: "Relatório de Estoque Atual",
         produtos: "Relatório de Produtos Cadastrados"
     };
-
 
     // ========================================
     // VERIFICAR RELATÓRIO
@@ -168,7 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : erro.message;
             return;
         }
-    }
+}
 
     // ========================================
     // ESTOQUE ATUAL
