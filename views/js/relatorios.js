@@ -1,35 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
     if (!await configurarNavegacaoDaSessao()) return;
-    const produtos = [
-        {
-            id: 1,
-            nome: "Display LCD 6.1",
-            sku: "SKU-001",
-            categoria: "Telas",
-            quantidade: 32,
-            valor: 250.00,
-            descricao: "Peça para manutenção"
-        },
-        {
-            id: 2,
-            nome: "Bateria modelo A20",
-            sku: "SKU-002",
-            categoria: "Baterias",
-            quantidade: 45,
-            valor: 120.00,
-            descricao: "Componente interno"
-        },
-        {
-            id: 3,
-            nome: "Conector USB-C",
-            sku: "SKU-003",
-            categoria: "Conectores",
-            quantidade: 3,
-            valor: 35.00,
-            descricao: "Peça para manutenção"
-        }
-    ];
-
     async function consultarProdutosParaCategorias() {
         const resposta = await fetch("/api/relatorios/estoque", {
             method: "GET",
@@ -43,6 +13,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         return resultado.dados.itens;
+    }
+
+    async function consultarProdutosCadastrados() {
+        const resposta = await fetch("/api/relatorio/produtos", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !Array.isArray(resultado)) {
+            throw new Error(resultado.message || "Não foi possível gerar o relatório de produtos.");
+        }
+
+        return resultado;
     }
 
     // ========================================
@@ -69,12 +54,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 function atualizarFiltros() {
     const estoqueSelecionado = tipoRelatorio.value === "estoque";
     const movimentacoesSelecionadas = tipoRelatorio.value === "movimentacoes";
+    const produtosSelecionados = tipoRelatorio.value === "produtos";
 
     filtrosEstoque.style.display = estoqueSelecionado ? "block" : "none";
 
     if (estoqueSelecionado || movimentacoesSelecionadas) {
     carregarCategoriasEstoque();
    }
+    if (produtosSelecionados) {
+        carregarCategoriasProdutos();
+    }
 }
 
 tipoRelatorio.addEventListener("change", atualizarFiltros);
@@ -113,23 +102,27 @@ async function carregarCategoriasEstoque() {
     }
 }
 
-    // ========================================
-    // PREENCHER CATEGORIAS
-    // ========================================
+async function carregarCategoriasProdutos() {
+    try {
+        const produtosCadastrados = await consultarProdutosCadastrados();
+        const categorias = [...new Set(
+            produtosCadastrados
+                .map((produto) => produto.categoria)
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+        const categoriaSelecionada = filtroCategoria.value;
+        const opcoes = [new Option("Todas", "")];
 
-    const categorias = [
-        ...new Set(produtos.map((produto) => produto.categoria))
-    ];
+        categorias.forEach((categoria) => opcoes.push(new Option(categoria, categoria)));
+        filtroCategoria.replaceChildren(...opcoes);
 
-    categorias.forEach((categoria) => {
-
-        const opt = document.createElement("option");
-
-        opt.value = categoria;
-        opt.textContent = categoria;
-
-        filtroCategoria.appendChild(opt);
-    });
+        if (categorias.includes(categoriaSelecionada)) {
+            filtroCategoria.value = categoriaSelecionada;
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar categorias dos produtos:", erro);
+    }
+}
 
     // ========================================
     // GERAR RELATÓRIO
@@ -281,29 +274,25 @@ async function carregarCategoriasEstoque() {
         // ========================================
 
         else if (tipo === "produtos") {
-
-            dados = produtos
-
-                .filter((produto) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    return produto.categoria === categoria;
-                })
-
-                .map((produto) => ({
-
-                    SKU: produto.sku,
-
-                    Produto: produto.nome,
-
-                    Categoria: produto.categoria,
-
-                    Descrição:
-                        produto.descricao || "-"
-                }));
+            try {
+                const produtosCadastrados = await consultarProdutosCadastrados();
+                dados = produtosCadastrados
+                    .filter((produto) => !categoria || produto.categoria === categoria)
+                    .map((produto) => ({
+                        SKU: produto.sku,
+                        Produto: produto.nome,
+                        Categoria: produto.categoria,
+                        "Código de barras": produto.codigo_barras || "-"
+                    }));
+            } catch (erro) {
+                console.error("Erro ao consultar relatório de produtos:", erro);
+                mensagemArea.innerHTML = `
+                    <p class="mensagem-erro">
+                        ${erro.message || "Não foi possível gerar o relatório de produtos."}
+                    </p>
+                `;
+                return;
+            }
         }
 
         // ========================================

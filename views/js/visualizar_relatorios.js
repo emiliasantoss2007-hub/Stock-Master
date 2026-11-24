@@ -36,40 +36,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     // ========================================
-    // PRODUTOS FICTÍCIOS
-    // ========================================
-
-    const produtos = [
-        {
-            id: 1,
-            nome: "Display LCD 6.1",
-            sku: "SKU-001",
-            categoria: "Telas",
-            quantidade: 32,
-            valor: 250.00,
-            descricao: "Peça para manutenção"
-        },
-        {
-            id: 2,
-            nome: "Bateria modelo A20",
-            sku: "SKU-002",
-            categoria: "Baterias",
-            quantidade: 45,
-            valor: 120.00,
-            descricao: "Componente interno"
-        },
-        {
-            id: 3,
-            nome: "Conector USB-C",
-            sku: "SKU-003",
-            categoria: "Conectores",
-            quantidade: 3,
-            valor: 35.00,
-            descricao: "Peça para manutenção"
-        }
-    ];
-
-    // ========================================
     // TÍTULOS
     // ========================================
 
@@ -242,25 +208,37 @@ else if (tipo === "estoque") {
     // ========================================
 
     else if (tipo === "produtos") {
+        try {
+            const resposta = await fetch("/api/relatorio/produtos", {
+                method: "GET",
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            });
+            const produtosCadastrados = await resposta.json();
 
-        dados = produtos
-            .filter((produto) => {
+            if (!resposta.ok || !Array.isArray(produtosCadastrados)) {
+                throw new Error(
+                    produtosCadastrados.message || "Não foi possível consultar o relatório de produtos."
+                );
+            }
 
-                if (!categoria) return true;
-
-                return produto.categoria === categoria;
-            })
-            .map((produto) => ({
-
-                SKU: produto.sku,
-
-                Produto: produto.nome,
-
-                Categoria: produto.categoria,
-
-                Descrição:
-                    produto.descricao || "-"
-            }));
+            dados = produtosCadastrados
+                .filter((produto) => !categoria || produto.categoria === categoria)
+                .map((produto) => ({
+                    SKU: produto.sku,
+                    Produto: produto.nome,
+                    Categoria: produto.categoria,
+                    "Código de barras": produto.codigo_barras || "-"
+                }));
+        } catch (erro) {
+            console.error("Erro ao consultar relatório de produtos:", erro);
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">
+                    ${erro.message || "Não foi possível consultar o relatório de produtos."}
+                </p>
+            `;
+            return;
+        }
     }
 
 

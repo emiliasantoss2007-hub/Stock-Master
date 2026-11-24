@@ -87,6 +87,42 @@ test('gera o relatório de produtos cadastrados com dados do banco de teste', as
         .toHaveText(String(produtoCriado.quantidadeInicial));
 });
 
+test('Central de Relatórios consulta e exibe produtos reais do banco', async ({ page }) => {
+    await loginComoAdministrador(page);
+    const produto = await criarProdutoE2E(page, 7);
+    await page.goto('/html/relatorios.html');
+
+    const requisicaoCategorias = page.waitForResponse((response) =>
+        new URL(response.url()).pathname === '/api/relatorio/produtos'
+    );
+    await page.locator('#tipoRelatorio').selectOption('produtos');
+    expect((await requisicaoCategorias).status()).toBe(200);
+
+    const requisicaoRelatorio = page.waitForResponse((response) =>
+        new URL(response.url()).pathname === '/api/relatorio/produtos'
+    );
+    await page.locator('#formRelatorio button[type="submit"]').click();
+    const respostaRelatorio = await requisicaoRelatorio;
+    expect(respostaRelatorio.status()).toBe(200);
+    const produtosRelatorio = await respostaRelatorio.json();
+    expect(produtosRelatorio.some((item) => item.sku === produto.sku)).toBe(true);
+    await expect(page.locator('#visualizarRelatorioArea')).toBeVisible();
+
+    const requisicaoPrevia = page.waitForResponse((response) =>
+        new URL(response.url()).pathname === '/api/relatorio/produtos'
+    );
+    await page.locator('#btnVisualizarRelatorio').click();
+    const respostaPrevia = await requisicaoPrevia;
+    expect(respostaPrevia.status()).toBe(200);
+
+    const linha = page.locator('#relatorioCorpo tr').filter({ hasText: produto.sku });
+    await expect(linha).toHaveCount(1);
+    await expect(linha.locator('td').nth(0)).toHaveText(produto.sku);
+    await expect(linha.locator('td').nth(1)).toHaveText(produto.nome);
+    await expect(linha.locator('td').nth(2)).toHaveText('Conectores');
+    await expect(linha.locator('td').nth(3)).toHaveText('-');
+});
+
 test('gera o relatório das movimentações do produto criado neste cenário', async ({ page }) => {
     await loginComoAdministrador(page);
     const produto = await criarProdutoE2E(page, 5);
