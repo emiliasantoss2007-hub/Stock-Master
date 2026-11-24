@@ -106,8 +106,8 @@ test('gera o relatório das movimentações do produto criado neste cenário', a
 
     const tiposQuantidades = await movimentacoesE2E.evaluateAll((linhas) =>
         linhas.map((linha) => [
-            linha.cells[2].textContent.trim().toUpperCase(),
-            linha.cells[3].textContent.trim()
+            linha.cells[3].textContent.trim().toUpperCase(),
+            linha.cells[4].textContent.trim()
         ]).map(([tipo, quantidade]) => `${tipo}:${quantidade}`).sort()
     );
     expect(tiposQuantidades).toEqual([

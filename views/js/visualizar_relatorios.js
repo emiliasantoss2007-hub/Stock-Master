@@ -69,82 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     ];
 
-
-    const DATA_INICIO_PADRAO_MOVIMENTACOES = "1000-01-01";
-    const DATA_FIM_PADRAO_MOVIMENTACOES = "9999-12-30";
-
-    async function consultarMovimentacoes() {
-        try {
-            const parametros = new URLSearchParams({
-                dataInicio: dataInicio || DATA_INICIO_PADRAO_MOVIMENTACOES,
-                dataFim: dataFim || DATA_FIM_PADRAO_MOVIMENTACOES
-            });
-            const resposta = await fetch(
-                `/api/relatorios/movimentacoes?${parametros.toString()}`,
-                {
-                    method: "GET",
-                    headers: { Accept: "application/json" },
-                    credentials: "same-origin"
-                }
-            );
-            const resultado = await resposta.json();
-            const semResultados = resposta.status === 404 &&
-                resultado.data?.total_registros === 0;
-
-            if ((!resposta.ok && !semResultados) || (!resultado.success && !semResultados)) {
-                throw new Error(resultado.message || "Não foi possível consultar as movimentações.");
-            }
-
-            let registros = resultado.data?.registros || [];
-            if (categoria && registros.length) {
-                const respostaEstoque = await fetch("/api/relatorios/estoque", {
-                    method: "GET",
-                    headers: { Accept: "application/json" },
-                    credentials: "same-origin"
-                });
-                const resultadoEstoque = await respostaEstoque.json();
-
-                if (!respostaEstoque.ok || !resultadoEstoque.sucesso || !resultadoEstoque.dados?.itens) {
-                    throw new Error("Não foi possível aplicar o filtro de categoria.");
-                }
-
-                const categoriasPorProduto = new Map(
-                    resultadoEstoque.dados.itens.map((produto) => [
-                        Number(produto.idProduto),
-                        produto.categoria
-                    ])
-                );
-                registros = registros.filter((movimentacao) =>
-                    categoriasPorProduto.get(Number(movimentacao.produto?.id_produto)) === categoria
-                );
-            }
-
-            return registros.map((movimentacao) => {
-                const data = new Date(movimentacao.data_movimentacao);
-                const usuario = movimentacao.usuario || {};
-
-                return {
-                    Data: Number.isNaN(data.getTime())
-                        ? "-"
-                        : `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                        })}`,
-                    Produto: movimentacao.produto?.nome || "Produto removido",
-                    Tipo: movimentacao.tipo_movimentacao || "-",
-                    Quantidade: movimentacao.quantidade,
-                    Responsável: usuario.nome || usuario.login || "-",
-                    Justificativa: movimentacao.justificativa || "-"
-                };
-            });
-        } catch (erro) {
-            mensagemArea.className = "mensagem-erro";
-            mensagemArea.textContent = erro.message || "Não foi possível consultar as movimentações.";
-            return null;
-        }
-    }
-
-
     // ========================================
     // TÍTULOS
     // ========================================
@@ -154,7 +78,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         estoque: "Relatório de Estoque Atual",
         produtos: "Relatório de Produtos Cadastrados"
     };
-
 
     // ========================================
     // VERIFICAR RELATÓRIO
@@ -187,6 +110,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================
 
     let dados = [];
+    const filtrosMovimentacoes = {};
+    if (dataInicio) filtrosMovimentacoes.dataInicio = dataInicio;
+    if (dataFim) filtrosMovimentacoes.dataFim = dataFim;
 
 
     // ========================================
@@ -194,10 +120,52 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================
 
     if (tipo === "movimentacoes") {
-        dados = await consultarMovimentacoes();
-        if (dados === null) return;
-    }
+        btnExcel.disabled = true;
+        btnPdf.disabled = true;
+        mensagemArea.setAttribute("role", "status");
+        mensagemArea.className = "mensagem-processamento";
+        mensagemArea.textContent = "Carregando movimentações...";
 
+        try {
+            const query = new URLSearchParams(filtrosMovimentacoes);
+            const resposta = await fetch("/api/relatorios/movimentacoes/previa?" + query, {
+                credentials: "same-origin"
+            });
+            if (resposta.status === 401) throw new Error("Sessão expirada. Faça login novamente.");
+            if (resposta.status === 403) throw new Error("Apenas administradores podem consultar movimentações.");
+            if (resposta.status === 400) throw new Error("Informe um período válido.");
+
+            const resultado = resposta.ok ? await resposta.json() : null;
+            if (!Array.isArray(resultado?.registros)) throw new Error("Não foi possível consultar as movimentações.");
+
+            const formatarData = new Intl.DateTimeFormat("pt-BR", {
+                dateStyle: "short", timeStyle: "medium", timeZone: "UTC"
+            });
+            dados = resultado.registros.map(movimentacao => {
+                const data = movimentacao.data_movimentacao && new Date(movimentacao.data_movimentacao);
+                return {
+                    "Código": movimentacao.id_movimentacao,
+                    Produto: movimentacao.nome_produto,
+                    SKU: movimentacao.sku_produto,
+                    "Tipo de movimentação": movimentacao.tipo_movimentacao,
+                    Quantidade: movimentacao.quantidade,
+                    Data: data && Number.isFinite(data.getTime()) ? formatarData.format(data) : null,
+                    "Responsável": movimentacao.nome_responsavel,
+                    Justificativa: movimentacao.justificativa
+                };
+            });
+            mensagemArea.className = "";
+            mensagemArea.textContent = "";
+            btnExcel.disabled = false;
+            btnPdf.disabled = false;
+        } catch (erro) {
+            mensagemArea.className = "mensagem-erro";
+            mensagemArea.textContent = erro instanceof TypeError || erro instanceof SyntaxError
+                ? "Não foi possível consultar as movimentações."
+                : erro.message;
+            return;
+        }
+}
 
     // ========================================
     // ESTOQUE ATUAL
@@ -311,7 +279,12 @@ else if (tipo === "estoque") {
             ${new Date(dataFim + "T00:00:00")
                 .toLocaleDateString("pt-BR")}`;
     }
-if (tipo === "estoque") {
+if (tipo === "movimentacoes") {
+    if (dataInicio && !dataFim) periodo = "A partir de " + dataInicio.split("-").reverse().join("/");
+    if (!dataInicio && dataFim) periodo = "Até " + dataFim.split("-").reverse().join("/");
+    const total = new Intl.NumberFormat("pt-BR").format(dados.length);
+    meta.textContent = `Período: ${periodo} | Datas em UTC | Registros: ${total}`;
+} else if (tipo === "estoque") {
     meta.textContent =
         `Gerado por admin.stockmaster | ` +
         `Categoria: ${categoria || "Todas"} | ` +
@@ -333,7 +306,7 @@ if (tipo === "estoque") {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align:center; padding:30px;">
+                <td colspan="${tipo === "movimentacoes" ? 8 : 6}" style="text-align:center; padding:30px;">
                     Nenhum dado encontrado para os filtros selecionados.
                 </td>
             </tr>
@@ -351,16 +324,10 @@ if (tipo === "estoque") {
             </tr>
         `;
 
-        tbody.innerHTML =
-            dados.map((linha) => `
-                <tr>
-                    ${colunas
-                        .map((coluna) =>
-                            `<td>${linha[coluna]}</td>`
-                        )
-                        .join("")}
-                </tr>
-            `).join("");
+        for (const linha of dados) {
+            const tr = tbody.insertRow();
+            for (const coluna of colunas) tr.insertCell().textContent = linha[coluna] ?? "—";
+        }
     }
 
     // ========================================
@@ -379,10 +346,7 @@ btnPdf.addEventListener("click", async () => {
     try {
         const filtros = {};
 
-        if (tipo === "movimentacoes") {
-            if (dataInicio) filtros.dataInicio = dataInicio;
-            if (dataFim) filtros.dataFim = dataFim;
-        }
+        if (tipo === "movimentacoes") Object.assign(filtros, filtrosMovimentacoes);
 
         if (tipo === "estoque") {
             if (busca) filtros.busca = busca;
@@ -515,10 +479,7 @@ btnPdf.addEventListener("click", async () => {
 
             const filtros = {};
 
-            if (tipo === "movimentacoes") {
-                if (dataInicio) filtros.dataInicio = dataInicio;
-                if (dataFim) filtros.dataFim = dataFim;
-            }
+            if (tipo === "movimentacoes") Object.assign(filtros, filtrosMovimentacoes);
 
             if (tipo === "estoque") {
                 if (busca) filtros.busca = busca;

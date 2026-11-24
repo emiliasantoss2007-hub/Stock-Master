@@ -40,6 +40,36 @@ const consultarHistorico = async (req, res) => {
 };
 
 // Exporta o Controller para utilização pelas rotas
+const CAMPOS_PREVIA = [
+    'id_movimentacao', 'nome_produto', 'sku_produto', 'tipo_movimentacao',
+    'quantidade', 'data_movimentacao', 'nome_responsavel', 'justificativa'
+];
+
+async function consultarPreviaMovimentacoes(req, res) {
+    res.set('Cache-Control', 'no-store');
+    if (Object.entries(req.query).some(([chave, valor]) =>
+        !['dataInicio', 'dataFim'].includes(chave) || typeof valor !== 'string')) {
+        return res.status(400).json({ message: 'Informe apenas dataInicio e dataFim, sem repetir parâmetros.' });
+    }
+    try {
+        const registros = await movimentacaoModel.consultarHistorico({
+            data_inicio: req.query.dataInicio,
+            data_fim: req.query.dataFim
+        });
+        return res.json({
+            registros: registros.map(item => Object.fromEntries(
+                CAMPOS_PREVIA.map(campo => [campo, item[campo] ?? null])
+            ))
+        });
+    } catch (erro) {
+        if (erro.code === 'INVALID_FILTER') {
+            return res.status(400).json({ message: 'Informe um período válido no formato AAAA-MM-DD.' });
+        }
+        return res.status(500).json({ message: 'Não foi possível consultar as movimentações.' });
+    }
+}
+
 module.exports = {
-    consultarHistorico
+    consultarHistorico,
+    consultarPreviaMovimentacoes
 };

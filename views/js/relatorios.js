@@ -30,9 +30,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     ];
 
-    const DATA_INICIO_PADRAO_MOVIMENTACOES = "1000-01-01";
-    const DATA_FIM_PADRAO_MOVIMENTACOES = "9999-12-30";
-
     async function consultarProdutosParaCategorias() {
         const resposta = await fetch("/api/relatorios/estoque", {
             method: "GET",
@@ -173,7 +170,7 @@ async function carregarCategoriasEstoque() {
         // Se uma data for preenchida, a outra também
         // precisa ser preenchida.
 
-        if ((inicio && !fim) || (!inicio && fim)) {
+        if (tipo !== "movimentacoes" && ((inicio && !fim) || (!inicio && fim))) {
 
             mensagemArea.innerHTML = `
                 <p class="mensagem-erro">
@@ -197,75 +194,14 @@ async function carregarCategoriasEstoque() {
         // RELATÓRIO DE MOVIMENTAÇÕES
         // ========================================
 
-        if (tipo === "movimentacoes") {
-            try {
-                const parametros = new URLSearchParams({
-                    dataInicio: inicio || DATA_INICIO_PADRAO_MOVIMENTACOES,
-                    dataFim: fim || DATA_FIM_PADRAO_MOVIMENTACOES
-                });
-                const resposta = await fetch(
-                    `/api/relatorios/movimentacoes?${parametros.toString()}`,
-                    {
-                        method: "GET",
-                        headers: { Accept: "application/json" },
-                        credentials: "same-origin"
-                    }
-                );
-                const resultado = await resposta.json();
-                const semResultados = resposta.status === 404 &&
-                    resultado.data?.total_registros === 0;
-
-                if ((!resposta.ok && !semResultados) || (!resultado.success && !semResultados)) {
-                    throw new Error(resultado.message || "Não foi possível gerar o relatório de movimentações.");
-                }
-
-                let registros = resultado.data?.registros || [];
-                if (categoria && registros.length) {
-                    const produtosEstoque = await consultarProdutosParaCategorias();
-                    const categoriasPorProduto = new Map(
-                        produtosEstoque.map((produto) => [
-                            Number(produto.idProduto),
-                            produto.categoria
-                        ])
-                    );
-                    registros = registros.filter((movimentacao) =>
-                        categoriasPorProduto.get(Number(movimentacao.produto?.id_produto)) === categoria
-                    );
-                }
-
-                dados = registros.map((movimentacao) => {
-                    const data = new Date(movimentacao.data_movimentacao);
-                    const usuario = movimentacao.usuario || {};
-
-                    return {
-                        Data: Number.isNaN(data.getTime())
-                            ? "-"
-                            : `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            })}`,
-                        Produto: movimentacao.produto?.nome || "Produto removido",
-                        Tipo: movimentacao.tipo_movimentacao || "-",
-                        Quantidade: movimentacao.quantidade,
-                        Responsável: usuario.nome || usuario.login || "-",
-                        Justificativa: movimentacao.justificativa || "-"
-                    };
-                });
-            } catch (erro) {
-                const mensagem = document.createElement("p");
-                mensagem.className = "mensagem-erro";
-                mensagem.textContent = erro.message || "Não foi possível consultar as movimentações.";
-                mensagemArea.replaceChildren(mensagem);
-                return;
-            }
+                if (tipo === "movimentacoes") {
+            const filtros = new URLSearchParams({ tipo, inicio, fim });
+            btnVisualizarRelatorio.href = "visualizar_relatorios.html?" + filtros;
+            visualizarRelatorioArea.style.display = "block";
+            return;
         }
 
-        // ========================================
-        // RELATÓRIO DE ESTOQUE ATUAL
-        // ========================================
-
-        else if (tipo === "estoque") {
-
+        if (tipo === "estoque") {
     const busca = filtroBuscaEstoque.value.trim();
     const somenteZerados = apenasZerados.checked;
 
@@ -386,7 +322,7 @@ async function carregarCategoriasEstoque() {
                 "Relatório de Produtos Cadastrados"
         };
 
-                // ========================================
+        // ========================================
         // MENSAGEM DE SUCESSO
         // ========================================
 
@@ -449,7 +385,7 @@ btnVisualizarRelatorio.href =
 
     });
 
-         // ========================================
+    // ========================================
     // LIMPAR FILTROS
     // ========================================
 
@@ -461,5 +397,4 @@ btnVisualizarRelatorio.href =
 
         btnVisualizarRelatorio.href = "#";
     });
-
 });
