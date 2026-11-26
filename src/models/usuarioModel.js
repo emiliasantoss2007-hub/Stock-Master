@@ -1,4 +1,5 @@
-// Model responsável pelo cadastro de usuário (RF-04)
+
+// Model responsável pelo cadastro e gerenciamento de usuário
 
 const connection = require('../config/database');
 const bcrypt = require('bcrypt');
@@ -6,44 +7,35 @@ const bcrypt = require('bcrypt');
 // Função responsável por preparar e executar o cadastro do usuário
 const cadastrarUsuario = (dados, callback) => {
 
-    // Recebe os dados enviados pelo Controller
     const { nome, email, login, senha, perfil } = dados;
 
-    // Busca o nível de acesso correspondente ao perfil
     connection.query(
         'SELECT id_nivel_acesso FROM nivel_acesso WHERE descricao = ?',
         [perfil],
         (err, resultado) => {
 
-            // Verifica se ocorreu erro na consulta
             if (err) {
                 return callback(err);
             }
 
-            // Verifica se o nível de acesso foi encontrado
             if (resultado.length === 0) {
                 return callback(new Error('Nível de acesso não encontrado'));
             }
 
-            // Obtém o ID do nível de acesso
             const id_nivel_acesso = resultado[0].id_nivel_acesso;
 
-            // Gera o hash da senha
             bcrypt.hash(senha, 10, (err, senha_hash) => {
 
-                // Verifica se ocorreu erro ao gerar o hash
                 if (err) {
                     return callback(err);
                 }
 
-                // Comando SQL para cadastrar o usuário
                 const sql = `
                     INSERT INTO usuario
                     (nome, email, login, senha_hash, status, id_nivel_acesso)
                     VALUES (?, ?, ?, ?, ?, ?)
                 `;
 
-                // Valores que serão enviados para o SQL
                 const valores = [
                     nome,
                     email,
@@ -53,15 +45,12 @@ const cadastrarUsuario = (dados, callback) => {
                     id_nivel_acesso
                 ];
 
-                // Executa o cadastro no banco
                 connection.query(sql, valores, (err, resultado) => {
 
-                    // Verifica se ocorreu erro no cadastro
                     if (err) {
                         return callback(err);
                     }
 
-                    // Retorna o resultado do cadastro
                     callback(null, resultado);
                 });
             });
@@ -69,8 +58,268 @@ const cadastrarUsuario = (dados, callback) => {
     );
 };
 
-// Exporta a função para ser utilizada pelo Controller
-module.exports = {
-    cadastrarUsuario
-};
 
+// RF-05 — Buscar usuário por ID
+function buscarPorId(id) {
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            SELECT
+                u.id_usuario,
+                u.nome,
+                u.email,
+                u.login,
+                u.status,
+                u.id_nivel_acesso,
+                n.descricao AS perfil
+            FROM usuario u
+            INNER JOIN nivel_acesso n
+                ON u.id_nivel_acesso = n.id_nivel_acesso
+            WHERE u.id_usuario = ?
+        `;
+
+        connection.query(sql, [id], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados[0] || null);
+        });
+    });
+}
+
+
+// RF-05 — Verificar se login já está em uso
+function verificarLogin(login, idUsuario) {
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            SELECT id_usuario
+            FROM usuario
+            WHERE login = ?
+                AND id_usuario <> ?
+        `;
+
+        connection.query(sql, [login, idUsuario], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados.length > 0);
+        });
+    });
+}
+
+
+// RF-05 — Verificar se e-mail já está em uso
+function verificarEmail(email, idUsuario) {
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            SELECT id_usuario
+            FROM usuario
+            WHERE email = ?
+                AND id_usuario <> ?
+        `;
+
+        connection.query(sql, [email, idUsuario], (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados.length > 0);
+        });
+    });
+}
+
+
+// RF-05 — Atualizar usuário
+function atualizar(idUsuario, nome, email, login, idNivelAcesso) {
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            UPDATE usuario
+            SET
+                nome = ?,
+                email = ?,
+                login = ?,
+                id_nivel_acesso = ?
+            WHERE id_usuario = ?
+        `;
+
+        connection.query(
+            sql,
+            [nome, email, login, idNivelAcesso, idUsuario],
+            (erro, resultado) => {
+                if (erro) return reject(erro);
+                resolve(resultado);
+            }
+        );
+    });
+}
+
+
+// RF — Consultar usuários
+function listar(filtros = {}) {
+    return new Promise((resolve, reject) => {
+
+        const {
+            busca = '',
+            perfil = '',
+            status = '',
+            ordenarPor = 'nome',
+            direcao = 'asc'
+        } = filtros;
+
+        let sql = `
+            SELECT
+                u.id_usuario,
+                u.nome,
+                u.email,
+                u.login,
+                u.status,
+                u.id_nivel_acesso,
+                n.descricao AS perfil
+            FROM usuario u
+            INNER JOIN nivel_acesso n
+                ON u.id_nivel_acesso = n.id_nivel_acesso
+            WHERE 1 = 1
+        `;
+
+        const valores = [];
+
+        if (busca) {
+            sql += `
+                AND (
+                    u.nome LIKE ?
+                    OR u.email LIKE ?
+                    OR u.login LIKE ?
+                )
+            `;
+
+            const termo = `%${busca}%`;
+            valores.push(termo, termo, termo);
+        }
+
+        if (perfil) {
+            sql += ` AND n.descricao = ?`;
+            valores.push(perfil);
+        }
+
+        if (status !== '') {
+            sql += ` AND u.status = ?`;
+            valores.push(status === 'Ativo' ? 1 : 0);
+        }
+
+        // Colunas permitidas para ordenação
+        const colunasPermitidas = {
+            nome: 'u.nome',
+            email: 'u.email',
+            login: 'u.login',
+            perfil: 'n.descricao',
+            status: 'u.status'
+        };
+
+        const coluna = colunasPermitidas[ordenarPor] || 'u.nome';
+
+        const direcaoSQL =
+            String(direcao).toLowerCase() === 'desc'
+                ? 'DESC'
+                : 'ASC';
+
+        sql += ` ORDER BY ${coluna} ${direcaoSQL}`;
+
+        connection.query(sql, valores, (erro, resultados) => {
+            if (erro) return reject(erro);
+            resolve(resultados);
+        });
+    });
+}
+
+
+// RF — Excluir usuário
+function excluir(idUsuario) {
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            DELETE FROM usuario
+            WHERE id_usuario = ?
+        `;
+
+        connection.query(sql, [idUsuario], (erro, resultado) => {
+            if (erro) return reject(erro);
+
+            resolve(resultado.affectedRows === 1);
+        });
+    });
+}
+
+
+function contarUsuariosAtivos() {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT COUNT(*) AS total FROM usuario WHERE status = TRUE', [], (erro, registros) => {
+            if (erro) return reject(erro);
+            resolve(registros[0].total);
+        });
+    });
+}
+
+
+async function atualizarMeuPerfil(idUsuario, nome, email) {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            UPDATE usuario
+            SET nome = ?, email = ?
+            WHERE id_usuario = ? AND status = TRUE
+        `;
+
+        connection.query(sql, [nome, email, idUsuario], (erro, resultado) => {
+            if (erro) return reject(erro);
+            resolve(resultado);
+        });
+    });
+}
+
+async function alterarSenhaDoPerfil(idUsuario, senhaAtual, novaSenha) {
+    try {
+        const [usuarios] = await connection.promise().query(
+            `SELECT senha_hash, status
+             FROM usuario
+             WHERE id_usuario = ?
+             LIMIT 1`,
+            [idUsuario]
+        );
+
+        if (!usuarios.length || !usuarios[0].status) {
+            return { sucesso: false, motivo: 'USUARIO_NAO_ENCONTRADO' };
+        }
+
+        const senhaValida = await bcrypt.compare(
+            senhaAtual,
+            usuarios[0].senha_hash
+        );
+
+        if (!senhaValida) {
+            return { sucesso: false, motivo: 'SENHA_ATUAL_INCORRETA' };
+        }
+
+        const senhaHash = await bcrypt.hash(novaSenha, 10);
+
+        await connection.promise().query(
+            `UPDATE usuario
+             SET senha_hash = ?
+             WHERE id_usuario = ?`,
+            [senhaHash, idUsuario]
+        );
+
+        return { sucesso: true };
+
+    } catch (erro) {
+        throw erro;
+    }
+}
+
+// Exporta as funções utilizadas pelos Controllers
+module.exports = {
+    contarUsuariosAtivos,
+    cadastrarUsuario,
+    buscarPorId,
+    verificarLogin,
+    verificarEmail,
+    atualizar,
+    listar,
+    excluir,
+    atualizarMeuPerfil,
+    alterarSenhaDoPerfil
+};

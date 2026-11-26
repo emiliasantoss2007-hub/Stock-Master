@@ -1,20 +1,132 @@
+require('dotenv').config();
+require('./src/config/database');
+
 const express = require('express');
 const path = require('path');
 
+const authRoutes = require('./src/routes/authRoutes');
+const passRoutes = require('./src/routes/passRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
+const { criarRelatorioExcelRoutes } = require('./src/routes/relatorioExcelRoutes');
+const { criarRelatorioPdfRoutes } = require('./src/routes/relatorioPdfRoutes');
+const { gerarRelatorioPdf } = require('./src/services/relatorioPdfService');
+const { consultarHistorico } = require('./src/models/movimentacaoModel');
+const { listarRelatorioEstoque } = require('./src/models/produtoModel');
+const { consultarRelatorioProdutos } = require('./src/models/relatorioProdutoModel');
+const autenticarRelatorio = require('./src/middlewares/produtoAuth');
+const autorizarRelatorio = require('./src/middlewares/adminOnly');
+const relatorioProdutoRoutes = require('./src/routes/relatorioProdutoRoutes');
+const movimentacaoRoutes = require('./src/routes/movimentacaoRoutes');
+const produtoRoutes = require('./src/routes/produtoRoutes');
+const relatorioRoutes = require('./src/routes/relatorioRoutes');
+const prodEditRoutes = require('./src/routes/prodEditRoutes');
+const saidaEstoqueRoutes = require('./src/routes/saidaEstoqueRoutes');
+const relatorioMovimentacaoRoutes = require('./src/routes/relatorioMovimentacaoRoutes');
+
 const app = express();
-const PORT = 3001;
+app.set('trust proxy', 1);
+const PORT = process.env.PORT || 3001;
+
+const usuarioRoutes = require('./src/routes/usuarioRoutes');
 
 // Permite receber dados em JSON
 app.use(express.json());
 
-// Arquivos do Front-end
-app.use(express.static(path.join(__dirname, 'views')));
+// Permite receber dados de formulários
+app.use(express.urlencoded({ extended: true }));
 
-// Rota de usuários
-const usuarioRoutes = require('./src/routes/usuarioRoutes');
+const sessaoService = require('./src/services/sessaoService');
+
+const COOKIE_SESSAO = 'stockmaster_session';
+
+function obterCookie(req, nome) {
+    const cookies = (req.headers.cookie || '').split(';');
+
+    const cookie = cookies
+        .map((parte) => parte.trim())
+        .find((parte) => parte.startsWith(`${nome}=`));
+
+    if (!cookie) return null;
+
+    try {
+        return decodeURIComponent(cookie.slice(nome.length + 1));
+    } catch {
+        return null;
+    }
+}
+
+app.use((req, res, next) => {
+    const caminho = req.path.toLowerCase();
+
+    // Verifica somente solicitações de páginas HTML
+    if (!caminho.endsWith('.html')) {
+        return next();
+    }
+
+    // Páginas que podem ser acessadas sem login
+    const paginasPublicas = [
+        '/html/login.html',
+        '/html/recuperar_senha.html',
+        '/html/redefinir_senha.html'
+    ];
+
+    if (paginasPublicas.includes(caminho)) {
+        return next();
+    }
+
+    const token = obterCookie(req, COOKIE_SESSAO);
+    const usuario = token && sessaoService.obterUsuario(token);
+
+    if (!usuario) {
+        return res.redirect('/html/login.html');
+    }
+
+    const nivel = Number(usuario.id_nivel_acesso);
+    if (nivel === 2 && caminho === '/html/dashboard_adm.html') {
+        return res.redirect('/html/dashboard_tec.html');
+    }
+    if (nivel === 1 && caminho === '/html/dashboard_tec.html') {
+        return res.redirect('/html/dashboard_adm.html');
+    }
+
+    next();
+});
+
+// Arquivos estáticos do Front-end
+app.use(express.static(path.join(__dirname, 'views')));
+app.use('/src', express.static(path.join(__dirname, 'src')));
+
+// Rotas da API
+app.use('/api/auth', authRoutes);
+app.use('/api/auth', passRoutes);
+app.use('/api', dashboardRoutes);
+app.use(criarRelatorioExcelRoutes({
+    autenticar: autenticarRelatorio,
+    autorizar: autorizarRelatorio,
+    consultarHistorico,
+    listarRelatorioEstoque,
+    consultarRelatorioProdutos
+}));
+app.use(criarRelatorioPdfRoutes({
+    autenticar: autenticarRelatorio,
+    autorizar: autorizarRelatorio,
+    consultarHistorico,
+    listarRelatorioEstoque,
+    consultarRelatorioProdutos,
+    gerarRelatorioPdf
+}));
+app.use('/api', relatorioProdutoRoutes);
+app.use('/api', movimentacaoRoutes);
+app.use('/api', produtoRoutes);
+app.use('/api/relatorios', relatorioRoutes);
+app.use('/api/produtos', prodEditRoutes);
+app.use('/api/estoque/saida', saidaEstoqueRoutes);
+app.use('/api', relatorioMovimentacaoRoutes);
+
+// Rotas de usuários
 app.use(usuarioRoutes);
 
-// Rota inicial
+// Rota inicial → login
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'html', 'login.html'));
 });

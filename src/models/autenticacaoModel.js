@@ -6,7 +6,7 @@
 
 "use strict";
 
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const connection = require("../config/database");
 
 // Namespace da equipe: window no navegador, globalThis no Node.
@@ -105,8 +105,7 @@ function limparTentativas(login) {
 
 /* ---------- Model ---------- */
 const Autenticacao = {
-
-    // Consulta o usuário pelo login (RN-02: login único, garantido por UNIQUE no banco).
+    // Consulta o usuário pelo login ou e-mail.
     buscarUsuarioPorLogin({ login }) {
         const sql = `
             SELECT u.id_usuario,
@@ -119,10 +118,11 @@ const Autenticacao = {
                    n.descricao AS perfil
               FROM usuario u
              INNER JOIN nivel_acesso n ON n.id_nivel_acesso = u.id_nivel_acesso
-             WHERE u.login = ?
+             WHERE u.login = ? OR u.email = ?
              LIMIT 1`;
 
-        return executarQuery(sql, [login]).then((linhas) => linhas[0] || null);
+        return executarQuery(sql, [login, login])
+            .then((linhas) => linhas[0] || null);
     },
 
     // Compara a senha digitada com o hash armazenado (RNF-01.01).

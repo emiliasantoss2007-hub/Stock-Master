@@ -1,142 +1,34 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!await configurarNavegacaoDaSessao()) return;
+    async function consultarProdutosParaCategorias() {
+        const resposta = await fetch("/api/relatorios/estoque", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        });
+        const resultado = await resposta.json();
 
-    // ========================================
-    // CONTROLE DE ACESSO E NAVEGAÇÃO
-    // ========================================
+        if (!resposta.ok || !resultado.sucesso || !resultado.dados?.itens) {
+            throw new Error("Não foi possível carregar as categorias dos produtos.");
+        }
 
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-    const produtosLink = document.querySelector("#produtosLink");
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const entradaLink = document.querySelector("#entradaLink");
-    const saidaLink = document.querySelector("#saidaLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const historicoLink = document.querySelector("#historicoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-    const perfilLink = document.querySelector("#perfilLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-    // ========================================
-    // RELATÓRIOS SÃO EXCLUSIVOS DO ADMIN
-    // ========================================
-
-    if (origem === "tecnico") {
-        window.location.href = "dashboard_tec.html";
-        return;
+        return resultado.dados.itens;
     }
 
-    // ========================================
-    // CONFIGURAÇÃO DO ADMINISTRADOR
-    // ========================================
+    async function consultarProdutosCadastrados() {
+        const resposta = await fetch("/api/relatorio/produtos", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin"
+        });
+        const resultado = await resposta.json();
 
-    dashboardLink.href = "dashboard_adm.html";
-    breadcrumbLink.href = "dashboard_adm.html";
-
-    produtosLink.href = "produtos.html?origem=adm";
-    produtosMenuText.textContent = "Produtos";
-
-    entradaLink.href = "entrada_estoque.html?origem=adm";
-    saidaLink.href = "saída_estoque.html?origem=adm";
-    expurgoLink.href = "expurgo_estoque.html?origem=adm";
-    historicoLink.href = "historico_movimentacao.html?origem=adm";
-    relatoriosLink.href = "relatorios.html?origem=adm";
-    perfilLink.href = "perfil.html?origem=adm";
-
-    userRole.textContent = "Administrador";
-    username.textContent = "admin.stockmaster";
-    userAvatar.textContent = "AD";
-
-    usuariosLink.style.display = "";
-    expurgoLink.style.display = "";
-    relatoriosLink.style.display = "";
-
-    // ========================================
-    // PRODUTOS FICTÍCIOS
-    // ========================================
-
-    const produtos = [
-        {
-            id: 1,
-            nome: "Display LCD 6.1",
-            sku: "SKU-001",
-            categoria: "Telas",
-            quantidade: 32,
-            valor: 250.00,
-            descricao: "Peça para manutenção"
-        },
-        {
-            id: 2,
-            nome: "Bateria modelo A20",
-            sku: "SKU-002",
-            categoria: "Baterias",
-            quantidade: 45,
-            valor: 120.00,
-            descricao: "Componente interno"
-        },
-        {
-            id: 3,
-            nome: "Conector USB-C",
-            sku: "SKU-003",
-            categoria: "Conectores",
-            quantidade: 3,
-            valor: 35.00,
-            descricao: "Peça para manutenção"
+        if (!resposta.ok || !Array.isArray(resultado)) {
+            throw new Error(resultado.message || "Não foi possível gerar o relatório de produtos.");
         }
-    ];
 
-    // ========================================
-    // MOVIMENTAÇÕES FICTÍCIAS
-    // ========================================
-
-    const movimentacoes = [
-        {
-            data: "2026-09-08T14:30:00",
-            produtoId: 1,
-            tipo: "Entrada",
-            quantidade: 10,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        },
-        {
-            data: "2026-09-08T11:15:00",
-            produtoId: 3,
-            tipo: "Saída",
-            quantidade: 2,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-07T16:40:00",
-            produtoId: 2,
-            tipo: "Expurgo",
-            quantidade: 3,
-            usuario: "admin.stockmaster",
-            justificativa: "Produto danificado"
-        },
-        {
-            data: "2026-09-06T10:20:00",
-            produtoId: 1,
-            tipo: "Saída",
-            quantidade: 4,
-            usuario: "tecnico.stockmaster",
-            justificativa: "Utilização em manutenção"
-        },
-        {
-            data: "2026-09-05T09:10:00",
-            produtoId: 2,
-            tipo: "Entrada",
-            quantidade: 15,
-            usuario: "admin.stockmaster",
-            justificativa: "Reposição de estoque"
-        }
-    ];
+        return resultado;
+    }
 
     // ========================================
     // ELEMENTOS DO FORMULÁRIO
@@ -145,6 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const formulario = document.querySelector("#formRelatorio");
     const tipoRelatorio = document.querySelector("#tipoRelatorio");
     const filtroCategoria = document.querySelector("#filtroCategoria");
+    const filtrosEstoque = document.querySelector("#filtrosEstoque");
+    const filtroBuscaEstoque = document.querySelector("#filtroBuscaEstoque");
+    const apenasZerados = document.querySelector("#apenasZerados");
     const dataInicio = document.querySelector("#dataInicio");
     const dataFim = document.querySelector("#dataFim");
     const mensagemArea = document.querySelector("#mensagemArea");
@@ -153,28 +48,87 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnVisualizarRelatorio = document.querySelector("#btnVisualizarRelatorio");
 
     // ========================================
-    // PREENCHER CATEGORIAS
-    // ========================================
+   // EXIBIR FILTROS CONFORME O TIPO DE RELATÓRIO
+  // ========================================
 
-    const categorias = [
-        ...new Set(produtos.map((produto) => produto.categoria))
-    ];
+function atualizarFiltros() {
+    const estoqueSelecionado = tipoRelatorio.value === "estoque";
+    const movimentacoesSelecionadas = tipoRelatorio.value === "movimentacoes";
+    const produtosSelecionados = tipoRelatorio.value === "produtos";
 
-    categorias.forEach((categoria) => {
+    filtrosEstoque.style.display = estoqueSelecionado ? "block" : "none";
 
-        const opt = document.createElement("option");
+    if (estoqueSelecionado || movimentacoesSelecionadas) {
+    carregarCategoriasEstoque();
+   }
+    if (produtosSelecionados) {
+        carregarCategoriasProdutos();
+    }
+}
 
-        opt.value = categoria;
-        opt.textContent = categoria;
+tipoRelatorio.addEventListener("change", atualizarFiltros);
 
-        filtroCategoria.appendChild(opt);
-    });
+atualizarFiltros();
+
+async function carregarCategoriasEstoque() {
+    try {
+        const produtosEstoque = await consultarProdutosParaCategorias();
+        const categorias = [
+            ...new Set(
+                produtosEstoque
+                    .map((produto) => produto.categoria)
+                    .filter((categoria) => categoria)
+            )
+        ];
+
+        const categoriaSelecionada = filtroCategoria.value;
+
+        const opcoes = [new Option("Todas", "")];
+
+        categorias.sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+        categorias.forEach((categoria) => {
+            opcoes.push(new Option(categoria, categoria));
+        });
+
+        filtroCategoria.replaceChildren(...opcoes);
+
+        if (categorias.includes(categoriaSelecionada)) {
+            filtroCategoria.value = categoriaSelecionada;
+        }
+
+    } catch (erro) {
+        console.error("Erro ao carregar categorias do estoque:", erro);
+    }
+}
+
+async function carregarCategoriasProdutos() {
+    try {
+        const produtosCadastrados = await consultarProdutosCadastrados();
+        const categorias = [...new Set(
+            produtosCadastrados
+                .map((produto) => produto.categoria)
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+        const categoriaSelecionada = filtroCategoria.value;
+        const opcoes = [new Option("Todas", "")];
+
+        categorias.forEach((categoria) => opcoes.push(new Option(categoria, categoria)));
+        filtroCategoria.replaceChildren(...opcoes);
+
+        if (categorias.includes(categoriaSelecionada)) {
+            filtroCategoria.value = categoriaSelecionada;
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar categorias dos produtos:", erro);
+    }
+}
 
     // ========================================
     // GERAR RELATÓRIO
     // ========================================
 
-    formulario.addEventListener("submit", (e) => {
+    formulario.addEventListener("submit", async (e) => {
 
         e.preventDefault();
 
@@ -209,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Se uma data for preenchida, a outra também
         // precisa ser preenchida.
 
-        if ((inicio && !fim) || (!inicio && fim)) {
+        if (tipo !== "movimentacoes" && ((inicio && !fim) || (!inicio && fim))) {
 
             mensagemArea.innerHTML = `
                 <p class="mensagem-erro">
@@ -221,6 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        visualizarRelatorioArea.style.display = "none";
+
         // ========================================
         // DADOS DO RELATÓRIO
         // ========================================
@@ -231,147 +187,112 @@ document.addEventListener("DOMContentLoaded", () => {
         // RELATÓRIO DE MOVIMENTAÇÕES
         // ========================================
 
-        if (tipo === "movimentacoes") {
-
-            dados = movimentacoes
-
-                // Filtro de data inicial
-                .filter((movimentacao) => {
-
-                    if (!inicio) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) >=
-                        new Date(inicio + "T00:00:00");
-                })
-
-                // Filtro de data final
-                .filter((movimentacao) => {
-
-                    if (!fim) {
-                        return true;
-                    }
-
-                    return new Date(movimentacao.data) <=
-                        new Date(fim + "T23:59:59");
-                })
-
-                // Filtro de categoria
-                .filter((movimentacao) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
-                    );
-
-                    return produto &&
-                        produto.categoria === categoria;
-                })
-
-                // Formatação dos dados
-                .map((movimentacao) => {
-
-                    const produto = produtos.find(
-                        (p) => p.id === movimentacao.produtoId
-                    );
-
-                    const data = new Date(movimentacao.data);
-
-                    return {
-
-                        Data:
-                            data.toLocaleDateString("pt-BR") +
-                            " " +
-                            data.toLocaleTimeString("pt-BR", {
-                                hour: "2-digit",
-                                minute: "2-digit"
-                            }),
-
-                        Produto: produto
-                            ? produto.nome
-                            : "Produto removido",
-
-                        Tipo: movimentacao.tipo,
-
-                        Quantidade:
-                            movimentacao.quantidade,
-
-                        Responsável:
-                            movimentacao.usuario,
-
-                        Justificativa:
-                            movimentacao.justificativa || "-"
-                    };
-                });
+                if (tipo === "movimentacoes") {
+            const filtros = new URLSearchParams({ tipo, inicio, fim });
+            btnVisualizarRelatorio.href = "visualizar_relatorios.html?" + filtros;
+            visualizarRelatorioArea.style.display = "block";
+            return;
         }
 
-        // ========================================
-        // RELATÓRIO DE ESTOQUE ATUAL
-        // ========================================
+        if (tipo === "estoque") {
+    const busca = filtroBuscaEstoque.value.trim();
+    const somenteZerados = apenasZerados.checked;
 
-        else if (tipo === "estoque") {
+    const parametros = new URLSearchParams();
 
-            dados = produtos
+    if (busca) {
+        parametros.append("busca", busca);
+    }
 
-                .filter((produto) => {
+    if (categoria) {
+        parametros.append("categoria", categoria);
+    }
 
-                    if (!categoria) {
-                        return true;
-                    }
+    if (somenteZerados) {
+        parametros.append("apenasZerados", "true");
+    }
 
-                    return produto.categoria === categoria;
-                })
+    try {
+        const resposta = await fetch(
+            `/api/relatorios/estoque?${parametros.toString()}`,
+            {
+                method: "GET",
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            }
+        );
 
-                .map((produto) => ({
+        if (!resposta.ok) {
+            const mensagem = resposta.status === 401
+                ? "Acesso não autenticado. Faça login novamente."
+                : resposta.status === 403
+                    ? "Acesso negado. Apenas administradores podem consultar relatórios."
+                    : "Não foi possível gerar o relatório de estoque.";
 
-                    SKU: produto.sku,
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">${mensagem}</p>
+            `;
 
-                    Produto: produto.nome,
-
-                    Categoria: produto.categoria,
-
-                    "Quantidade em estoque":
-                        produto.quantidade,
-
-                    "Valor unitário":
-                        `R$ ${produto.valor
-                            .toFixed(2)
-                            .replace(".", ",")}`
-                }));
+            return;
         }
 
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso || !resultado.dados) {
+            mensagemArea.innerHTML = `
+                <p class="mensagem-erro">
+                    Não foi possível obter os dados do estoque.
+                </p>
+            `;
+
+            return;
+        }
+
+        dados = resultado.dados.itens.map((produto) => ({
+            SKU: produto.sku,
+            Produto: produto.nome,
+            Categoria: produto.categoria,
+            "Quantidade em estoque": produto.quantidadeEstoque,
+            "Valor unitário": `R$ ${produto.valorUnitario.toFixed(2).replace(".", ",")}`,
+            "Valor total em estoque": `R$ ${produto.valorEstoque.toFixed(2).replace(".", ",")}`
+        }));
+
+    } catch (erro) {
+        console.error("Erro ao consultar relatório de estoque:", erro);
+
+        mensagemArea.innerHTML = `
+            <p class="mensagem-erro">
+                Não foi possível conectar ao serviço de relatórios.
+            </p>
+        `;
+
+        return;
+    }
+}
         // ========================================
         // RELATÓRIO DE PRODUTOS CADASTRADOS
         // ========================================
 
         else if (tipo === "produtos") {
-
-            dados = produtos
-
-                .filter((produto) => {
-
-                    if (!categoria) {
-                        return true;
-                    }
-
-                    return produto.categoria === categoria;
-                })
-
-                .map((produto) => ({
-
-                    SKU: produto.sku,
-
-                    Produto: produto.nome,
-
-                    Categoria: produto.categoria,
-
-                    Descrição:
-                        produto.descricao || "-"
-                }));
+            try {
+                const produtosCadastrados = await consultarProdutosCadastrados();
+                dados = produtosCadastrados
+                    .filter((produto) => !categoria || produto.categoria === categoria)
+                    .map((produto) => ({
+                        SKU: produto.sku,
+                        Produto: produto.nome,
+                        Categoria: produto.categoria,
+                        "Código de barras": produto.codigo_barras || "-"
+                    }));
+            } catch (erro) {
+                console.error("Erro ao consultar relatório de produtos:", erro);
+                mensagemArea.innerHTML = `
+                    <p class="mensagem-erro">
+                        ${erro.message || "Não foi possível gerar o relatório de produtos."}
+                    </p>
+                `;
+                return;
+            }
         }
 
         // ========================================
@@ -390,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Relatório de Produtos Cadastrados"
         };
 
-                // ========================================
+        // ========================================
         // MENSAGEM DE SUCESSO
         // ========================================
 
@@ -407,8 +328,24 @@ document.addEventListener("DOMContentLoaded", () => {
         // BOTÃO VISUALIZAR RELATÓRIO
         // ========================================
 
-        btnVisualizarRelatorio.href =
-            `visualizar_relatorios.html?tipo=${encodeURIComponent(tipo)}&categoria=${encodeURIComponent(categoria)}&inicio=${encodeURIComponent(inicio)}&fim=${encodeURIComponent(fim)}&origem=adm`;
+        const parametrosVisualizacao = new URLSearchParams({
+    tipo,
+    categoria,
+    inicio,
+    fim,
+    origem: "adm"
+});
+
+if (tipo === "estoque") {
+    parametrosVisualizacao.set("busca", filtroBuscaEstoque.value.trim());
+    parametrosVisualizacao.set(
+        "apenasZerados",
+        String(apenasZerados.checked)
+    );
+}
+
+btnVisualizarRelatorio.href =
+    `visualizar_relatorios.html?${parametrosVisualizacao.toString()}`;
 
         visualizarRelatorioArea.style.display = "block";
 
@@ -437,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-         // ========================================
+    // ========================================
     // LIMPAR FILTROS
     // ========================================
 
@@ -449,5 +386,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
         btnVisualizarRelatorio.href = "#";
     });
-
 });

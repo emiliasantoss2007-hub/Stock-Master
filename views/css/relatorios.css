@@ -218,3 +218,38 @@
     gap: 10px;
     margin-bottom: 20px;
 }
+#btnExportarExcel[hidden] {
+    display: none;
+}
+
+#btnExportarExcel:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+#btnExportarExcel[aria-busy="true"] {
+    cursor: wait;
+}
+
+#btnExportarExcel:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+#statusExportarExcel:empty {
+    margin: 0;
+}
+
+.mensagem-processamento {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 9px;
+    background: var(--primary-soft);
+    font-size: 13px;
+}
+
+@media print {
+    #statusExportarExcel {
+        display: none;
+    }
+}

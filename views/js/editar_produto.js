@@ -1,270 +1,185 @@
-document.addEventListener("DOMContentLoaded", () => {
-
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
-
-    const params = new URLSearchParams(window.location.search);
-
-    const origem = params.get("origem");
-    const idProduto = params.get("id");
-
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-
-    const produtosLink = document.querySelector("#produtosLink");
-    const cancelarProdutoLink = document.querySelector("#cancelarProdutoLink");
-
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-    const breadcrumbProdutosLink = document.querySelector("#breadcrumbProdutosLink");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-
-    // ========================================
-    // CONFIGURAÇÃO DO ADMINISTRADOR
-    // ========================================
-
-    if (origem !== "tecnico") {
-
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-
-        produtosLink.href = "produtos.html?origem=adm";
-        breadcrumbProdutosLink.href = "produtos.html?origem=adm";
-        cancelarProdutoLink.href = "produtos.html?origem=adm";
-
-        produtosMenuText.textContent = "Produtos";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-
-    // ========================================
-    // CONFIGURAÇÃO DO TÉCNICO
-    // ========================================
-
-    if (origem === "tecnico") {
-
-        dashboardLink.href = "dashboard_tec.html";
-        breadcrumbLink.href = "dashboard_tec.html";
-
-        produtosLink.href = "produtos.html?origem=tecnico";
-        breadcrumbProdutosLink.href = "produtos.html?origem=tecnico";
-        cancelarProdutoLink.href = "produtos.html?origem=tecnico";
-
-        produtosMenuText.textContent = "Consultar produtos";
-
-        userRole.textContent = "Técnico";
-        username.textContent = "tecnico.stockmaster";
-        userAvatar.textContent = "TC";
-
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
-    }
-
-
-    // ========================================
-    // DADOS FICTÍCIOS DO PROTÓTIPO
-    // ========================================
-
-    const produtos = {
-
-        "1": {
-            nome: "Tela LCD 6.5",
-            categoria: "Tela",
-            sku: "SM-TEL-001",
-            codigoBarras: "7891234560012",
-            valor: "289.90",
-            quantidade: "12",
-            descricao: "Tela LCD para smartphones compatíveis."
-        },
-
-        "2": {
-            nome: "Bateria 5000mAh",
-            categoria: "Bateria",
-            sku: "SM-BAT-002",
-            codigoBarras: "7891234560029",
-            valor: "119.90",
-            quantidade: "25",
-            descricao: "Bateria de reposição para aparelhos compatíveis."
-        },
-
-        "3": {
-            nome: "Conector USB-C",
-            categoria: "Conector",
-            sku: "SM-CON-003",
-            codigoBarras: "7891234560036",
-            valor: "39.90",
-            quantidade: "8",
-            descricao: "Conector USB-C para manutenção de dispositivos."
-        }
-
-    };
-
-
-    // ========================================
-    // CARREGAR PRODUTO
-    // ========================================
-
-    const produto = produtos[idProduto] || produtos["1"];
-
-    document.querySelector("#nome").value = produto.nome;
-    document.querySelector("#categoria").value = produto.categoria;
-    document.querySelector("#sku").value = produto.sku;
-    document.querySelector("#codigoBarras").value = produto.codigoBarras;
-    document.querySelector("#valor").value = produto.valor;
-    document.querySelector("#quantidade").value = produto.quantidade;
-    document.querySelector("#descricao").value = produto.descricao;
-
-
-    // ========================================
-    // FORMULÁRIO
-    // ========================================
+document.addEventListener("DOMContentLoaded", async () => {
+    const sessao = await configurarNavegacaoDaSessao();
+    if (!sessao) return;
+    const idProduto = new URLSearchParams(window.location.search).get("id");
 
     const form = document.querySelector("#formEditarProduto");
     const formMessage = document.querySelector("#formMessage");
+    const btnExcluir = document.querySelector("#btnExcluir");
+    if (sessao.ehTecnico && btnExcluir) btnExcluir.style.display = "none";
 
 
-    form.addEventListener("submit", (event) => {
+    // ========================================
+// CARREGAR PRODUTO DO BANCO DE DADOS
+// ========================================
 
-        event.preventDefault();
+async function carregarProduto() {
 
-        const nome = document.querySelector("#nome");
-        const categoria = document.querySelector("#categoria");
-        const valor = document.querySelector("#valor");
+    if (!idProduto || !/^\d+$/.test(idProduto)) {
+        formMessage.textContent = "ID do produto inválido.";
+        formMessage.className =
+            "product-form-message product-form-message-error";
+        return;
+    }
 
-        let formValid = true;
+    try {
 
+        const token = sessionStorage.getItem("stockmaster.accessToken");
+        const resposta = await fetch(`/api/produtos/${idProduto}`, {method: "GET", headers: {
+            "Accept": "application/json", "Authorization": `Bearer ${token}`}});
 
-        // Limpa erros
+        if (!resposta.ok) {const erro = await resposta.text();
+            console.error("Resposta da API:", erro);
+            throw new Error(`Erro ${resposta.status} ao buscar produto.`);}
+        
+        const resultado = await resposta.json();
 
-        document.querySelector("#nomeError").textContent = "";
-        document.querySelector("#categoriaError").textContent = "";
-        document.querySelector("#valorError").textContent = "";
-
-        nome.classList.remove("field-invalid");
-        categoria.classList.remove("field-invalid");
-        valor.classList.remove("field-invalid");
-
-
-        // Validação do nome
-
-        if (!nome.value.trim()) {
-
-            document.querySelector("#nomeError").textContent =
-                "Informe o nome do produto.";
-
-            nome.classList.add("field-invalid");
-
-            formValid = false;
+        if (!resposta.ok || !resultado.success) {
+            throw new Error(resultado.message || "Produto não encontrado.");
         }
 
+        const produto = resultado.data;
 
-        // Validação da categoria
+        document.querySelector("#nome").value = produto.nome || "";
+        document.querySelector("#categoria").value = produto.categoria || "";
+        document.querySelector("#sku").value = produto.sku || "";
+        document.querySelector("#codigoBarras").value = produto.codigo_barras || "";
+        document.querySelector("#valor").value = produto.valor ?? "";
+        document.querySelector("#quantidade").value = produto.quantidade_estoque ?? "";
+        document.querySelector("#descricao").value = produto.descricao || "";
 
-        if (!categoria.value) {
+    } catch (erro) {
 
-            document.querySelector("#categoriaError").textContent =
-                "Selecione uma categoria.";
+        console.error("Erro ao carregar produto:", erro);
 
-            categoria.classList.add("field-invalid");
+        formMessage.textContent = erro.message ||
+            "Não foi possível carregar os dados do produto.";
 
-            formValid = false;
-        }
+        formMessage.className =
+            "product-form-message product-form-message-error";
+    }
+}
 
+carregarProduto();
 
-        // Validação do valor
+// ========================================
+// FORMULÁRIO DE EDIÇÃO
+// ========================================
 
-        if (!valor.value || Number(valor.value) < 0) {
+form.addEventListener("submit", async (event) => {
 
-            document.querySelector("#valorError").textContent =
-                "Informe um valor válido.";
+    event.preventDefault();
 
-            valor.classList.add("field-invalid");
+    const nome = document.querySelector("#nome");
+    const categoria = document.querySelector("#categoria");
+    const valor = document.querySelector("#valor");
 
-            formValid = false;
-        }
+    const codigoBarras = document.querySelector("#codigoBarras");
+    const descricao = document.querySelector("#descricao");
 
+    let formValid = true;
 
-        if (!formValid) {
+    // Limpa erros anteriores
+    document.querySelector("#nomeError").textContent = "";
+    document.querySelector("#categoriaError").textContent = "";
+    document.querySelector("#valorError").textContent = "";
 
-            formMessage.textContent =
-                "Corrija os campos destacados antes de continuar.";
+    nome.classList.remove("field-invalid");
+    categoria.classList.remove("field-invalid");
+    valor.classList.remove("field-invalid");
 
-            formMessage.className =
-                "product-form-message product-form-message-error";
+    // Validação do nome
+    if (!nome.value.trim()) {
+        document.querySelector("#nomeError").textContent =
+            "Informe o nome do produto.";
 
-            return;
-        }
+        nome.classList.add("field-invalid");
+        formValid = false;
+    }
 
+    // Validação da categoria
+    if (!categoria.value) {
+        document.querySelector("#categoriaError").textContent =
+            "Selecione uma categoria.";
 
-        // ========================================
-        // SUCESSO VISUAL
-        // ========================================
+        categoria.classList.add("field-invalid");
+        formValid = false;
+    }
 
+    // Validação do valor
+    if (!valor.value || !Number.isFinite(Number(valor.value)) || Number(valor.value) < 0) {
+        document.querySelector("#valorError").textContent =
+            "Informe um valor válido.";
+
+        valor.classList.add("field-invalid");
+        formValid = false;
+    }
+
+    if (!formValid) {
         formMessage.textContent =
-            "Produto atualizado com sucesso!";
+            "Corrija os campos destacados antes de continuar.";
+
+        formMessage.className =
+            "product-form-message product-form-message-error";
+
+        return;
+    }
+
+    // Verifica o ID
+    if (!idProduto || !/^\d+$/.test(idProduto)) {
+        formMessage.textContent = "ID do produto inválido.";
+
+        formMessage.className =
+            "product-form-message product-form-message-error";
+
+        return;
+    }
+
+    // Envia alterações ao backend
+    try {
+
+        const token = sessionStorage.getItem("stockmaster.accessToken");
+
+        const resposta = await fetch(`/api/produtos/${idProduto}`, {
+            method: "PUT",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                nome: nome.value.trim(),
+                categoria: categoria.value,
+                codigoBarras: codigoBarras.value.trim(),
+                valor: Number(valor.value),
+                descricao: descricao.value.trim()
+            })
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.success) {
+            throw new Error(resultado.message || "Não foi possível atualizar o produto.");
+        }
+
+        formMessage.textContent = "Produto atualizado com sucesso!";
 
         formMessage.className =
             "product-form-message product-form-message-success";
+        
+        setTimeout(() => {window.location.href = "produtos.html";}, 1000);
 
-    });
+    } catch (erro) {
 
+        console.error("Erro ao atualizar produto:", erro);
 
-    // ========================================
-    // EXCLUIR — SOMENTE VISUAL
-    // ========================================
+        formMessage.textContent = erro.message ||
+            "Erro ao salvar as alterações.";
 
-    const btnExcluir = document.querySelector("#btnExcluir");
+        formMessage.className =
+            "product-form-message product-form-message-error";
+    }
 
-    btnExcluir.addEventListener("click", () => {
-
-        if (origem === "tecnico") {
-
-            formMessage.textContent =
-                "Apenas o Administrador pode excluir produtos.";
-
-            formMessage.className =
-                "product-form-message product-form-message-error";
-
-            return;
-        }
-
-
-        const confirmar = window.confirm(
-            "Deseja realmente excluir este produto?"
-        );
-
-
-        if (confirmar) {
-
-            formMessage.textContent =
-                "Produto excluído com sucesso.";
-
-            formMessage.className =
-                "product-form-message product-form-message-success";
-
-        }
-
-    });
+});
 
 });
