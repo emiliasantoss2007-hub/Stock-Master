@@ -1,137 +1,207 @@
-document.addEventListener("DOMContentLoaded", () => {
 
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
+document.addEventListener("DOMContentLoaded", async () => {
+    const navegacao = await configurarNavegacaoDaSessao();
 
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
+    if (!navegacao) return;
 
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-    const produtosLink = document.querySelector("#produtosLink");
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const entradaLink = document.querySelector("#entradaLink");
-    const saidaLink = document.querySelector("#saidaLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const historicoLink = document.querySelector("#historicoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-    const perfilLink = document.querySelector("#perfilLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-
-    // ========================================
-    // ADMINISTRADOR
-    // ========================================
-
-    if (origem !== "tecnico") {
-
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-        produtosLink.href = "produtos.html?origem=adm";
-        produtosMenuText.textContent = "Produtos";
-
-        entradaLink.href = "entrada_estoque.html?origem=adm";
-        saidaLink.href = "saída_estoque.html?origem=adm";
-        expurgoLink.href = "expurgo_estoque.html?origem=adm";
-        historicoLink.href = "historico_movimentacao.html?origem=adm";
-        relatoriosLink.href = "relatorios.html?origem=adm";
-        perfilLink.href = "perfil.html?origem=adm";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-
-    // ========================================
-    // TÉCNICO
-    // ========================================
-
-    if (origem === "tecnico") {
-
-        dashboardLink.href = "dashboard_tec.html";
-        breadcrumbLink.href = "dashboard_tec.html";
-        produtosLink.href = "produtos.html?origem=tecnico";
-        produtosMenuText.textContent = "Consultar produtos";
-
-        entradaLink.href = "entrada_estoque.html?origem=tecnico";
-        saidaLink.href = "saída_estoque.html?origem=tecnico";
-        historicoLink.href = "historico_movimentacao.html?origem=tecnico";
-        perfilLink.href = "perfil.html?origem=tecnico";
-
-        userRole.textContent = "Técnico";
-        username.textContent = "tecnico.stockmaster";
-        userAvatar.textContent = "TC";
-
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
-    }
-
-
-    // ========================================
-    // CÓDIGO ESPECÍFICO DA PÁGINA
-    // ========================================
+    const formularioDados = document.querySelector("#formDados");
+    const formularioSenha = document.querySelector("#formSenha");
 
     const mensagemDados = document.querySelector("#mensagemDados");
     const mensagemSenha = document.querySelector("#mensagemSenha");
 
-    // Preenche os dados a partir do que a navegação já identificou (nome/login/perfil)
-    document.querySelector("#perfilNome").value = userRole.textContent === "Administrador" ? "João Silva" : "Maria Souza";
-    document.querySelector("#perfilLoginCampo").value = username.textContent;
-    document.querySelector("#perfilEmail").value = `${username.textContent}@stockmaster.com`;
-    document.querySelector("#perfilTipo").value = userRole.textContent;
+    const campoNome = document.querySelector("#perfilNome");
+    const campoEmail = document.querySelector("#perfilEmail");
+    const campoLogin = document.querySelector("#perfilLoginCampo");
+    const campoPerfil = document.querySelector("#perfilTipo");
 
-    document.querySelector("#formDados").addEventListener("submit", (e) => {
-        e.preventDefault();
-        mensagemDados.innerHTML = "";
+    function mostrarMensagem(elemento, mensagem, sucesso = false) {
+        elemento.replaceChildren();
 
-        const nome = document.querySelector("#perfilNome").value.trim();
-        const email = document.querySelector("#perfilEmail").value.trim();
-        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        const paragrafo = document.createElement("p");
+        paragrafo.className = sucesso ? "mensagem-sucesso" : "mensagem-erro";
+        paragrafo.textContent = mensagem;
 
-        if (!nome || !emailValido) {
-            mensagemDados.innerHTML = `<p class="mensagem-erro">Preencha corretamente o nome e o e-mail.</p>`;
+        elemento.appendChild(paragrafo);
+    }
+
+    async function requisicao(url, metodo, dados) {
+        const resposta = await fetch(url, {
+            method: metodo,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                resultado.mensagem ||
+                resultado.message ||
+                "Não foi possível concluir a operação."
+            );
+        }
+
+        return resultado;
+    }
+
+    async function carregarPerfil() {
+        try {
+            const resposta = await fetch("/usuarios/me", {
+                headers: {
+                    "Accept": "application/json"
+                },
+                cache: "no-store"
+            });
+
+            if (resposta.status === 401) {
+                window.location.replace("login.html");
+                return false;
+            }
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(
+                    dados.mensagem || "Não foi possível carregar o perfil."
+                );
+            }
+
+            campoNome.value = dados.nome || "";
+            campoEmail.value = dados.email || "";
+            campoLogin.value = dados.login || "";
+            campoPerfil.value = dados.perfil || "";
+
+            const userRole = document.querySelector("#userRole");
+
+            if (userRole) {
+                userRole.textContent = dados.perfil || "Usuário";
+            }
+
+            return true;
+
+        } catch (erro) {
+            mostrarMensagem(mensagemDados, erro.message);
+            return false;
+        }
+    }
+
+    formularioDados.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        mensagemDados.replaceChildren();
+
+        const nome = campoNome.value.trim();
+        const email = campoEmail.value.trim();
+
+        if (!nome || !email) {
+            mostrarMensagem(
+                mensagemDados,
+                "Preencha corretamente o nome e o e-mail."
+            );
             return;
         }
 
-        mensagemDados.innerHTML = `<p class="mensagem-sucesso">Dados atualizados com sucesso!</p>`;
+        try {
+            const resultado = await requisicao(
+                "/usuarios/me",
+                "PUT",
+                { nome, email }
+            );
+
+            mostrarMensagem(
+                mensagemDados,
+                resultado.mensagem || "Dados atualizados com sucesso.",
+                true
+            );
+
+            const avatar = document.querySelector("#userAvatar, .avatar");
+
+            if (avatar) {
+                avatar.textContent = nome
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map(parte => parte.charAt(0))
+                    .join("")
+                    .toUpperCase();
+            }
+
+        } catch (erro) {
+            mostrarMensagem(mensagemDados, erro.message);
+        }
     });
 
-    document.querySelector("#formSenha").addEventListener("submit", (e) => {
-        e.preventDefault();
-        mensagemSenha.innerHTML = "";
+    formularioSenha.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        mensagemSenha.replaceChildren();
 
-        const nova = document.querySelector("#senhaNova").value;
-        const confirmar = document.querySelector("#senhaConfirmar").value;
+        const senhaAtual = document.querySelector("#senhaAtual").value;
+        const novaSenha = document.querySelector("#senhaNova").value;
+        const confirmarSenha = document.querySelector("#senhaConfirmar").value;
 
-        if (nova.length < 6) {
-            mensagemSenha.innerHTML = `<p class="mensagem-erro">A nova senha deve ter pelo menos 6 caracteres.</p>`;
+        if (!senhaAtual || !novaSenha || !confirmarSenha) {
+            mostrarMensagem(
+                mensagemSenha,
+                "Preencha todos os campos de senha."
+            );
             return;
         }
 
-        if (nova !== confirmar) {
-            mensagemSenha.innerHTML = `<p class="mensagem-erro">As senhas não coincidem.</p>`;
+        if (novaSenha !== confirmarSenha) {
+            mostrarMensagem(
+                mensagemSenha,
+                "A confirmação da senha não confere."
+            );
             return;
         }
 
-        // Nesta Sprint 1 a senha não é persistida de fato (sem back-end/hash real ainda)
-        mensagemSenha.innerHTML = `<p class="mensagem-sucesso">Senha alterada com sucesso!</p>`;
-        document.querySelector("#formSenha").reset();
+        try {
+            const resultado = await requisicao(
+                "/usuarios/me/senha",
+                "PUT",
+                {
+                    senhaAtual,
+                    novaSenha,
+                    confirmarSenha
+                }
+            );
+
+            mostrarMensagem(
+                mensagemSenha,
+                resultado.mensagem || "Senha alterada com sucesso.",
+                true
+            );
+
+            formularioSenha.reset();
+
+        } catch (erro) {
+            mostrarMensagem(mensagemSenha, erro.message);
+        }
     });
 
+    await carregarPerfil();
+
+    // Mostrar / ocultar senhas
+    document.querySelectorAll(".password-wrapper").forEach((wrapper) => {
+        const campo = wrapper.querySelector("input");
+        const botao = wrapper.querySelector(".password-toggle");
+
+        botao.addEventListener("click", () => {
+            const mostrar = campo.type === "password";
+
+            campo.type = mostrar ? "text" : "password";
+
+            botao.setAttribute(
+                "aria-label",
+                mostrar ? "Ocultar senha" : "Mostrar senha"
+            );
+
+            botao.setAttribute(
+                "aria-pressed",
+                String(mostrar)
+            );
+        });
+    });
 });

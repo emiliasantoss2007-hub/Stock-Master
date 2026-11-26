@@ -153,6 +153,63 @@ body {
     text-decoration: none;
 }
 
+.sidebar:not(.sidebar-padronizado) {
+    visibility: hidden;
+}
+
+.sidebar-padronizado {
+    overflow-y: auto;
+}
+
+.sidebar-padronizado .brand {
+    margin-bottom: 24px;
+}
+
+.sidebar-padronizado .admin-brand-logo {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    height: 84px;
+    object-fit: cover;
+    margin-inline: auto;
+}
+
+.sidebar-padronizado .sidebar-nav {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.sidebar-padronizado .nav-title {
+    margin-bottom: 4px;
+}
+
+.sidebar-padronizado .sidebar-bottom {
+    flex-shrink: 0;
+    margin-top: 12px;
+    padding-top: 8px;
+}
+
+.sidebar-padronizado .sidebar-bottom a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    font-size: 13px;
+}
+
+.sidebar-padronizado .nav-icon {
+    display: block;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 20px;
+    color: #ffffff;
+}
+
+.sidebar-padronizado + .main-area .dashboard-columns > .panel {
+    min-width: 0;
+}
+
 /* ÁREA PRINCIPAL */
 
 .main-area {

@@ -1,164 +1,174 @@
-document.addEventListener("DOMContentLoaded", () => {
-
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
-
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
-
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-    const produtosLink = document.querySelector("#produtosLink");
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const entradaLink = document.querySelector("#entradaLink");
-    const saidaLink = document.querySelector("#saidaLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const historicoLink = document.querySelector("#historicoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-    const perfilLink = document.querySelector("#perfilLink");
-    const produtosMenuText = document.querySelector("#produtosMenuText");
-
-    const userRole = document.querySelector("#userRole");
-    const username = document.querySelector("#username");
-    const userAvatar = document.querySelector("#userAvatar");
-
-
-    // ========================================
-    // ADMINISTRADOR
-    // ========================================
-
-    if (origem !== "tecnico") {
-
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-        produtosLink.href = "produtos.html?origem=adm";
-        produtosMenuText.textContent = "Produtos";
-
-        entradaLink.href = "entrada_estoque.html?origem=adm";
-        saidaLink.href = "saída_estoque.html?origem=adm";
-        expurgoLink.href = "expurgo_estoque.html?origem=adm";
-        historicoLink.href = "historico_movimentacao.html?origem=adm";
-        relatoriosLink.href = "relatorios.html?origem=adm";
-        perfilLink.href = "perfil.html?origem=adm";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-        userAvatar.textContent = "AD";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
-    }
-
-
-    // ========================================
-    // TÉCNICO (sem acesso a esta tela)
-    // ========================================
-
-    if (origem === "tecnico") {
-        // Expurgo é exclusivo do Administrador — redireciona o Técnico
-        window.location.href = "dashboard_tec.html";
-        return;
-    }
-
-
-    // ========================================
-    // CÓDIGO ESPECÍFICO DA PÁGINA
-    // ========================================
-
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!await configurarNavegacaoDaSessao()) return;
     const select = document.querySelector("#produtoSelect");
     const infoEstoque = document.querySelector("#infoEstoque");
     const mensagemArea = document.querySelector("#mensagemArea");
+    const form = document.querySelector("#formExpurgo");
+    const quantidadeInput = document.querySelector("#quantidade");
+    const justificativaInput = document.querySelector("#justificativa");
 
-    const produtos = [
-    {
-        id: 1,
-        nome: "Display LCD 6.1",
-        sku: "SKU-001",
-        quantidade: 32
-    },
-    {
-        id: 2,
-        nome: "Bateria modelo A20",
-        sku: "SKU-002",
-        quantidade: 45
-    },
-    {
-        id: 3,
-        nome: "Conector USB-C",
-        sku: "SKU-003",
-        quantidade: 3
+    const overlay = document.querySelector("#modalOverlay");
+    const modalTitulo = document.querySelector("#modalTitulo");
+    const modalMensagem = document.querySelector("#modalMensagem");
+    const modalCancelar = document.querySelector("#modalCancelar");
+    const modalConfirmar = document.querySelector("#modalConfirmar");
+
+    const token = sessionStorage.getItem("stockmaster.accessToken");
+
+    let produtos = [];
+
+    function obterCabecalhos() {
+        return {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        };
     }
-];
 
-    produtos.forEach((p) => {
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.nome} (SKU: ${p.sku})`;
-    select.appendChild(opt);
-});
+    function mostrarMensagem(texto, tipo = "erro") {
+        mensagemArea.textContent = texto;
+        mensagemArea.className = tipo === "sucesso"
+            ? "mensagem-sucesso"
+            : "mensagem-erro";
+    }
 
+    // CARREGAR PRODUTOS DO BANCO
+    async function carregarProdutos() {
+        try {
+            const resposta = await fetch("/api/produtos/expurgo/listar", {
+                method: "GET",
+                headers: obterCabecalhos()
+            });
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(resultado.mensagem || "Erro ao carregar produtos.");
+            }
+
+            produtos = resultado.produtos;
+
+            select.innerHTML = '<option value="">Selecione um produto</option>';
+
+            produtos.forEach((produto) => {
+                const opcao = document.createElement("option");
+                opcao.value = produto.id_produto;
+                opcao.textContent = `${produto.nome} (SKU: ${produto.sku})`;
+                select.appendChild(opcao);
+            });
+
+        } catch (erro) {
+            mostrarMensagem(erro.message);
+        }
+    }
+
+    // MOSTRAR SALDO DISPONÍVEL
     select.addEventListener("change", () => {
-    const produto = produtos.find(
-        (p) => String(p.id) === String(select.value)
-    );
+        const produto = produtos.find(
+            (p) => String(p.id_produto) === String(select.value)
+        );
 
-    infoEstoque.textContent = produto
-        ? `Estoque disponível: ${produto.quantidade} unidade(s).`
-        : "";
-});
+        infoEstoque.textContent = produto
+            ? `Estoque disponível: ${produto.quantidade_estoque} unidade(s).`
+            : "";
+    });
 
-    document.querySelector("#formExpurgo").addEventListener("submit", (e) => {
+    // ABRIR CONFIRMAÇÃO
+    form.addEventListener("submit", (e) => {
         e.preventDefault();
-        mensagemArea.innerHTML = "";
+        mensagemArea.textContent = "";
 
         const produtoId = select.value;
-        const quantidade = Number(document.querySelector("#quantidade").value);
-        const justificativa = document.querySelector("#justificativa").value.trim();
-
-        if (!produtoId) {
-            mensagemArea.innerHTML = `<p class="mensagem-erro">Selecione um produto para continuar.</p>`;
-            return;
-        }
+        const quantidade = Number(quantidadeInput.value);
+        const justificativa = justificativaInput.value.trim();
 
         const produto = produtos.find(
-    (p) => String(p.id) === String(produtoId)
-);
+            (p) => String(p.id_produto) === String(produtoId)
+        );
 
-        if (!quantidade || quantidade <= 0 || quantidade > produto.quantidade) {
-            mensagemArea.innerHTML = `<p class="mensagem-erro">Informe uma quantidade válida (disponível: ${produto.quantidade}).</p>`;
+        if (!produto) {
+            mostrarMensagem("Selecione um produto para continuar.");
             return;
         }
 
-        // RN12: expurgo exige justificativa obrigatória
+        if (
+            !Number.isInteger(quantidade) ||
+            quantidade <= 0 ||
+            quantidade > Number(produto.quantidade_estoque)
+        ) {
+            mostrarMensagem(
+                `Informe uma quantidade válida. Disponível: ${produto.quantidade_estoque}.`
+            );
+            return;
+        }
+
         if (!justificativa) {
-            mensagemArea.innerHTML = `<p class="mensagem-erro">A justificativa é obrigatória para o expurgo.</p>`;
+            mostrarMensagem("A justificativa é obrigatória para o expurgo.");
             return;
         }
 
-        const overlay = document.querySelector("#modalOverlay");
-        document.querySelector("#modalTitulo").textContent = "Confirmar expurgo";
-        document.querySelector("#modalMensagem").textContent =
+        modalTitulo.textContent = "Confirmar expurgo";
+        modalMensagem.textContent =
             `Confirma o expurgo de ${quantidade} unidade(s) de "${produto.nome}"? Esta ação não pode ser desfeita.`;
 
         overlay.classList.add("show");
+    });
 
-        document.querySelector("#modalCancelar").onclick = () => overlay.classList.remove("show");
-        document.querySelector("#modalConfirmar").onclick = () => {
+    // CANCELAR CONFIRMAÇÃO
+    modalCancelar.onclick = () => {
+        overlay.classList.remove("show");
+    };
+
+    // CONFIRMAR E REGISTRAR EXPURGO
+    modalConfirmar.onclick = async () => {
+        const produtoId = select.value;
+        const quantidade = Number(quantidadeInput.value);
+        const justificativa = justificativaInput.value.trim();
+
+        modalConfirmar.disabled = true;
+
+        try {
+            const resposta = await fetch("/api/produtos/expurgo", {
+                method: "POST",
+                headers: obterCabecalhos(),
+                body: JSON.stringify({
+                    id_produto: produtoId,
+                    quantidade,
+                    justificativa
+                })
+            });
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(resultado.mensagem || "Erro ao registrar expurgo.");
+            }
+
             overlay.classList.remove("show");
 
-            produto.quantidade -= quantidade;          
+            mostrarMensagem(
+                resultado.mensagem,
+                "sucesso"
+            );
 
-            mensagemArea.innerHTML = `<p class="mensagem-sucesso">Expurgo de ${quantidade} unidade(s) de "${produto.nome}" registrado com sucesso.</p>`;
-            document.querySelector("#formExpurgo").reset();
+            form.reset();
             infoEstoque.textContent = "";
-        };
-    });
+
+            await carregarProdutos();
+
+        } catch (erro) {
+            overlay.classList.remove("show");
+            mostrarMensagem(erro.message);
+        } finally {
+            modalConfirmar.disabled = false;
+        }
+    };
+
+    // INICIALIZAÇÃO
+    if (!token) {
+        mostrarMensagem("Sessão não encontrada. Faça login novamente.");
+        return;
+    }
+
+    carregarProdutos();
 
 });

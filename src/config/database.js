@@ -1,13 +1,31 @@
+
 require('dotenv').config();
 const mysql = require('mysql2');
+const fs = require('fs');
+const path = require('path');
 
-const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
+const dbHost = process.env.DB_HOST;
+
+const config = {
+    host: dbHost,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT
-});
+    port: Number(process.env.DB_PORT)
+};
+
+// Exige TLS quando a conexão não é local.
+if (dbHost !== 'localhost' && dbHost !== '127.0.0.1') {
+    config.ssl = {
+        ca: fs.readFileSync(
+            path.join(__dirname, '../../certs/azure-ca-bundle.pem'),
+            'utf8'
+        ),
+        rejectUnauthorized: true
+    };
+}
+
+const connection = mysql.createConnection(config);
 
 connection.connect((err) => {
     if (err) {

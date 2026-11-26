@@ -1,214 +1,360 @@
-document.addEventListener("DOMContentLoaded", () => {
 
-    // ========================================
-    // IDENTIFICAÇÃO DA ORIGEM
-    // ========================================
+document.addEventListener("DOMContentLoaded", async () => {
+    const sessao = await configurarNavegacaoDaSessao();
+    if (!sessao) return;
+    const { ehTecnico } = sessao;
 
-    const params = new URLSearchParams(window.location.search);
-    const origem = params.get("origem");
+    const searchInput = document.querySelector("#searchProduct");
+    const categoryFilter = document.querySelector("#filterCategory");
+    const situationFilter = document.querySelector("#filterSituation");
+    const tabelaProdutos = document.querySelector("#productsTableBody");
+    const productsCount = document.querySelector("#productsCount");
+    const productsMessage = document.querySelector("#productsMessage");
 
-
-    // ========================================
-    // ELEMENTOS DA NAVEGAÇÃO
-    // ========================================
-
-    const dashboardLink = document.querySelector("#dashboardLink");
-    const breadcrumbLink = document.querySelector("#breadcrumbLink");
-
-    const cadastrarProdutoLink = document.querySelector("#cadastrarProdutoLink");
-
-    const usuariosLink = document.querySelector("#usuariosLink");
-    const expurgoLink = document.querySelector("#expurgoLink");
-    const relatoriosLink = document.querySelector("#relatoriosLink");
-
-    const entradaLink = document.querySelector("#entradaLink");
-    const saidaLink = document.querySelector("#saidaLink");
-    const historicoLink = document.querySelector("#historicoLink");
-
-    const produtosMenuText =
-        document.querySelector("#produtosMenuText");
-
-    const breadcrumbPage =
-        document.querySelector("#breadcrumbPage");
-
-    const userRole =
-        document.querySelector("#userRole");
-
-    const username =
-        document.querySelector("#username");
-
-
-    // ========================================
-    // CONFIGURAÇÃO DO ADMINISTRADOR
-    // ========================================
-
-    if (origem !== "tecnico") {
-
-        dashboardLink.href = "dashboard_adm.html";
-        breadcrumbLink.href = "dashboard_adm.html";
-
-        cadastrarProdutoLink.href = "cadastrar_produto.html?origem=adm";
-        entradaLink.href = "entrada_estoque.html?origem=adm";
-
-        userRole.textContent = "Administrador";
-        username.textContent = "admin.stockmaster";
-
-        produtosMenuText.textContent = "Produtos";
-        breadcrumbPage.textContent = "Produtos";
-
-        usuariosLink.style.display = "";
-        expurgoLink.style.display = "";
-        relatoriosLink.style.display = "";
+    if (!searchInput || !categoryFilter || !situationFilter ||
+        !tabelaProdutos || !productsCount || !productsMessage) {
+        console.error("Elementos da tela de consulta de produtos não encontrados.");
+        return;
     }
 
+    let produtos = [];
+    let temporizadorBusca = null;
 
-    // ========================================
-    // CONFIGURAÇÃO DO TÉCNICO
-    // ========================================
-
-    if (origem === "tecnico") {
-
-        dashboardLink.href = "dashboard_tec.html";
-        breadcrumbLink.href = "dashboard_tec.html";
-
-        cadastrarProdutoLink.href = "cadastrar_produto.html?origem=tecnico";
-        entradaLink.href = "entrada_estoque.html?origem=tecnico";
-
-        userRole.textContent = "Técnico";
-        username.textContent = "tecnico.stockmaster";
-
-        produtosMenuText.textContent = "Consultar produtos";
-        breadcrumbPage.textContent = "Produtos";
-
-        // Esconde funções exclusivas do administrador
-        usuariosLink.style.display = "none";
-        expurgoLink.style.display = "none";
-        relatoriosLink.style.display = "none";
+    function obterSituacao(produto) {
+        return Number(produto.quantidadeEstoque) <= Number(produto.estoqueMinimo)
+            ? "Crítico"
+            : "Normal";
     }
 
-
     // ========================================
-    // MANTER ORIGEM NO EDITAR
+    // ELEMENTOS DO MODAL DE EXCLUSÃO
     // ========================================
 
-    const editLinks =
-        document.querySelectorAll(".product-action-edit");
+    const deleteModal = document.querySelector("#deleteProductModal");
+    const deleteProductName = document.querySelector("#deleteProductName");
+    const deleteProductSku = document.querySelector("#deleteProductSku");
+    const deleteProductId = document.querySelector("#deleteProductId");
+    const deleteProductFeedback = document.querySelector("#deleteProductFeedback");
+    const cancelDeleteProduct = document.querySelector("#cancelDeleteProduct");
+    const confirmDeleteProduct = document.querySelector("#confirmDeleteProduct");
 
-    editLinks.forEach((link) => {
+    let selectedProductId = null;
+    let selectedProductRow = null;
 
-        const productId =
-            new URLSearchParams(link.search).get("id");
+    function setDeleteFeedback(message, type = "") {
+        if (!deleteProductFeedback) return;
 
-        link.href = origem === "tecnico"
-            ? `editar_produto.html?id=${productId}&origem=tecnico`
-            : `editar_produto.html?id=${productId}&origem=adm`;
+        deleteProductFeedback.textContent = message;
+        deleteProductFeedback.className = type
+            ? `product-feedback product-feedback-${type}`
+            : "product-feedback";
+    }
+
+    function abrirModalExclusao(row) {
+        if (!deleteModal || !row || ehTecnico) return;
+
+        selectedProductRow = row;
+        selectedProductId = row.dataset.productId;
+
+        const nome = row.querySelector(".product-cell strong");
+        const sku = row.querySelector("td:nth-child(2)");
+
+        if (deleteProductName) deleteProductName.textContent = nome?.textContent || "";
+        if (deleteProductSku) deleteProductSku.textContent = sku?.textContent || "";
+        if (deleteProductId) deleteProductId.textContent = selectedProductId || "";
+
+        setDeleteFeedback("");
+
+        if (confirmDeleteProduct) confirmDeleteProduct.disabled = false;
+
+        deleteModal.hidden = false;
+        document.body.classList.add("product-modal-open");
+    }
+
+    function fecharModalExclusao() {
+        if (!deleteModal) return;
+
+        deleteModal.hidden = true;
+        document.body.classList.remove("product-modal-open");
+        selectedProductId = null;
+        selectedProductRow = null;
+    }
+
+    if (cancelDeleteProduct) {
+        cancelDeleteProduct.addEventListener("click", fecharModalExclusao);
+    }
+
+    if (deleteModal) {
+        deleteModal.addEventListener("click", (event) => {
+            if (event.target === deleteModal) fecharModalExclusao();
+        });
+    }
+
+    // Delegação: funciona também com linhas criadas dinamicamente.
+    tabelaProdutos.addEventListener("click", (event) => {
+        const botaoExcluir = event.target.closest(".product-action-delete");
+
+        if (!botaoExcluir || ehTecnico) return;
+
+        const row = botaoExcluir.closest("tr");
+
+        if (row) abrirModalExclusao(row);
     });
 
-
     // ========================================
-    // MANTER ORIGEM NOS DETALHES
-    // ========================================
-
-    const detailLinks =
-        document.querySelectorAll(".product-action-view");
-
-    detailLinks.forEach((link) => {
-
-        const productId =
-            new URLSearchParams(link.search).get("id");
-
-        link.href = origem === "tecnico"
-            ? `produto_detalhes.html?id=${productId}&origem=tecnico`
-            : `produto_detalhes.html?id=${productId}&origem=adm`;
-    });
-
-
-    // ========================================
-    // BUSCA E FILTROS DE PRODUTOS
+    // CONFIRMAR EXCLUSÃO
     // ========================================
 
-    const searchInput =
-        document.querySelector("#searchProduct");
+    if (confirmDeleteProduct) {
+        confirmDeleteProduct.addEventListener("click", async () => {
+            if (!selectedProductId || !selectedProductRow) return;
 
-    const categoryFilter =
-        document.querySelector("#filterCategory");
+            const token = sessionStorage.getItem("stockmaster.accessToken");
 
-    const situationFilter =
-        document.querySelector("#filterSituation");
+            if (!token) {
+                setDeleteFeedback("Sessão expirada. Faça login novamente.", "error");
+                return;
+            }
 
-    const rows = Array.from(
-        document.querySelectorAll("#productsTableBody tr")
-    );
+            confirmDeleteProduct.disabled = true;
+            setDeleteFeedback("Excluindo produto...", "pending");
 
-    const productsCount =
-        document.querySelector("#productsCount");
+            try {
+                const response = await fetch(
+                    `/api/produtos/${encodeURIComponent(selectedProductId)}`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Accept": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        }
+                    }
+                );
 
-    const productsMessage =
-        document.querySelector("#productsMessage");
+                const data = await response.json();
 
+                if (!response.ok || data.sucesso === false) {
+                    throw new Error(
+                        data.mensagem || "Não foi possível excluir o produto."
+                    );
+                }
 
-    function filterProducts() {
+                const idExcluido = String(selectedProductId);
 
-        const search =
-            searchInput.value.trim().toLowerCase();
+                produtos = produtos.filter(
+                    (produto) => String(produto.idProduto) !== idExcluido
+                );
 
-        const category =
-            categoryFilter.value;
+                fecharModalExclusao();
+                aplicarFiltrosLocais();
 
-        const situation =
-            situationFilter.value;
+                productsMessage.textContent =
+                    data.mensagem || "Produto excluído com sucesso.";
 
-        let visibleRows = 0;
+            } catch (erro) {
+                setDeleteFeedback(erro.message, "error");
 
-        rows.forEach((row) => {
-
-            const matchesSearch =
-                !search ||
-                row.dataset.search.includes(search);
-
-            const matchesCategory =
-                !category ||
-                row.dataset.category === category;
-
-            const matchesSituation =
-                !situation ||
-                row.dataset.situation === situation;
-
-            const shouldShow =
-                matchesSearch &&
-                matchesCategory &&
-                matchesSituation;
-
-            row.hidden = !shouldShow;
-
-            if (shouldShow) {
-                visibleRows++;
+            } finally {
+                confirmDeleteProduct.disabled = false;
             }
         });
-
-        productsCount.textContent =
-            `${visibleRows} produto(s)`;
-
-        productsMessage.textContent =
-            visibleRows === 0
-                ? "Nenhum produto encontrado para os filtros informados."
-                : "";
     }
 
+    // ========================================
+    // MONTAGEM DA TABELA
+    // ========================================
 
-    searchInput.addEventListener(
-        "input",
-        filterProducts
-    );
+    function preencherTabela(lista) {
+        tabelaProdutos.innerHTML = "";
 
-    categoryFilter.addEventListener(
-        "change",
-        filterProducts
-    );
+        lista.forEach((produto) => {
+            const linha = document.createElement("tr");
+            linha.dataset.productId = produto.idProduto;
 
-    situationFilter.addEventListener(
-        "change",
-        filterProducts
-    );
+            const situacao = obterSituacao(produto);
 
+            const nome = document.createElement("strong");
+            nome.textContent = produto.nome;
+
+            const descricao = document.createElement("small");
+            descricao.textContent = produto.descricao || "Sem descrição";
+
+            const identificacao = document.createElement("div");
+            identificacao.className = "product-cell";
+
+            const miniatura = document.createElement("span");
+            miniatura.className = "product-thumb";
+            miniatura.textContent = "▣";
+
+            const detalhes = document.createElement("div");
+            detalhes.append(nome, descricao);
+            identificacao.append(miniatura, detalhes);
+
+            const celulaProduto = document.createElement("td");
+            celulaProduto.append(identificacao);
+
+            const celulaSku = document.createElement("td");
+            celulaSku.textContent = produto.sku || "";
+
+            const celulaCategoria = document.createElement("td");
+            celulaCategoria.textContent = produto.categoria || "";
+
+            const celulaSaldo = document.createElement("td");
+            const saldo = document.createElement("span");
+            saldo.className = "stock-value";
+            saldo.textContent = `${produto.quantidadeEstoque} un.`;
+            celulaSaldo.append(saldo);
+
+            const celulaSituacao = document.createElement("td");
+            const status = document.createElement("span");
+
+            status.className = situacao === "Crítico"
+                ? "status status-warning"
+                : "status status-success";
+
+            status.textContent = situacao === "Crítico"
+                ? "Estoque crítico"
+                : "Normal";
+
+            celulaSituacao.append(status);
+
+            const celulaAcoes = document.createElement("td");
+            const acoes = document.createElement("div");
+            acoes.className = "product-table-actions";
+
+            const editar = document.createElement("a");
+            editar.className = "product-action product-action-edit";
+            editar.textContent = "Editar";
+
+            editar.href = `editar_produto.html?id=${encodeURIComponent(produto.idProduto)}`;
+
+            const visualizar = document.createElement("a");
+            visualizar.className = "product-action product-action-view";
+            visualizar.textContent = "Detalhes";
+
+            visualizar.href = `produto_detalhes.html?id=${encodeURIComponent(produto.idProduto)}`;
+
+            acoes.append(editar, visualizar);
+
+            if (!ehTecnico) {
+                const excluir = document.createElement("button");
+                excluir.type = "button";
+                excluir.className = "product-action product-action-delete";
+                excluir.textContent = "Excluir";
+                acoes.append(excluir);
+            }
+
+            celulaAcoes.append(acoes);
+
+            linha.append(
+                celulaProduto,
+                celulaSku,
+                celulaCategoria,
+                celulaSaldo,
+                celulaSituacao,
+                celulaAcoes
+            );
+
+            tabelaProdutos.append(linha);
+        });
+
+        productsCount.textContent = `${lista.length} produto(s)`;
+    }
+
+    // ========================================
+    // FILTROS LOCAIS
+    // ========================================
+
+    function aplicarFiltrosLocais() {
+        const situacaoSelecionada = situationFilter.value;
+        const termo = searchInput.value.trim().toLowerCase();
+        const categoriaSelecionada = categoryFilter.value;
+
+        const filtrados = produtos.filter((produto) => {
+            const correspondeSituacao =
+                !situacaoSelecionada || obterSituacao(produto) === situacaoSelecionada;
+
+            const correspondeBusca = !termo ||
+                String(produto.nome || "").toLowerCase().includes(termo) ||
+                String(produto.sku || "").toLowerCase().includes(termo) ||
+                String(produto.categoria || "").toLowerCase().includes(termo);
+
+            const correspondeCategoria = !categoriaSelecionada ||
+                produto.categoria === categoriaSelecionada;
+
+            return correspondeSituacao && correspondeBusca && correspondeCategoria;
+        });
+
+        preencherTabela(filtrados);
+
+        productsMessage.textContent = filtrados.length === 0
+            ? "Nenhum produto encontrado para os filtros informados."
+            : "";
+    }
+
+    // ========================================
+    // CONSULTA À API
+    // ========================================
+
+    async function consultarProdutos() {
+        const busca = searchInput.value.trim();
+        const categoria = categoryFilter.value;
+        const parametros = new URLSearchParams();
+        
+        if (busca) parametros.set("busca", busca);
+        if (categoria) parametros.set("categoria", categoria);
+
+        productsMessage.textContent = "Consultando produtos...";
+        tabelaProdutos.innerHTML = "";
+        productsCount.textContent = "Consultando...";
+
+        try {
+            const token = sessionStorage.getItem("stockmaster.accessToken");
+            const resposta = await fetch(`/api/produtos/consulta?${parametros.toString()}`,
+            {headers: {
+            "Accept": "application/json",
+            "Authorization": `Bearer ${token}`
+        }
+    }
+);
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.success) {
+                throw new Error(
+                    resultado.message || "Erro ao consultar produtos."
+                );
+            }
+
+            produtos = resultado.data?.produtos || [];
+            aplicarFiltrosLocais();
+
+        } catch (erro) {
+            console.error("Erro na consulta:", erro);
+
+            produtos = [];
+            tabelaProdutos.innerHTML = "";
+            productsCount.textContent = "0 produto(s)";
+            productsMessage.textContent =
+                "Não foi possível consultar os produtos. Tente novamente.";
+        }
+    }
+
+    // ========================================
+    // EVENTOS DOS FILTROS
+    // ========================================
+
+    searchInput.addEventListener("input", () => {
+        clearTimeout(temporizadorBusca);
+        temporizadorBusca = setTimeout(consultarProdutos, 300);
+    });
+
+    categoryFilter.addEventListener("change", consultarProdutos);
+    situationFilter.addEventListener("change", aplicarFiltrosLocais);
+
+    // ========================================
+    // CONSULTA INICIAL
+    // ========================================
+
+    consultarProdutos();
 });
